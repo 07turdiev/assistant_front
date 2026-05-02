@@ -1,0 +1,215 @@
+<template>
+  <el-card>
+    <template #header>
+      <div class="header">
+        <span>{{ $t('admin.users') }}</span>
+        <el-button type="primary" @click="$router.push({ name: 'admin.users.create' })">
+          {{ $t('admin.createUser') }}
+        </el-button>
+      </div>
+    </template>
+
+    <div class="filters">
+      <el-input
+        v-model="filters.search"
+        :placeholder="$t('common.search')"
+        clearable
+        style="width: 240px"
+        @input="onSearch"
+      />
+      <el-select
+        v-model="filters.role"
+        :placeholder="$t('admin.filterRole')"
+        clearable
+        style="width: 200px"
+        @change="reload"
+      >
+        <el-option v-for="r in lookup.roles" :key="r.value" :label="r.label" :value="r.value" />
+      </el-select>
+      <el-select
+        v-model="filters.enabled"
+        :placeholder="$t('admin.filterEnabled')"
+        clearable
+        style="width: 160px"
+        @change="reload"
+      >
+        <el-option :label="$t('common.yes')" :value="true" />
+        <el-option :label="$t('common.no')" :value="false" />
+      </el-select>
+    </div>
+
+    <el-table v-loading="loading" :data="users" stripe>
+      <el-table-column prop="username" :label="$t('admin.userTable.username')" width="160" />
+      <el-table-column :label="$t('admin.userTable.fullName')">
+        <template #default="{ row }">
+          {{ row.last_name }} {{ row.first_name }} {{ row.father_name || '' }}
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('admin.userTable.role')" width="160">
+        <template #default="{ row }">
+          {{ row.role?.label_uz || row.role?.name }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="phone_number" :label="$t('profile.phone')" width="160" />
+      <el-table-column :label="$t('admin.userTable.status')" width="140">
+        <template #default="{ row }">
+          <el-tag>{{ row.status }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('admin.userTable.enabled')" width="100">
+        <template #default="{ row }">
+          <el-switch
+            :model-value="row.enabled"
+            :loading="row.id === togglingId"
+            @change="onToggleEnabled(row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('common.actions')" width="220" fixed="right">
+        <template #default="{ row }">
+          <el-button size="small" @click="$router.push({ name: 'admin.users.edit', params: { id: row.id } })">
+            {{ $t('common.edit') }}
+          </el-button>
+          <el-button size="small" type="warning" @click="onResetPassword(row)">
+            {{ $t('admin.resetPassword') }}
+          </el-button>
+          <el-button size="small" type="danger" @click="onDelete(row)">
+            {{ $t('common.delete') }}
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <el-pagination
+      class="pagination"
+      :current-page="filters.page"
+      :page-size="filters.page_size"
+      :total="total"
+      layout="prev, pager, next, total"
+      @current-change="onPageChange"
+    />
+  </el-card>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+import { adminUsersApi } from '@/api/admin'
+import { useLookupStore } from '@/stores/lookup'
+import type { User } from '@/types/user'
+
+const { t } = useI18n()
+const lookup = useLookupStore()
+
+const users = ref<User[]>([])
+const total = ref(0)
+const loading = ref(false)
+const togglingId = ref<string | null>(null)
+
+const filters = reactive({
+  page: 1,
+  page_size: 20,
+  search: '',
+  role: undefined as string | undefined,
+  enabled: undefined as boolean | undefined,
+})
+
+let searchTimer: number | null = null
+
+async function reload() {
+  loading.value = true
+  try {
+    const params = {
+      page: filters.page,
+      page_size: filters.page_size,
+      search: filters.search || undefined,
+      role: filters.role || undefined,
+      enabled: filters.enabled,
+    }
+    const { data } = await adminUsersApi.list(params as never)
+    users.value = data.results
+    total.value = data.count
+  } catch (_e) {
+    ElMessage.error(t('common.error'))
+  } finally {
+    loading.value = false
+  }
+}
+
+function onSearch() {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => {
+    filters.page = 1
+    reload()
+  }, 350)
+}
+
+function onPageChange(page: number) {
+  filters.page = page
+  reload()
+}
+
+async function onToggleEnabled(row: User) {
+  togglingId.value = row.id
+  try {
+    await adminUsersApi.update(row.id, { enabled: !row.enabled } as never)
+    row.enabled = !row.enabled
+  } catch (_e) {
+    ElMessage.error(t('common.error'))
+  } finally {
+    togglingId.value = null
+  }
+}
+
+async function onResetPassword(row: User) {
+  await ElMessageBox.confirm(t('admin.confirmResetPassword'), t('common.confirm'), {
+    type: 'warning',
+  })
+  try {
+    const { data } = await adminUsersApi.resetPassword(row.id)
+    if (data.generated_password) {
+      ElMessageBox.alert(data.generated_password, t('admin.newPassword'), { type: 'success' })
+    } else {
+      ElMessage.success(t('common.success'))
+    }
+  } catch (_e) {
+    ElMessage.error(t('common.error'))
+  }
+}
+
+async function onDelete(row: User) {
+  await ElMessageBox.confirm(t('admin.confirmDeleteUser'), t('common.confirm'), {
+    type: 'warning',
+  })
+  try {
+    await adminUsersApi.delete(row.id)
+    ElMessage.success(t('common.success'))
+    await reload()
+  } catch (_e) {
+    ElMessage.error(t('common.error'))
+  }
+}
+
+onMounted(async () => {
+  await lookup.loadAll()
+  await reload()
+})
+</script>
+
+<style lang="scss" scoped>
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+</style>

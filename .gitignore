@@ -1,0 +1,17 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+*.local
+*.log
+.vite
+coverage
+
+src/auto-imports.d.ts
+src/components.d.ts
+
+.eslintcache
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

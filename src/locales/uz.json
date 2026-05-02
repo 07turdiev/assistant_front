@@ -1,0 +1,150 @@
+{
+  "app": {
+    "title": "Smart Assistant",
+    "subtitle": "Madaniyat va turizm vazirligi"
+  },
+  "common": {
+    "actions": "Amallar",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "refresh": "Yangilash",
+    "yes": "Ha",
+    "no": "Yo'q",
+    "loading": "Yuklanmoqda...",
+    "error": "Xatolik yuz berdi",
+    "success": "Muvaffaqiyatli",
+    "search": "Qidirish",
+    "back": "Orqaga",
+    "confirm": "Tasdiqlang",
+    "required": "Bu maydon to'ldirilishi shart"
+  },
+  "auth": {
+    "login": "Tizimga kirish",
+    "username": "Login",
+    "password": "Parol",
+    "signIn": "Kirish",
+    "logout": "Chiqish",
+    "usernameRequired": "Loginni kiriting",
+    "passwordRequired": "Parolni kiriting",
+    "loginFailed": "Login yoki parol noto'g'ri"
+  },
+  "nav": {
+    "dashboard": "Bosh sahifa",
+    "calendar": "Kalendar",
+    "calendarWeek": "Hafta",
+    "calendarMonth": "Oy",
+    "preEvents": "Tadbir loyihalari",
+    "tasks": "Topshiriqlar",
+    "requests": "So'rovlar",
+    "chat": "Suhbat",
+    "notifications": "Bildirishnomalar",
+    "profile": "Profil",
+    "admin": "Boshqaruv"
+  },
+  "dashboard": {
+    "welcome": "Salom, {name}!",
+    "tasks": "Topshiriqlar",
+    "requests": "So'rovlar",
+    "unreadChat": "O'qilmagan xabarlar",
+    "notifications": "Yangi bildirishnomalar",
+    "todayPlaceholder": "Bugungi tadbirlar va statistika tez orada bu yerda ko'rinadi."
+  },
+  "notifications": {
+    "title": "Sarlavha",
+    "type": "Turi",
+    "date": "Sana",
+    "seen": "Ko'rilgan",
+    "empty": "Bildirishnomalar yo'q"
+  },
+  "webpush": {
+    "settings": "Push bildirishnomalar",
+    "status": "Holat",
+    "permission": "Brauzer ruxsati",
+    "enable": "Yoqish",
+    "disable": "O'chirish",
+    "dismiss": "Keyinroq",
+    "sendTest": "Test xabar yuborish",
+    "subscribed": "Push bildirishnomalar yoqildi",
+    "subscribeError": "Push bildirishnomani yoqib bo'lmadi",
+    "testSent": "Test xabar yuborildi",
+    "unsupported": "Brauzeringiz Web Push'ni qo'llab-quvvatlamaydi",
+    "bannerTitle": "Bildirishnomalarni yoqing",
+    "bannerDescription": "Yangi tadbir, topshiriq va xabarlardan bevosita brauzer orqali xabardor bo'ling.",
+    "activeSubscriptions": "Faol qurilmalar",
+    "noSubs": "Faol push obunalar yo'q",
+    "device": "Qurilma",
+    "createdAt": "Qachon yoqildi",
+    "statusLabel": {
+      "default": "Sozlanmagan",
+      "granted": "Ruxsat berilgan",
+      "denied": "Rad etilgan",
+      "subscribing": "Yoqilmoqda...",
+      "subscribed": "Faol",
+      "unsupported": "Qo'llab-quvvatlanmaydi"
+    }
+  },
+  "profile": {
+    "fullName": "F.I.Sh.",
+    "position": "Lavozimi",
+    "role": "Roli",
+    "email": "Email",
+    "phone": "Telefon",
+    "status": "Holati"
+  },
+  "placeholder": {
+    "title": "Sahifa tayyorlanmoqda",
+    "description": "Bu sahifa keyingi bosqichlarda to'ldiriladi."
+  },
+  "notFound": {
+    "description": "Sahifa topilmadi",
+    "goHome": "Bosh sahifaga"
+  },
+  "admin": {
+    "dashboard": "Admin paneli",
+    "users": "Foydalanuvchilar",
+    "directions": "Yo'nalishlar",
+    "organisations": "Tashkilotlar",
+    "regions": "Hududlar",
+    "districts": "Tumanlar",
+    "create": "Yaratish",
+    "edit": "Tahrirlash",
+    "createUser": "Foydalanuvchi qo'shish",
+    "editUser": "Foydalanuvchini tahrirlash",
+    "manageUsers": "Foydalanuvchilarni boshqarish",
+    "manageDirections": "Yo'nalishlarni boshqarish",
+    "quickLinks": "Tezkor harakatlar",
+    "filterRole": "Rol bo'yicha",
+    "filterEnabled": "Faollik",
+    "resetPassword": "Parolni tiklash",
+    "newPassword": "Yangi parol",
+    "confirmResetPassword": "Foydalanuvchi parolini tiklamoqchimisiz?",
+    "confirmDeleteUser": "Foydalanuvchini o'chirib tashlamoqchimisiz?",
+    "confirmDelete": "O'chirib tashlamoqchimisiz?",
+    "userTable": {
+      "username": "Login",
+      "fullName": "F.I.Sh.",
+      "role": "Roli",
+      "status": "Holati",
+      "enabled": "Faol"
+    },
+    "lastName": "Familiyasi",
+    "firstName": "Ismi",
+    "fatherName": "Otasining ismi",
+    "positionUz": "Lavozim (uz)",
+    "positionRu": "Lavozim (ru)",
+    "role": "Roli",
+    "status": "Holati",
+    "enabled": "Faol",
+    "nameUz": "Nomi (uz)",
+    "nameRu": "Nomi (ru)",
+    "addressUz": "Manzil (uz)",
+    "addressRu": "Manzil (ru)",
+    "address": "Manzil",
+    "parent": "Bo'g'liq element",
+    "organisation": "Tashkilot",
+    "district": "Tuman",
+    "selectRegion": "Tumanlarni ko'rish uchun hududni tanlang"
+  }
+}

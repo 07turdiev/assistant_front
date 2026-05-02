@@ -1,0 +1,150 @@
+{
+  "app": {
+    "title": "Smart Assistant",
+    "subtitle": "Министерство культуры и туризма"
+  },
+  "common": {
+    "actions": "Действия",
+    "edit": "Изменить",
+    "delete": "Удалить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "refresh": "Обновить",
+    "yes": "Да",
+    "no": "Нет",
+    "loading": "Загрузка...",
+    "error": "Произошла ошибка",
+    "success": "Успешно",
+    "search": "Поиск",
+    "back": "Назад",
+    "confirm": "Подтвердите",
+    "required": "Поле обязательно"
+  },
+  "auth": {
+    "login": "Вход в систему",
+    "username": "Логин",
+    "password": "Пароль",
+    "signIn": "Войти",
+    "logout": "Выход",
+    "usernameRequired": "Введите логин",
+    "passwordRequired": "Введите пароль",
+    "loginFailed": "Неверный логин или пароль"
+  },
+  "nav": {
+    "dashboard": "Главная",
+    "calendar": "Календарь",
+    "calendarWeek": "Неделя",
+    "calendarMonth": "Месяц",
+    "preEvents": "Проекты мероприятий",
+    "tasks": "Поручения",
+    "requests": "Запросы",
+    "chat": "Чат",
+    "notifications": "Уведомления",
+    "profile": "Профиль",
+    "admin": "Управление"
+  },
+  "dashboard": {
+    "welcome": "Здравствуйте, {name}!",
+    "tasks": "Поручения",
+    "requests": "Запросы",
+    "unreadChat": "Непрочитанные сообщения",
+    "notifications": "Новые уведомления",
+    "todayPlaceholder": "Здесь скоро появятся сегодняшние мероприятия и статистика."
+  },
+  "notifications": {
+    "title": "Заголовок",
+    "type": "Тип",
+    "date": "Дата",
+    "seen": "Просмотрено",
+    "empty": "Уведомлений нет"
+  },
+  "webpush": {
+    "settings": "Push-уведомления",
+    "status": "Статус",
+    "permission": "Разрешение браузера",
+    "enable": "Включить",
+    "disable": "Отключить",
+    "dismiss": "Позже",
+    "sendTest": "Отправить тестовое",
+    "subscribed": "Push-уведомления включены",
+    "subscribeError": "Не удалось включить push",
+    "testSent": "Тестовое уведомление отправлено",
+    "unsupported": "Ваш браузер не поддерживает Web Push",
+    "bannerTitle": "Включите уведомления",
+    "bannerDescription": "Получайте уведомления о новых мероприятиях, поручениях и сообщениях прямо в браузере.",
+    "activeSubscriptions": "Активные устройства",
+    "noSubs": "Нет активных подписок",
+    "device": "Устройство",
+    "createdAt": "Дата подключения",
+    "statusLabel": {
+      "default": "Не настроено",
+      "granted": "Разрешено",
+      "denied": "Запрещено",
+      "subscribing": "Подключение...",
+      "subscribed": "Активно",
+      "unsupported": "Не поддерживается"
+    }
+  },
+  "profile": {
+    "fullName": "Ф.И.О.",
+    "position": "Должность",
+    "role": "Роль",
+    "email": "Email",
+    "phone": "Телефон",
+    "status": "Статус"
+  },
+  "placeholder": {
+    "title": "Страница в разработке",
+    "description": "Эта страница будет добавлена на следующих этапах."
+  },
+  "notFound": {
+    "description": "Страница не найдена",
+    "goHome": "На главную"
+  },
+  "admin": {
+    "dashboard": "Панель администратора",
+    "users": "Пользователи",
+    "directions": "Направления",
+    "organisations": "Организации",
+    "regions": "Регионы",
+    "districts": "Районы",
+    "create": "Создать",
+    "edit": "Изменить",
+    "createUser": "Добавить пользователя",
+    "editUser": "Изменить пользователя",
+    "manageUsers": "Управление пользователями",
+    "manageDirections": "Управление направлениями",
+    "quickLinks": "Быстрые действия",
+    "filterRole": "По роли",
+    "filterEnabled": "Активность",
+    "resetPassword": "Сбросить пароль",
+    "newPassword": "Новый пароль",
+    "confirmResetPassword": "Сбросить пароль пользователя?",
+    "confirmDeleteUser": "Удалить пользователя?",
+    "confirmDelete": "Удалить запись?",
+    "userTable": {
+      "username": "Логин",
+      "fullName": "Ф.И.О.",
+      "role": "Роль",
+      "status": "Статус",
+      "enabled": "Активен"
+    },
+    "lastName": "Фамилия",
+    "firstName": "Имя",
+    "fatherName": "Отчество",
+    "positionUz": "Должность (uz)",
+    "positionRu": "Должность (ru)",
+    "role": "Роль",
+    "status": "Статус",
+    "enabled": "Активен",
+    "nameUz": "Название (uz)",
+    "nameRu": "Название (ru)",
+    "addressUz": "Адрес (uz)",
+    "addressRu": "Адрес (ru)",
+    "address": "Адрес",
+    "parent": "Родительский элемент",
+    "organisation": "Организация",
+    "district": "Район",
+    "selectRegion": "Выберите регион, чтобы увидеть районы"
+  }
+}
