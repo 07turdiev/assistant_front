@@ -374,6 +374,49 @@ watch(
   { immediate: true }
 )
 
+// Direction o'zgarganda — yo'nalish va parentlardagi xodimlarni chief options'ga
+// yuklab, mos chief'ni avto-tanlash (foydalanuvchi qo'lda o'zgartirishi mumkin).
+const LEADER_RE = /boshlig'i|bosh buxgalter|vazir(\b| o'rinbosari| kotibiyati)|o'rinbosari|maslahatchi|министр/i
+
+watch(
+  () => model.direction_id,
+  async (newDirId, oldDirId) => {
+    if (!newDirId || newDirId === oldDirId) return
+    try {
+      const { data } = await usersApi.chiefCandidates({
+        direction_id: newDirId,
+        exclude: props.user?.id,
+      })
+
+      // Mavjud chief boshqa tarmoqdan bo'lishi mumkin — uni saqlab qolaylik
+      const merged = [...data]
+      if (model.chief_id) {
+        const existing = chiefOptions.value.find((c) => c.id === model.chief_id)
+        if (existing && !merged.some((c) => c.id === existing.id)) {
+          merged.unshift(existing)
+        }
+      }
+      chiefOptions.value = merged
+
+      // Agar tanlangan chief allaqachon ro'yxatda bo'lsa — qoldiramiz
+      const currentValid = merged.some((c) => c.id === model.chief_id)
+      if (currentValid) return
+
+      // Aks holda — birinchi "rahbar" lavozimdagi kandidatni tanlaymiz (peer xodimlarni o'tkazib)
+      const leader = data.find((c) =>
+        LEADER_RE.test(c.position_uz || '') || LEADER_RE.test(c.position_ru || ''),
+      )
+      if (leader) {
+        model.chief_id = leader.id
+      } else if (data.length > 0) {
+        model.chief_id = data[0].id
+      } else {
+        model.chief_id = null
+      }
+    } catch (_e) { /* ignore */ }
+  },
+)
+
 async function onSubmit() {
   if (!formRef.value) return
   const valid = await formRef.value.validate().catch(() => false)

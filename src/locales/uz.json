@@ -69,7 +69,12 @@
     "month": "Oy",
     "week": "Hafta",
     "day": "Kun",
-    "today": "Bugun"
+    "today": "Bugun",
+    "prev": "Oldingi",
+    "next": "Keyingi",
+    "totalEvents": "tadbirlar",
+    "importantEvents": "muhim",
+    "privateEvents": "yopiq"
   },
   "chat": {
     "empty": "Hali xabar yo'q",
@@ -114,6 +119,10 @@
     "unsupported": "Brauzeringiz Web Push'ni qo'llab-quvvatlamaydi",
     "bannerTitle": "Bildirishnomalarni yoqing",
     "bannerDescription": "Yangi tadbir, topshiriq va xabarlardan bevosita brauzer orqali xabardor bo'ling.",
+    "blockedTitle": "Bildirishnomalar bloklangan",
+    "blockedDescription": "Brauzer sozlamalarida sayt uchun bildirishnomalarga ruxsat bering, aks holda yangi tadbir va xabarlardan xabardor bo'lmaysiz.",
+    "howToUnblock": "Qanday yoqish",
+    "unblockInstructions": "<b>Chrome / Edge:</b><br>1. Manzil qatori chap tomonidagi 🔒 belgini bosing<br>2. \"Bildirishnomalar\" → <b>Ruxsat berish</b><br>3. Sahifani yangilang<br><br><b>Firefox:</b><br>1. Manzil qatori 🔒 → <b>Bildirishnomalar</b> sozlamasini o'zgartiring<br>2. Sahifani yangilang",
     "activeSubscriptions": "Faol qurilmalar",
     "noSubs": "Faol push obunalar yo'q",
     "device": "Qurilma",
@@ -171,6 +180,8 @@
     "executors": "Ijrochilarni qo'shish",
     "searchHint": "Foydalanuvchini qidiring",
     "searchResults": "Topilgan natijalar",
+    "selectDirectionFirst": "Avval yo'nalishni tanlang — keyin xodimlar ro'yxati ko'rinadi",
+    "noEmployeesInDirection": "Bu yo'nalishda hodimlar topilmadi",
     "submitBtn": "Topshiriq qo'shish",
     "subordinateTag": "Yordamchi",
     "reminder": {

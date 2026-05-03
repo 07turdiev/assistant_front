@@ -51,9 +51,38 @@
         </template>
       </el-table-column>
       <el-table-column prop="phone_number" :label="$t('profile.phone')" width="160" />
-      <el-table-column :label="$t('admin.userTable.status')" width="140">
+      <el-table-column :label="$t('admin.userTable.status')" width="170">
         <template #default="{ row }">
-          <el-tag>{{ row.status }}</el-tag>
+          <el-dropdown
+            trigger="click"
+            :disabled="row.id === statusUpdatingId"
+            @command="(s: UserStatus) => onChangeStatus(row, s)"
+          >
+            <el-tag
+              :type="statusTagType(row.status)"
+              effect="light"
+              class="status-tag"
+              :loading="row.id === statusUpdatingId"
+              @click.stop
+            >
+              {{ statusLabel(row.status) }}
+              <el-icon class="caret"><CaretBottom /></el-icon>
+            </el-tag>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-for="opt in statusOptions"
+                  :key="opt.value"
+                  :command="opt.value"
+                  :disabled="opt.value === row.status"
+                >
+                  <el-tag :type="statusTagType(opt.value)" effect="plain" size="small">
+                    {{ opt.label }}
+                  </el-tag>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </template>
       </el-table-column>
       <el-table-column :label="$t('admin.userTable.enabled')" width="100">
@@ -102,22 +131,24 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Edit, Delete, Key } from '@element-plus/icons-vue'
+import { CaretBottom, Edit, Delete, Key } from '@element-plus/icons-vue'
 import { adminUsersApi } from '@/api/admin'
 import { useLookupStore } from '@/stores/lookup'
 import type { User } from '@/types/user'
+
+type UserStatus = 'AT_WORK' | 'ON_HOLIDAY' | 'WORK_TRIP' | 'DISMISSED' | 'IN_CHILDHOOD_RAISING'
 
 const { t } = useI18n()
 const router = useRouter()
 
 function onRowClick(row: User, _column: unknown, event: MouseEvent) {
-  // Action tugmalari va switch'lar bosilganda row click ishlamasin
+  // Action tugmalari, switchlar va status dropdown bosilganda row click ishlamasin
   const target = event.target as HTMLElement
-  if (target.closest('button, .el-switch, .el-button')) return
+  if (target.closest('button, .el-switch, .el-button, .el-tag, .el-dropdown, .el-dropdown-menu')) return
   router.push({ name: 'admin.users.detail', params: { id: row.id } })
 }
 
@@ -127,6 +158,47 @@ const users = ref<User[]>([])
 const total = ref(0)
 const loading = ref(false)
 const togglingId = ref<string | null>(null)
+const statusUpdatingId = ref<string | null>(null)
+
+type TagType = 'success' | 'warning' | 'info' | 'danger' | 'primary'
+
+const statusOptions = computed<{ value: UserStatus; label: string }[]>(() => [
+  { value: 'AT_WORK', label: t('userStatus.atWork') },
+  { value: 'ON_HOLIDAY', label: t('userStatus.onHoliday') },
+  { value: 'WORK_TRIP', label: t('userStatus.workTrip') },
+  { value: 'IN_CHILDHOOD_RAISING', label: t('userStatus.childcare') },
+  { value: 'DISMISSED', label: t('userStatus.dismissed') },
+])
+
+function statusLabel(status: string): string {
+  return statusOptions.value.find((s) => s.value === status)?.label || status
+}
+
+function statusTagType(status: string): TagType {
+  switch (status) {
+    case 'AT_WORK': return 'success'
+    case 'DISMISSED': return 'info'
+    case 'ON_HOLIDAY': return 'warning'
+    case 'WORK_TRIP': return 'primary'
+    case 'IN_CHILDHOOD_RAISING': return 'warning'
+    default: return 'info'
+  }
+}
+
+async function onChangeStatus(row: User, newStatus: UserStatus) {
+  if (newStatus === row.status) return
+  statusUpdatingId.value = row.id
+  try {
+    await adminUsersApi.changeStatus(row.id, newStatus)
+    row.status = newStatus
+    ElMessage.success(t('common.success'))
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } } }
+    ElMessage.error(err.response?.data?.message || t('common.error'))
+  } finally {
+    statusUpdatingId.value = null
+  }
+}
 
 const filters = reactive({
   page: 1,
@@ -232,5 +304,23 @@ onMounted(async () => {
 .pagination {
   margin-top: 16px;
   justify-content: flex-end;
+}
+
+.status-tag {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  transition: filter 0.15s ease;
+}
+
+.status-tag:hover {
+  filter: brightness(0.96);
+}
+
+.status-tag .caret {
+  font-size: 10px;
+  opacity: 0.6;
 }
 </style>

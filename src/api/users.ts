@@ -37,4 +37,7 @@ export const usersApi = {
   fullInfo(id: string) {
     return apiClient.get<User>(`/users/${id}/full/`)
   },
+  chiefCandidates(params: { direction_id: string; exclude?: string }) {
+    return apiClient.get<User[]>('/users/chief-candidates/', { params })
+  },
 }

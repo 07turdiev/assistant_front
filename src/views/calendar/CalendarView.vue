@@ -1,44 +1,68 @@
 <template>
-  <el-card class="calendar-card" v-loading="loading">
-    <template #header>
-      <div class="header">
-        <span class="title">{{ $t('nav.calendar') }}</span>
-
-        <el-button-group>
-          <el-button :type="view === 'multiMonthYear' ? 'primary' : ''" @click="changeView('multiMonthYear')">
-            {{ $t('calendar.year') }}
-          </el-button>
-          <el-button :type="view === 'dayGridMonth' ? 'primary' : ''" @click="changeView('dayGridMonth')">
-            {{ $t('calendar.month') }}
-          </el-button>
-          <el-button :type="view === 'timeGridWeek' ? 'primary' : ''" @click="changeView('timeGridWeek')">
-            {{ $t('calendar.week') }}
-          </el-button>
-          <el-button :type="view === 'timeGridDay' ? 'primary' : ''" @click="changeView('timeGridDay')">
-            {{ $t('calendar.day') }}
-          </el-button>
+  <div class="calendar-page" v-loading="loading">
+    <!-- Toolbar -->
+    <div class="cal-toolbar">
+      <div class="cal-toolbar__left">
+        <el-button-group class="nav-group">
+          <el-tooltip :content="$t('calendar.prev')" placement="top">
+            <el-button :icon="ArrowLeft" @click="navPrev" />
+          </el-tooltip>
+          <el-button class="today-btn" @click="navToday">{{ $t('calendar.today') }}</el-button>
+          <el-tooltip :content="$t('calendar.next')" placement="top">
+            <el-button :icon="ArrowRight" @click="navNext" />
+          </el-tooltip>
         </el-button-group>
+        <h2 class="cal-title">{{ currentTitle }}</h2>
+      </div>
 
-        <div class="actions">
-          <el-button
-            v-if="canCreateEvent"
-            type="primary"
-            @click="$router.push({ name: 'events.create' })"
-          >
-            + {{ $t('event.create') }}
+      <div class="cal-toolbar__center">
+        <el-segmented
+          :model-value="view"
+          :options="viewOptions"
+          @change="onSegmentedChange"
+        />
+      </div>
+
+      <div class="cal-toolbar__right">
+        <el-tooltip v-if="canCreateTask" :content="taskDialogTitle" placement="top">
+          <el-button type="success" circle size="large" @click="taskDialogVisible = true">
+            <el-icon><Document /></el-icon>
           </el-button>
-          <el-button
-            v-if="canCreateTask"
-            type="success"
-            @click="taskDialogVisible = true"
-          >
-            + {{ $t('reports.create') }}
+        </el-tooltip>
+        <el-tooltip v-if="canCreateEvent" :content="$t('event.create')" placement="top">
+          <el-button type="primary" circle size="large" @click="$router.push({ name: 'events.create' })">
+            <el-icon><Plus /></el-icon>
           </el-button>
+        </el-tooltip>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stats-strip">
+      <div class="stat">
+        <span class="stat__value">{{ events.length }}</span>
+        <span class="stat__label">{{ $t('calendar.totalEvents') }}</span>
+      </div>
+      <div class="stat stat--important">
+        <span class="stat__value">{{ importantCount }}</span>
+        <span class="stat__label">{{ $t('calendar.importantEvents') }}</span>
+      </div>
+      <div class="stat stat--private">
+        <span class="stat__value">{{ privateCount }}</span>
+        <span class="stat__label">{{ $t('calendar.privateEvents') }}</span>
+      </div>
+      <div class="legend">
+        <div v-for="(color, type) in typeColors" :key="type" class="legend-item">
+          <span class="legend-dot" :style="{ background: color }"></span>
+          <span class="legend-label">{{ typeLabels[type] || type }}</span>
         </div>
       </div>
-    </template>
+    </div>
 
-    <FullCalendar ref="calendarRef" :options="calendarOptions" />
+    <!-- Calendar -->
+    <div class="cal-card">
+      <FullCalendar ref="calendarRef" :options="calendarOptions" />
+    </div>
 
     <!-- Tezkor topshiriq/so'rov dialogi -->
     <el-dialog v-model="taskDialogVisible" :title="taskDialogTitle" width="520px">
@@ -59,7 +83,7 @@
         </el-button>
       </template>
     </el-dialog>
-  </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -67,12 +91,13 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import { ArrowLeft, ArrowRight, Document, Plus } from '@element-plus/icons-vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import multiMonthPlugin from '@fullcalendar/multimonth'
-import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput } from '@fullcalendar/core'
+import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput, EventContentArg } from '@fullcalendar/core'
 
 import { eventsApi } from '@/api/events'
 import { reportsApi } from '@/api/reports'
@@ -117,38 +142,88 @@ async function onCreateTask() {
   }
 }
 
+// EventType -> color mapping (production enum'i)
+const typeColors: Record<string, string> = {
+  Collection: '#5470c6',
+  Presidium: '#91cc75',
+  Selector: '#fac858',
+  Discussion: '#ee6666',
+  Presentation: '#73c0de',
+  Meeting: '#3ba272',
+  Forum: '#fc8452',
+  Seminar: '#9a60b4',
+}
+
+const typeLabels = computed<Record<string, string>>(() => ({
+  Collection: locale.value === 'ru' ? 'Собрание' : "Yig'ilish",
+  Presidium: locale.value === 'ru' ? 'Президиум' : 'Prezidium',
+  Selector: locale.value === 'ru' ? 'Селектор' : 'Selektor',
+  Discussion: locale.value === 'ru' ? 'Обсуждение' : 'Muhokama',
+  Presentation: locale.value === 'ru' ? 'Презентация' : 'Taqdimot',
+  Meeting: locale.value === 'ru' ? 'Встреча' : 'Uchrashuv',
+  Forum: 'Forum',
+  Seminar: 'Seminar',
+}))
+
+type CalView = 'multiMonthYear' | 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'
+
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null)
-const view = ref<'multiMonthYear' | 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'>('dayGridMonth')
+const view = ref<CalView>('dayGridMonth')
 const events = ref<Event[]>([])
 const loading = ref(false)
+const currentTitle = ref('')
+
+const importantCount = computed(() => events.value.filter((e) => e.is_important).length)
+const privateCount = computed(() => events.value.filter((e) => e.is_private).length)
+
+const viewOptions = computed(() => [
+  { label: t('calendar.year'), value: 'multiMonthYear' },
+  { label: t('calendar.month'), value: 'dayGridMonth' },
+  { label: t('calendar.week'), value: 'timeGridWeek' },
+  { label: t('calendar.day'), value: 'timeGridDay' },
+])
+
+function colorFor(e: Event): string {
+  return typeColors[e.type] || '#909399'
+}
 
 const fcEvents = computed<EventInput[]>(() =>
-  events.value.map((e) => ({
-    id: e.id,
-    title: e.title,
-    start: `${e.date}T${e.start_time}`,
-    end: `${e.date}T${e.end_time}`,
-    backgroundColor: e.is_important ? '#f56c6c' : '#409eff',
-    borderColor: e.is_important ? '#f56c6c' : '#409eff',
-    extendedProps: { sphere: e.sphere, type: e.type, address: e.address },
-  }))
+  events.value.map((e) => {
+    const base = colorFor(e)
+    return {
+      id: e.id,
+      title: e.title,
+      start: `${e.date}T${e.start_time}`,
+      end: `${e.date}T${e.end_time}`,
+      backgroundColor: base,
+      borderColor: base,
+      classNames: [
+        'event-pill',
+        e.is_important ? 'is-important' : '',
+        e.is_private ? 'is-private' : '',
+      ].filter(Boolean),
+      extendedProps: {
+        sphere: e.sphere,
+        type: e.type,
+        address: e.address,
+        is_important: e.is_important,
+        is_private: e.is_private,
+        start_time: e.start_time,
+      },
+    }
+  })
 )
 
 const calendarOptions = computed<CalendarOptions>(() => ({
   plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin],
   initialView: view.value,
-  headerToolbar: {
-    left: 'prev,next today',
-    center: 'title',
-    right: '',
-  },
-  buttonText: {
-    today: t('calendar.today'),
-  },
+  // Headerni o'zimiz qildik — FC default yashirin
+  headerToolbar: false,
   locale: locale.value === 'ru' ? 'ru' : 'en',
   firstDay: 1,
   weekends: true,
   height: 'auto',
+  expandRows: true,
   events: fcEvents.value,
   eventClick: onEventClick,
   datesSet: onDatesSet,
@@ -157,13 +232,64 @@ const calendarOptions = computed<CalendarOptions>(() => ({
   navLinks: true,
   navLinkDayClick: onNavToDay,
   multiMonthMaxColumns: 3,
+  slotMinTime: '07:00:00',
+  slotMaxTime: '21:00:00',
+  slotDuration: '00:30:00',
+  allDaySlot: false,
+  scrollTime: '08:00:00',
+  businessHours: {
+    daysOfWeek: [1, 2, 3, 4, 5],
+    startTime: '09:00',
+    endTime: '18:00',
+  },
+  eventContent: renderEventContent,
+  dayHeaderFormat: { weekday: 'short' },
 }))
 
-function changeView(newView: typeof view.value) {
+function renderEventContent(arg: EventContentArg) {
+  const time = arg.event.extendedProps.start_time as string | undefined
+  const isImportant = arg.event.extendedProps.is_important as boolean
+  const isPrivate = arg.event.extendedProps.is_private as boolean
+  const timeStr = time ? time.slice(0, 5) : ''
+  const isMonthView = arg.view.type === 'dayGridMonth' || arg.view.type === 'multiMonthYear'
+
+  const bg = arg.event.backgroundColor || '#409eff'
+  const html = isMonthView
+    ? `
+      <div class="ev-pill" style="--ev-color:${bg}">
+        ${isImportant ? '<span class="ev-flag-important"></span>' : ''}
+        ${timeStr ? `<span class="ev-time">${timeStr}</span>` : ''}
+        <span class="ev-title">${escapeHtml(arg.event.title)}</span>
+        ${isPrivate ? '<span class="ev-lock">🔒</span>' : ''}
+      </div>`
+    : `
+      <div class="ev-block">
+        <div class="ev-block__time">${timeStr}${isImportant ? ' <span class="ev-flag-important"></span>' : ''}</div>
+        <div class="ev-block__title">${escapeHtml(arg.event.title)}</div>
+        ${isPrivate ? '<div class="ev-block__meta">🔒</div>' : ''}
+      </div>`
+  return { html }
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c
+  ))
+}
+
+function changeView(newView: CalView) {
   view.value = newView
   const api = calendarRef.value?.getApi()
   if (api) api.changeView(newView)
 }
+
+function onSegmentedChange(value: string | number | boolean) {
+  changeView(value as CalView)
+}
+
+function navPrev() { calendarRef.value?.getApi().prev() }
+function navNext() { calendarRef.value?.getApi().next() }
+function navToday() { calendarRef.value?.getApi().today() }
 
 function onEventClick(arg: EventClickArg) {
   router.push({ name: 'events.detail', params: { id: arg.event.id } })
@@ -172,13 +298,11 @@ function onEventClick(arg: EventClickArg) {
 function onNavToDay(date: Date) {
   view.value = 'timeGridDay'
   const api = calendarRef.value?.getApi()
-  if (api) {
-    api.changeView('timeGridDay', date)
-  }
+  if (api) api.changeView('timeGridDay', date)
 }
 
 async function onDatesSet(arg: DatesSetArg) {
-  // Yangi diapazon ko'rsatildi — backendning by-period endpoint'idan tortamiz
+  currentTitle.value = arg.view.title
   const start = formatDate(arg.start, 'YYYY-MM-DD')
   const end = formatDate(arg.end, 'YYYY-MM-DD')
   await loadEvents(start, end)
@@ -196,64 +320,524 @@ async function loadEvents(startDate: string, endDate: string) {
   }
 }
 
-onMounted(() => {
-  // Calendar API onMount'dan keyin tayyor — datesSet avtomatik ishga tushadi
-})
+onMounted(() => { /* datesSet trigger qiladi */ })
 </script>
 
 <style lang="scss" scoped>
-.calendar-card {
-  :deep(.el-card__body) {
-    padding: 16px;
-  }
-}
+/* ============================================================
+   Tokens — local design variables for consistency
+   ============================================================ */
+$bg-page: #f5f7fa;
+$bg-surface: #ffffff;
+$border-soft: #ebeef5;
+$border-default: #e4e7ed;
+$text-primary: #1f2d3d;
+$text-secondary: #5a6c7d;
+$text-muted: #909399;
+$text-faint: #c0c4cc;
+$brand: #409eff;
+$brand-soft: rgba(64, 158, 255, 0.08);
+$danger: #ee6666;
+$radius-card: 12px;
+$radius-pill: 8px;
+$shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
+$shadow-event-hover: 0 2px 8px rgba(15, 23, 42, 0.08);
 
-.header {
+/* ============================================================
+   Page layout
+   ============================================================ */
+.calendar-page {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 12px;
+}
 
-  .title {
-    font-weight: 500;
+/* ============================================================
+   Toolbar
+   ============================================================ */
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: $bg-surface;
+  padding: 14px 20px;
+  border-radius: $radius-card;
+  box-shadow: $shadow-card;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
-  .actions {
+  &__center { flex: 0 0 auto; }
+
+  &__right {
     display: flex;
+    align-items: center;
     gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .nav-group { flex-shrink: 0; }
+
+  .today-btn {
+    font-weight: 500;
+    min-width: 72px;
+  }
+
+  .cal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-primary;
+    text-transform: capitalize;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
+/* ============================================================
+   Stats strip
+   ============================================================ */
+.stats-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: $bg-surface;
+  border-radius: $radius-card;
+  box-shadow: $shadow-card;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #fafbfc;
+  border: 1px solid $border-default;
+  transition: border-color 0.15s ease;
+
+  &__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-primary;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 12px;
+    color: $text-muted;
+    line-height: 1;
+  }
+
+  &--important {
+    border-color: rgba(238, 102, 102, 0.25);
+    background: rgba(238, 102, 102, 0.04);
+  }
+
+  &--important .stat__value { color: $danger; }
+
+  &--private {
+    border-color: rgba(144, 147, 153, 0.4);
+    background: #fafbfc;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-left: auto;
+  padding-left: 16px;
+  border-left: 1px solid $border-soft;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $text-secondary;
+  white-space: nowrap;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Calendar surface
+   ============================================================ */
+.cal-card {
+  background: $bg-surface;
+  border-radius: $radius-card;
+  padding: 16px;
+  box-shadow: $shadow-card;
+  min-height: 520px;
+}
+
+/* ============================================================
+   FullCalendar overrides — base
+   ============================================================ */
 :deep(.fc) {
   font-family: inherit;
+  --fc-border-color: #{$border-soft};
+  --fc-today-bg-color: rgba(64, 158, 255, 0.05);
+  --fc-now-indicator-color: #{$danger};
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: #fafbfc;
 }
 
-:deep(.fc-toolbar-title) {
-  font-size: 16px !important;
+:deep(.fc-theme-standard td),
+:deep(.fc-theme-standard th) {
+  border-color: $border-soft;
+}
+
+:deep(.fc-scrollgrid),
+:deep(.fc-scrollgrid-section > *) {
+  border-color: $border-soft;
+}
+
+:deep(.fc-scrollgrid) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Column headers (weekday names)
+   ============================================================ */
+:deep(.fc-col-header-cell) {
+  background: #fafbfc;
+}
+
+:deep(.fc-col-header-cell-cushion) {
+  color: $text-secondary;
   font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-decoration: none;
+  padding: 10px 4px;
+  display: inline-block;
 }
 
-:deep(.fc-button-primary) {
-  background-color: #1976d2;
-  border-color: #1976d2;
-  text-transform: capitalize;
-
-  &:hover, &:not(:disabled).fc-button-active, &:not(:disabled):active {
-    background-color: #155fa0;
-    border-color: #155fa0;
-  }
+/* ============================================================
+   Day cells
+   ============================================================ */
+:deep(.fc-daygrid-day) {
+  transition: background-color 0.15s ease;
 }
 
+:deep(.fc-daygrid-day-frame) {
+  padding: 2px;
+  min-height: 90px;
+}
+
+:deep(.fc-daygrid-day-top) {
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+:deep(.fc-daygrid-day-number) {
+  color: $text-primary;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 6px 8px 4px;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+:deep(.fc-day-other) .fc-daygrid-day-number { color: $text-faint; }
+
+/* Today — bold colored number; cell tint comes from --fc-today-bg-color */
+:deep(.fc-day-today .fc-daygrid-day-number) {
+  color: $brand;
+  font-weight: 700;
+}
+
+/* Weekend tint */
+:deep(.fc-day-sat),
+:deep(.fc-day-sun) {
+  background-color: rgba(248, 250, 252, 0.6);
+}
+
+/* ============================================================
+   Events — month view (pill)
+   ============================================================ */
 :deep(.fc-event) {
   cursor: pointer;
-  font-size: 12px;
-  padding: 1px 3px;
+  border: none;
+  background: transparent;
 }
 
-:deep(.fc-daygrid-day-number),
-:deep(.fc-col-header-cell-cushion) {
-  color: #1f2d3d;
+:deep(.event-pill) {
+  margin: 1px 4px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+:deep(.fc-daygrid-event) {
+  margin-top: 2px !important;
+  padding: 0 !important;
+}
+
+:deep(.ev-pill) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: $radius-pill;
+  background: var(--ev-color, $brand);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.3;
+  overflow: hidden;
+  position: relative;
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+:deep(.ev-pill:hover) {
+  filter: brightness(1.06);
+  box-shadow: $shadow-event-hover;
+  transform: translateY(-1px);
+}
+
+:deep(.ev-pill .ev-time) {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.92;
+  flex-shrink: 0;
+}
+
+:deep(.ev-pill .ev-title) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+  font-weight: 500;
+}
+
+:deep(.ev-pill .ev-lock) {
+  font-size: 10px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+:deep(.ev-pill .ev-flag-important) {
+  width: 3px;
+  align-self: stretch;
+  background: #fde047;
+  border-radius: 1.5px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Events — time grid (block)
+   ============================================================ */
+:deep(.fc-timegrid-event-harness) { margin: 0 2px; }
+
+:deep(.fc-timegrid-event) {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: $radius-pill;
+}
+
+:deep(.fc-timegrid-event .fc-event-main) {
+  padding: 0 !important;
+}
+
+:deep(.ev-block) {
+  height: 100%;
+  padding: 5px 8px 4px;
+  border-radius: $radius-pill;
+  background: var(--ev-color, $brand);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  border-left: 3px solid rgba(0, 0, 0, 0.22);
+  transition: filter 0.15s ease;
+}
+
+:deep(.ev-block:hover) { filter: brightness(1.06); }
+
+:deep(.ev-block__time) {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:deep(.ev-block__title) {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* ============================================================
+   Important event accent
+   ============================================================ */
+:deep(.fc-event.is-important .ev-pill) {
+  box-shadow: 0 0 0 2px #fde047, 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+:deep(.fc-event.is-important .ev-block) {
+  border-top: 3px solid #fde047;
+  padding-top: 3px;
+}
+
+/* ============================================================
+   Time grid — slots & axis
+   ============================================================ */
+:deep(.fc-timegrid-slot) { height: 38px; }
+
+:deep(.fc-timegrid-slot-minor) {
+  border-top-style: dotted;
+  border-top-color: #f2f4f7;
+}
+
+:deep(.fc-timegrid-slot-label) { border-color: transparent; }
+
+:deep(.fc-timegrid-slot-label-cushion) {
+  font-size: 11px;
+  color: $text-muted;
+  font-variant-numeric: tabular-nums;
+  padding: 0 8px;
+}
+
+:deep(.fc-timegrid-axis) {
+  border-color: $border-soft;
+}
+
+:deep(.fc-non-business) {
+  background: rgba(244, 246, 251, 0.55);
+}
+
+:deep(.fc-timegrid-now-indicator-line) {
+  border-color: $danger;
+  border-width: 1.5px;
+  border-style: solid;
+}
+
+:deep(.fc-timegrid-now-indicator-arrow) {
+  border-color: $danger;
+  border-width: 5px;
+}
+
+/* ============================================================
+   Multi-month (year view)
+   ============================================================ */
+:deep(.fc-multimonth) { border: none; }
+
+:deep(.fc-multimonth-month) {
+  padding: 8px 10px;
+  border: 1px solid $border-soft;
+  border-radius: 8px;
+  margin: 4px;
+  background: #fff;
+}
+
+:deep(.fc-multimonth-title) {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-primary;
+  text-transform: capitalize;
+  padding: 4px 0 8px;
+}
+
+:deep(.fc-multimonth-daygrid-table) {
+  font-size: 11px;
+}
+
+:deep(.fc-multimonth-daygrid-table th) {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+/* ============================================================
+   "+N more" link
+   ============================================================ */
+:deep(.fc-daygrid-more-link) {
+  color: $brand;
+  font-weight: 500;
+  font-size: 11px;
+  background: $brand-soft;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin: 2px 4px;
+  display: inline-block;
+  transition: background-color 0.15s ease;
+}
+
+:deep(.fc-daygrid-more-link:hover) {
+  background: rgba(64, 158, 255, 0.16);
   text-decoration: none;
+}
+
+:deep(.fc-popover) {
+  border: 1px solid $border-soft !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+  overflow: hidden;
+}
+
+:deep(.fc-popover-header) {
+  background: #fafbfc !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid $border-soft !important;
+}
+
+:deep(.fc-popover-title) {
+  font-weight: 600;
+  font-size: 13px;
+  color: $text-primary;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .legend { display: none; }
+  .cal-toolbar { gap: 12px; padding: 12px 14px; }
+  .cal-toolbar .cal-title { font-size: 17px; }
+}
+
+@media (max-width: 720px) {
+  .cal-toolbar__left { width: 100%; }
+  .cal-toolbar__center { width: 100%; }
+  .stats-strip .stat__label { display: none; }
+
+  :deep(.fc-daygrid-day-frame) { min-height: 64px; }
+  :deep(.ev-pill) { padding: 2px 6px; font-size: 11px; }
+  :deep(.ev-pill .ev-time) { display: none; }
 }
 </style>

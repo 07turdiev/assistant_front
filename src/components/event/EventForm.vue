@@ -112,34 +112,72 @@
 
     <el-form-item v-if="form.participant_ids.length > 0">
       <div class="participants-tags">
-        <el-tag v-for="pid in form.participant_ids" :key="pid" closable @close="removeParticipant(pid)">
+        <el-tag
+          v-for="pid in form.participant_ids"
+          :key="pid"
+          closable
+          type="primary"
+          effect="light"
+          class="selected-tag"
+          @close="removeParticipant(pid)"
+        >
+          <el-avatar :size="18" :src="participantMap[pid]?.avatar_url || undefined" class="tag-avatar">
+            {{ participantMap[pid] ? initials(participantMap[pid]) : '' }}
+          </el-avatar>
           {{ formatUser(participantMap[pid]) }}
         </el-tag>
       </div>
     </el-form-item>
 
-    <el-form-item v-if="participantOptions.length > 0">
-      <p class="muted">{{ $t('event.searchResults') }} ({{ participantOptions.length }}):</p>
+    <el-form-item v-if="!filterDirectionId">
+      <div class="participants-empty">
+        <el-icon class="participants-empty__icon"><Search /></el-icon>
+        <p class="participants-empty__text">{{ $t('event.selectDirectionFirst') }}</p>
+      </div>
+    </el-form-item>
+
+    <el-form-item v-else-if="participantOptions.length === 0">
+      <div class="participants-empty">
+        <el-icon class="participants-empty__icon"><UserIcon /></el-icon>
+        <p class="participants-empty__text">{{ $t('event.noEmployeesInDirection') }}</p>
+      </div>
+    </el-form-item>
+
+    <el-form-item v-else>
+      <div class="participants-header">
+        <span class="participants-header__label">{{ $t('event.searchResults') }}</span>
+        <el-tag size="small" type="info" effect="plain" round>{{ participantOptions.length }}</el-tag>
+      </div>
       <div class="participants-list">
         <div
           v-for="u in participantOptions"
           :key="u.id"
           class="participant-row"
           :class="{
-            selected: form.participant_ids.includes(u.id),
-            subordinate: u.chief_id && form.participant_ids.includes(u.chief_id),
+            'is-selected': form.participant_ids.includes(u.id),
+            'is-subordinate': u.chief_id && form.participant_ids.includes(u.chief_id),
           }"
           @click="toggleParticipant(u)"
         >
-          <el-avatar :size="28" :src="u.avatar_url || undefined">{{ initials(u) }}</el-avatar>
+          <el-avatar :size="36" :src="u.avatar_url || undefined" class="participant-row__avatar">
+            {{ initials(u) }}
+          </el-avatar>
           <div class="participant-row__info">
             <span class="participant-row__name">{{ formatUser(u) }}</span>
             <span v-if="u.position_uz" class="participant-row__position">{{ u.position_uz }}</span>
           </div>
-          <el-tag v-if="u.chief_id && form.participant_ids.includes(u.chief_id)" size="small" type="info">
+          <el-tag
+            v-if="u.chief_id && form.participant_ids.includes(u.chief_id)"
+            size="small"
+            type="success"
+            effect="plain"
+            class="participant-row__badge"
+          >
             {{ $t('event.subordinateTag') }}
           </el-tag>
-          <el-icon v-if="form.participant_ids.includes(u.id)" class="check-icon"><Check /></el-icon>
+          <div class="participant-row__check">
+            <el-icon v-if="form.participant_ids.includes(u.id)"><Check /></el-icon>
+          </div>
         </div>
       </div>
     </el-form-item>
@@ -157,7 +195,7 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules, UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Check, DocumentAdd } from '@element-plus/icons-vue'
+import { Check, DocumentAdd, Search, User as UserIcon } from '@element-plus/icons-vue'
 import { useLookupStore } from '@/stores/lookup'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
@@ -262,12 +300,17 @@ function onParticipantSearch() {
 }
 
 async function reloadParticipants() {
+  // Yo'nalish tanlanmagan bo'lsa hodimlar ko'rsatilmaydi
+  if (!filterDirectionId.value) {
+    participantOptions.value = []
+    return
+  }
   try {
-    // /api/users/participants/ — yo'nalish (cascade), tashkilot, search filterlari bilan
-    const params: { search?: string; organisation_id?: string; direction_id?: string } = {}
+    const params: { search?: string; organisation_id?: string; direction_id?: string } = {
+      direction_id: filterDirectionId.value,
+    }
     if (participantSearch.value.trim()) params.search = participantSearch.value.trim()
     if (filterOrganisationId.value) params.organisation_id = filterOrganisationId.value
-    if (filterDirectionId.value) params.direction_id = filterDirectionId.value
     const { data } = await usersApi.participants(params)
     participantOptions.value = data
     for (const u of data) participantMap.value[u.id] = u
@@ -386,8 +429,9 @@ onMounted(async () => {
   await Promise.all([
     lookup.loadAll(),
     loadLookups(),
-    reloadParticipants(),
   ])
+  // Edit rejimida yo'nalish allaqachon tanlangan bo'lsa avto-yuklash
+  if (filterDirectionId.value) await reloadParticipants()
 })
 </script>
 
@@ -465,33 +509,100 @@ onMounted(async () => {
 .participants-tags {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.selected-tag {
+  display: inline-flex !important;
+  align-items: center;
   gap: 6px;
+  padding: 4px 10px 4px 4px !important;
+  height: auto !important;
+  border-radius: 999px !important;
+  font-size: 12px;
+}
+
+.tag-avatar {
+  flex-shrink: 0;
+  font-size: 9px;
+}
+
+.participants-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px;
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #5a6c7d;
+  }
+}
+
+.participants-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  width: 100%;
+  background: #fafbfc;
+  border: 1px dashed #e4e7ed;
+  border-radius: 10px;
+  color: #909399;
+
+  &__icon {
+    font-size: 32px;
+    color: #c0c4cc;
+    margin-bottom: 8px;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 13px;
+    text-align: center;
+  }
 }
 
 .participants-list {
-  max-height: 320px;
+  width: 100%;
+  max-height: 360px;
   overflow-y: auto;
+  background: #fff;
   border: 1px solid #ebeef5;
-  border-radius: 4px;
-  margin-top: 8px;
+  border-radius: 10px;
+  padding: 4px;
+
+  /* Custom scrollbar */
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: #dcdfe6;
+    border-radius: 4px;
+    border: 2px solid #fff;
+  }
+  &::-webkit-scrollbar-thumb:hover { background: #c0c4cc; }
 }
 
 .participant-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  border-bottom: 1px solid #f5f7fa;
-  transition: background 0.15s;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+  position: relative;
 
-  &:last-child { border-bottom: none; }
-  &:hover { background: #f5f7fa; }
-  &.selected { background: #ecf5ff; color: #1976d2; }
-  &.subordinate {
-    padding-left: 28px;
-    background: #f9fafb;
-    border-left: 3px solid #67c23a;
+  &__avatar {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    background: #ecf5ff;
+    color: #409eff;
+    border: 1px solid #d9ecff;
   }
 
   &__info {
@@ -499,27 +610,80 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    line-height: 1.3;
   }
 
   &__name {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
+    color: #1f2d3d;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   &__position {
-    font-size: 11px;
+    font-size: 12px;
     color: #909399;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 2px;
   }
-}
 
-.check-icon {
-  color: #67c23a;
+  &__badge {
+    flex-shrink: 0;
+  }
+
+  &__check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid #dcdfe6;
+    transition: all 0.15s ease;
+    color: transparent;
+    font-size: 13px;
+  }
+
+  &:hover {
+    background: #f5f7fa;
+
+    .participant-row__check {
+      border-color: #c0c4cc;
+    }
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &.is-selected {
+    background: rgba(64, 158, 255, 0.08);
+
+    .participant-row__name { color: #1976d2; }
+    .participant-row__avatar {
+      background: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+    .participant-row__check {
+      background: #67c23a;
+      border-color: #67c23a;
+      color: #fff;
+    }
+  }
+
+  &.is-subordinate {
+    margin-left: 24px;
+    background: linear-gradient(90deg, rgba(103, 194, 58, 0.05) 0%, transparent 50%);
+    border-left: 3px solid #67c23a;
+    padding-left: 9px;
+    border-radius: 0 8px 8px 0;
+  }
 }
 
 .muted {

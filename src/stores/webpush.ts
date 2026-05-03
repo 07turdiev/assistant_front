@@ -2,8 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { webpushApi, type WebPushSubscription } from '@/api/webpush'
 
-const DISMISSED_KEY = 'assistant.webpush.dismissed'
-
 export type WebPushStatus = 'unsupported' | 'default' | 'granted' | 'denied' | 'subscribing' | 'subscribed'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -28,23 +26,44 @@ export const useWebPushStore = defineStore('webpush', () => {
   const subscriptions = ref<WebPushSubscription[]>([])
   const isSupported = ref(false)
 
-  const dismissed = ref<boolean>(localStorage.getItem(DISMISSED_KEY) === '1')
+  // Sessiya davomida 1 marta "Keyinroq" bosilgan bo'lsa banner yashiriladi.
+  // localStorage ishlatmaymiz — har login'da qaytadan ko'rinadi.
+  const dismissed = ref<boolean>(false)
+
+  const isBlocked = computed(() => status.value === 'denied')
 
   const shouldPromptBanner = computed(() => {
-    return isSupported.value && status.value === 'default' && !dismissed.value
+    if (!isSupported.value) return false
+    // Bloklangan bo'lsa — har doim ko'rsatamiz (dismiss qilib bo'lmaydi)
+    if (status.value === 'denied') return true
+    // So'ralmagan / ruxsat bor lekin obuna yo'q — banner ko'rsatamiz
+    if (status.value === 'default' || status.value === 'granted') {
+      return !dismissed.value
+    }
+    return false
   })
 
   async function init() {
-    isSupported.value = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
+    isSupported.value =
+      'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
     if (!isSupported.value) {
       status.value = 'unsupported'
       return
     }
+    // Har login'da banner qaytadan ko'rinishi uchun dismissed reset
+    dismissed.value = false
     status.value = Notification.permission as WebPushStatus
     try {
       const reg = await navigator.serviceWorker.ready
       const sub = await reg.pushManager.getSubscription()
-      if (sub) status.value = 'subscribed'
+      if (sub) {
+        status.value = 'subscribed'
+      } else if (Notification.permission === 'granted') {
+        // Ruxsat allaqachon berilgan, lekin obuna yo'q — jim avto-subscribe
+        try {
+          await subscribe()
+        } catch (_e) { /* ignore */ }
+      }
     } catch (_e) {
       // ignore
     }
@@ -107,13 +126,12 @@ export const useWebPushStore = defineStore('webpush', () => {
   }
 
   function dismissBanner() {
+    // Faqat sessiya — login'da yana qaytadan ko'rinadi
     dismissed.value = true
-    localStorage.setItem(DISMISSED_KEY, '1')
   }
 
   function resetBanner() {
     dismissed.value = false
-    localStorage.removeItem(DISMISSED_KEY)
   }
 
   return {
@@ -121,6 +139,7 @@ export const useWebPushStore = defineStore('webpush', () => {
     isSupported,
     subscriptions,
     dismissed,
+    isBlocked,
     shouldPromptBanner,
     init,
     subscribe,
