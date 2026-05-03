@@ -194,6 +194,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Promotion } from '@element-plus/icons-vue'
@@ -298,10 +299,18 @@ function replyColor(value: string): string {
   return list.find((c) => c.value === value)?.color || '#909399'
 }
 
+function setActiveChatInSW(partnerId: string | null) {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
+  navigator.serviceWorker.ready.then((reg) => {
+    reg.active?.postMessage({ type: 'set-active-chat', partnerId })
+  }).catch(() => { /* SW hali tayyor emas */ })
+}
+
 function onTabChange(key: TabKey) {
   activeTab.value = key
   selectedPartnerId.value = null
   selectedReportId.value = null
+  setActiveChatInSW(null)
 }
 
 // Chat
@@ -318,6 +327,7 @@ async function loadChatPartners() {
 
 async function openChatThread(u: User) {
   selectedPartnerId.value = u.id
+  setActiveChatInSW(u.id)
   threadLoading.value = true
   try {
     const { data } = await chatApi.history({ receiver_id: u.id, page: 1, page_size: 100 })
@@ -336,6 +346,7 @@ function closeChatThread() {
   selectedPartnerId.value = null
   threadMessages.value = []
   draft.value = ''
+  setActiveChatInSW(null)
 }
 
 async function onSendMessage() {
@@ -440,6 +451,50 @@ watch(() => chat.recentIncoming.length, async () => {
     await loadChatPartners()
   }
 })
+
+// Push bildirishnoma click → ?openChat=<id> bilan kelganda chat thread'ni avtomatik ochish
+const route = useRoute()
+const router = useRouter()
+
+async function openChatBySenderId(senderId: string) {
+  if (!senderId || !auth.isAuthenticated) return
+  activeTab.value = 'chat'
+  // chatPartners hali yuklanmagan bo'lishi mumkin
+  if (chatPartners.value.length === 0) await loadChatPartners()
+  let partner = chatPartners.value.find((u) => u.id === senderId)
+  if (!partner) {
+    try {
+      const { data } = await usersApi.fullInfo(senderId)
+      partner = data
+    } catch (_e) { /* ignore */ }
+  }
+  if (partner) await openChatThread(partner)
+}
+
+watch(
+  () => route.query.openChat,
+  async (val) => {
+    if (!val) return
+    const senderId = String(val)
+    await openChatBySenderId(senderId)
+    // URL'dan parametrni tozalaymiz (history'da iflos bo'lmasin)
+    const { openChat: _drop, ...rest } = route.query
+    router.replace({ query: rest })
+  },
+  { immediate: true },
+)
+
+// Service worker'dan "push-skipped" signali — focus'da turganda audio/visual reaksiya joyi
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', async (event) => {
+    if (event.data?.type !== 'push-skipped') return
+    const payload = event.data.payload || {}
+    if (payload.data?.channel === 'chat') {
+      await chat.fetchUnreadCount()
+      await loadChatPartners()
+    }
+  })
+}
 
 onMounted(refreshAll)
 </script>
