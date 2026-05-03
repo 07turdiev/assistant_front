@@ -7,13 +7,21 @@
           <span>{{ event?.title || '' }}</span>
         </div>
         <div class="actions">
-          <el-button v-if="canEdit" type="primary" @click="$router.push({ name: 'events.edit', params: { id: route.params.id } })">
-            {{ $t('common.edit') }}
-          </el-button>
-          <el-button v-if="canEdit" type="danger" @click="onDelete">
-            {{ $t('common.delete') }}
-          </el-button>
-          <el-button @click="$router.back()">{{ $t('common.back') }}</el-button>
+          <el-tooltip v-if="canEdit" :content="$t('common.edit')" placement="top">
+            <el-button type="primary" circle @click="$router.push({ name: 'events.edit', params: { id: route.params.id } })">
+              <el-icon><Edit /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip v-if="canEdit" :content="$t('common.delete')" placement="top">
+            <el-button type="danger" circle @click="onDelete">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip :content="$t('common.back')" placement="top">
+            <el-button circle @click="$router.back()">
+              <el-icon><ArrowLeft /></el-icon>
+            </el-button>
+          </el-tooltip>
         </div>
       </div>
     </template>
@@ -112,6 +120,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
+import { Edit, Delete, ArrowLeft } from '@element-plus/icons-vue'
 import { eventsApi } from '@/api/events'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'

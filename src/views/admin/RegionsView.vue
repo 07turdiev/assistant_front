@@ -20,12 +20,16 @@
           <el-table-column prop="name_ru" :label="$t('admin.nameRu')" />
           <el-table-column :label="$t('common.actions')" width="160">
             <template #default="{ row }">
-              <el-button size="small" @click.stop="openEditRegion(row)">
-                {{ $t('common.edit') }}
-              </el-button>
-              <el-button size="small" type="danger" @click.stop="onDeleteRegion(row)">
-                {{ $t('common.delete') }}
-              </el-button>
+              <el-tooltip :content="$t('common.edit')" placement="top">
+                <el-button size="small" circle @click.stop="openEditRegion(row)">
+                  <el-icon><Edit /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip :content="$t('common.delete')" placement="top">
+                <el-button size="small" type="danger" circle @click.stop="onDeleteRegion(row)">
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
@@ -55,14 +59,18 @@
         <el-table v-else :data="districts" stripe>
           <el-table-column prop="name_uz" :label="$t('admin.nameUz')" />
           <el-table-column prop="name_ru" :label="$t('admin.nameRu')" />
-          <el-table-column :label="$t('common.actions')" width="160">
+          <el-table-column :label="$t('common.actions')" width="100" align="center">
             <template #default="{ row }">
-              <el-button size="small" @click="openEditDistrict(row)">
-                {{ $t('common.edit') }}
-              </el-button>
-              <el-button size="small" type="danger" @click="onDeleteDistrict(row)">
-                {{ $t('common.delete') }}
-              </el-button>
+              <el-tooltip :content="$t('common.edit')" placement="top">
+                <el-button size="small" circle @click="openEditDistrict(row)">
+                  <el-icon><Edit /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip :content="$t('common.delete')" placement="top">
+                <el-button size="small" type="danger" circle @click="onDeleteDistrict(row)">
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
@@ -108,6 +116,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Edit, Delete } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { adminRegionsApi, type Region, type District } from '@/api/admin'
 

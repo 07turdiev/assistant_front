@@ -3,9 +3,11 @@
     <template #header>
       <div class="header">
         <span>{{ $t('nav.profile') }}</span>
-        <el-button size="small" type="primary" @click="$router.push({ name: 'profile.edit' })">
-          {{ $t('common.edit') }}
-        </el-button>
+        <el-tooltip :content="$t('common.edit')" placement="top">
+          <el-button type="primary" circle @click="$router.push({ name: 'profile.edit' })">
+            <el-icon><Edit /></el-icon>
+          </el-button>
+        </el-tooltip>
       </div>
     </template>
 
@@ -40,6 +42,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Edit } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()

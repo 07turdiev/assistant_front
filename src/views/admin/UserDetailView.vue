@@ -13,9 +13,12 @@
           <el-tag :type="statusType">{{ statusLabel }}</el-tag>
         </div>
         <div class="spacer"></div>
-        <el-button type="primary" @click="$router.push({ name: 'admin.users.edit', params: { id: user.id } })">
-          {{ $t('common.edit') }}
-        </el-button>
+        <el-tooltip :content="$t('common.edit')" placement="top">
+          <el-button type="primary" circle size="large"
+                     @click="$router.push({ name: 'admin.users.edit', params: { id: user.id } })">
+            <el-icon><Edit /></el-icon>
+          </el-button>
+        </el-tooltip>
       </div>
 
       <h3 class="section-title">{{ $t('admin.userDetail.generalInfo') }}</h3>
@@ -66,7 +69,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
+import { ArrowLeft, Edit } from '@element-plus/icons-vue'
 import { adminUsersApi } from '@/api/admin'
 import { usersApi } from '@/api/users'
 import { fullName } from '@/utils/format'

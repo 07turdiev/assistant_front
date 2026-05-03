@@ -21,10 +21,18 @@
         <template #default="{ row }">{{ formatDateTime(row.end_time) }}</template>
       </el-table-column>
       <el-table-column prop="description" :label="$t('event.description')" />
-      <el-table-column :label="$t('common.actions')" width="180" fixed="right">
+      <el-table-column :label="$t('common.actions')" width="100" align="center" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="openEdit(row)">{{ $t('common.edit') }}</el-button>
-          <el-button size="small" type="danger" @click="onDelete(row)">{{ $t('common.delete') }}</el-button>
+          <el-tooltip :content="$t('common.edit')" placement="top">
+            <el-button size="small" circle @click="openEdit(row)">
+              <el-icon><Edit /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip :content="$t('common.delete')" placement="top">
+            <el-button size="small" type="danger" circle @click="onDelete(row)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </el-tooltip>
         </template>
       </el-table-column>
     </el-table>
@@ -78,6 +86,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Edit, Delete } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { preEventsApi, type PreEvent, type PreEventPayload } from '@/api/preEvents'
 import { formatDate, formatDateTime } from '@/utils/date'

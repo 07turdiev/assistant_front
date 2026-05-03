@@ -65,17 +65,27 @@
           />
         </template>
       </el-table-column>
-      <el-table-column :label="$t('common.actions')" width="220" fixed="right">
+      <el-table-column :label="$t('common.actions')" width="140" align="center" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="$router.push({ name: 'admin.users.edit', params: { id: row.id } })">
-            {{ $t('common.edit') }}
-          </el-button>
-          <el-button size="small" type="warning" @click="onResetPassword(row)">
-            {{ $t('admin.resetPassword') }}
-          </el-button>
-          <el-button size="small" type="danger" @click="onDelete(row)">
-            {{ $t('common.delete') }}
-          </el-button>
+          <el-tooltip :content="$t('common.edit')" placement="top">
+            <el-button
+              size="small"
+              circle
+              @click.stop="$router.push({ name: 'admin.users.edit', params: { id: row.id } })"
+            >
+              <el-icon><Edit /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip :content="$t('admin.resetPassword')" placement="top">
+            <el-button size="small" type="warning" circle @click.stop="onResetPassword(row)">
+              <el-icon><Key /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip :content="$t('common.delete')" placement="top">
+            <el-button size="small" type="danger" circle @click.stop="onDelete(row)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </el-tooltip>
         </template>
       </el-table-column>
     </el-table>
@@ -96,6 +106,7 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { Edit, Delete, Key } from '@element-plus/icons-vue'
 import { adminUsersApi } from '@/api/admin'
 import { useLookupStore } from '@/stores/lookup'
 import type { User } from '@/types/user'
