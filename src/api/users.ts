@@ -17,8 +17,16 @@ export const usersApi = {
   list(params?: Record<string, unknown>) {
     return apiClient.get<{ count: number; results: User[] }>('/users/', { params })
   },
-  participants(params: Record<string, unknown>) {
+  participants(params?: {
+    direction_id?: string
+    organisation_id?: string
+    chief_id?: string
+    search?: string
+  }) {
     return apiClient.get<User[]>('/users/participants/', { params })
+  },
+  subordinates(userId: string) {
+    return apiClient.get<User[]>(`/users/${userId}/subordinates/`)
   },
   chatters() {
     return apiClient.get<User[]>('/users/chatters/')

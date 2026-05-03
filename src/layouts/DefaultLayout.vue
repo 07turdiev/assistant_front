@@ -1,22 +1,22 @@
 <template>
-  <el-container class="app-shell">
-    <AppSidebar :collapsed="sidebarCollapsed" />
-    <el-container>
-      <AppHeader @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed" />
-      <el-container class="content-wrapper">
-        <el-main class="app-main">
-          <WebPushBanner v-if="auth.isAuthenticated" />
-          <slot />
-        </el-main>
-        <RightPanel v-if="auth.isAuthenticated && showRightPanel" />
-      </el-container>
-    </el-container>
-  </el-container>
+  <div class="app-shell">
+    <AppHeader @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed" />
+
+    <div class="app-body">
+      <AppSidebar :collapsed="sidebarCollapsed" />
+
+      <main class="app-main">
+        <WebPushBanner v-if="auth.isAuthenticated" />
+        <slot />
+      </main>
+
+      <RightPanel v-if="auth.isAuthenticated" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import RightPanel from '@/components/layout/RightPanel.vue'
@@ -33,12 +33,8 @@ const notifications = useNotificationsStore()
 const chat = useChatStore()
 const lookup = useLookupStore()
 const webpush = useWebPushStore()
-const route = useRoute()
 
 const sidebarCollapsed = ref(false)
-
-// RightPanel doim ko'rinadi (production'dagidek)
-const showRightPanel = computed(() => true)
 
 useAppWebSocket()
 
@@ -64,17 +60,22 @@ watch(
 
 <style lang="scss" scoped>
 .app-shell {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
+  background: #f5f7fa;
 }
 
-.content-wrapper {
+.app-body {
+  display: flex;
   flex: 1;
   overflow: hidden;
 }
 
 .app-main {
-  background: #f5f7fa;
-  padding: 24px;
+  flex: 1;
   overflow-y: auto;
+  padding: 20px 24px;
+  background: #f5f7fa;
 }
 </style>

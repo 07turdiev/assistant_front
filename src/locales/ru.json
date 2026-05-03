@@ -1,7 +1,12 @@
 {
   "app": {
     "title": "Smart Assistant",
-    "subtitle": "Министерство культуры и туризма"
+    "subtitle": "Министерство культуры и туризма",
+    "ministry1": "Республика Узбекистан",
+    "ministry2": "Министерство культуры"
+  },
+  "header": {
+    "markAllRead": "Прочитать все"
   },
   "common": {
     "actions": "Действия",
@@ -166,6 +171,7 @@
     "searchHint": "Поиск пользователя",
     "searchResults": "Результаты поиска",
     "submitBtn": "Добавить поручение",
+    "subordinateTag": "Помощник",
     "reminder": {
       "min": "за {n} мин",
       "hour": "за {n} ч",

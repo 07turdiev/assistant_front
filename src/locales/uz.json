@@ -1,7 +1,12 @@
 {
   "app": {
     "title": "Smart Assistant",
-    "subtitle": "Madaniyat vazirligi"
+    "subtitle": "Madaniyat vazirligi",
+    "ministry1": "O'zbekiston Respublikasi",
+    "ministry2": "Madaniyat vazirligi"
+  },
+  "header": {
+    "markAllRead": "Hammasini o'qildi"
   },
   "common": {
     "actions": "Amallar",
@@ -167,6 +172,7 @@
     "searchHint": "Foydalanuvchini qidiring",
     "searchResults": "Topilgan natijalar",
     "submitBtn": "Topshiriq qo'shish",
+    "subordinateTag": "Yordamchi",
     "reminder": {
       "min": "{n} daqiqa oldin",
       "hour": "{n} soat oldin",

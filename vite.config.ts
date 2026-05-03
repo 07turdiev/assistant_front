@@ -32,22 +32,32 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       host: '0.0.0.0',
       proxy: {
+        // REST API
         '/api': {
           target: apiTarget,
           changeOrigin: true,
         },
-        '/admin': {
+        // Django emergency admin (faqat /admin/django/ — Vue'da `/admin/users` va h.k. bor!)
+        '/admin/django': {
           target: apiTarget,
           changeOrigin: true,
         },
-        '/static': {
+        // Django admin static fayllari (django-static/ prefix)
+        '/django-static': {
           target: apiTarget,
           changeOrigin: true,
         },
+        // Backend yuklangan fayllar (avatarlar va boshqalar)
         '/media': {
           target: apiTarget,
           changeOrigin: true,
         },
+        // Legacy frontend referens (JAR'dan ko'chirilgan Vue 2 SPA, /legacy/ ostida)
+        '/legacy': {
+          target: apiTarget,
+          changeOrigin: true,
+        },
+        // WebSocket
         '/ws': {
           target: apiTarget.replace(/^http/, 'ws'),
           ws: true,

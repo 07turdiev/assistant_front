@@ -1,8 +1,11 @@
 <template>
   <el-aside :width="collapsed ? '64px' : '240px'" class="app-sidebar">
-    <div class="app-sidebar__logo">
-      <span v-if="!collapsed">{{ $t('app.title') }}</span>
-      <span v-else>SA</span>
+    <div class="app-sidebar__logo" :class="{ 'app-sidebar__logo--collapsed': collapsed }">
+      <template v-if="!collapsed">
+        <div class="logo-icon">SA</div>
+        <div class="logo-text">{{ $t('app.title') }}</div>
+      </template>
+      <div v-else class="logo-icon">SA</div>
     </div>
     <el-menu
       :default-active="activeKey"
@@ -79,13 +82,38 @@ const canSeeAdmin = computed(() => auth.hasRole('SUPER_ADMIN', 'ADMIN'))
   transition: width 0.2s ease;
 
   &__logo {
-    height: 60px;
+    height: 64px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 10px;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #409eff 0%, #1976d2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    &--collapsed {
+      justify-content: center;
+      padding: 0;
+    }
   }
 
   :deep(.el-menu) {

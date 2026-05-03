@@ -121,10 +121,25 @@
     <el-form-item v-if="participantOptions.length > 0">
       <p class="muted">{{ $t('event.searchResults') }} ({{ participantOptions.length }}):</p>
       <div class="participants-list">
-        <div v-for="u in participantOptions" :key="u.id" class="participant-row" :class="{ selected: form.participant_ids.includes(u.id) }" @click="toggleParticipant(u)">
+        <div
+          v-for="u in participantOptions"
+          :key="u.id"
+          class="participant-row"
+          :class="{
+            selected: form.participant_ids.includes(u.id),
+            subordinate: u.chief_id && form.participant_ids.includes(u.chief_id),
+          }"
+          @click="toggleParticipant(u)"
+        >
           <el-avatar :size="28" :src="u.avatar_url || undefined">{{ initials(u) }}</el-avatar>
-          <span>{{ formatUser(u) }}</span>
-          <el-icon v-if="form.participant_ids.includes(u.id)"><Check /></el-icon>
+          <div class="participant-row__info">
+            <span class="participant-row__name">{{ formatUser(u) }}</span>
+            <span v-if="u.position_uz" class="participant-row__position">{{ u.position_uz }}</span>
+          </div>
+          <el-tag v-if="u.chief_id && form.participant_ids.includes(u.chief_id)" size="small" type="info">
+            {{ $t('event.subordinateTag') }}
+          </el-tag>
+          <el-icon v-if="form.participant_ids.includes(u.id)" class="check-icon"><Check /></el-icon>
         </div>
       </div>
     </el-form-item>
@@ -248,16 +263,32 @@ function onParticipantSearch() {
 
 async function reloadParticipants() {
   try {
-    const params: Record<string, string | number> = { page_size: 50 }
+    // /api/users/participants/ — yo'nalish (cascade), tashkilot, search filterlari bilan
+    const params: { search?: string; organisation_id?: string; direction_id?: string } = {}
     if (participantSearch.value.trim()) params.search = participantSearch.value.trim()
     if (filterOrganisationId.value) params.organisation_id = filterOrganisationId.value
     if (filterDirectionId.value) params.direction_id = filterDirectionId.value
-    const { data } = await usersApi.list(params)
-    participantOptions.value = data.results
-    for (const u of data.results) participantMap.value[u.id] = u
+    const { data } = await usersApi.participants(params)
+    participantOptions.value = data
+    for (const u of data) participantMap.value[u.id] = u
   } catch (_e) {
     participantOptions.value = []
   }
+}
+
+/** Foydalanuvchi tanlanganda — uning yordamchilarini fetch va auto-add qilish. */
+async function fetchAndShowSubordinates(userId: string) {
+  try {
+    const { data } = await usersApi.subordinates(userId)
+    if (data.length === 0) return
+    for (const sub of data) {
+      participantMap.value[sub.id] = sub
+      // Subordinatlar suggestion sifatida participantOptions ga qo'shamiz (top'da bo'lsin)
+      if (!participantOptions.value.find((u) => u.id === sub.id)) {
+        participantOptions.value.unshift(sub)
+      }
+    }
+  } catch (_e) { /* ignore */ }
 }
 
 async function loadLookups() {
@@ -272,8 +303,13 @@ async function loadLookups() {
 function toggleParticipant(u: User) {
   participantMap.value[u.id] = u
   const i = form.participant_ids.indexOf(u.id)
-  if (i >= 0) form.participant_ids.splice(i, 1)
-  else form.participant_ids.push(u.id)
+  if (i >= 0) {
+    form.participant_ids.splice(i, 1)
+  } else {
+    form.participant_ids.push(u.id)
+    // Tanlangan foydalanuvchining yordamchilarini ro'yxatga qo'shamiz (production'dagidek)
+    fetchAndShowSubordinates(u.id)
+  }
 }
 
 function removeParticipant(id: string) {
@@ -452,6 +488,38 @@ onMounted(async () => {
   &:last-child { border-bottom: none; }
   &:hover { background: #f5f7fa; }
   &.selected { background: #ecf5ff; color: #1976d2; }
+  &.subordinate {
+    padding-left: 28px;
+    background: #f9fafb;
+    border-left: 3px solid #67c23a;
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__position {
+    font-size: 11px;
+    color: #909399;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.check-icon {
+  color: #67c23a;
 }
 
 .muted {
