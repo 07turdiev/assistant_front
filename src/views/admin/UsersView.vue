@@ -38,11 +38,11 @@
       </el-select>
     </div>
 
-    <el-table v-loading="loading" :data="users" stripe>
+    <el-table v-loading="loading" :data="users" stripe @row-click="onRowClick">
       <el-table-column prop="username" :label="$t('admin.userTable.username')" width="160" />
       <el-table-column :label="$t('admin.userTable.fullName')">
         <template #default="{ row }">
-          {{ row.last_name }} {{ row.first_name }} {{ row.father_name || '' }}
+          <span class="user-link">{{ row.last_name }} {{ row.first_name }} {{ row.father_name || '' }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('admin.userTable.role')" width="160">
@@ -93,6 +93,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { adminUsersApi } from '@/api/admin'
@@ -100,6 +101,15 @@ import { useLookupStore } from '@/stores/lookup'
 import type { User } from '@/types/user'
 
 const { t } = useI18n()
+const router = useRouter()
+
+function onRowClick(row: User, _column: unknown, event: MouseEvent) {
+  // Action tugmalari va switch'lar bosilganda row click ishlamasin
+  const target = event.target as HTMLElement
+  if (target.closest('button, .el-switch, .el-button')) return
+  router.push({ name: 'admin.users.detail', params: { id: row.id } })
+}
+
 const lookup = useLookupStore()
 
 const users = ref<User[]>([])

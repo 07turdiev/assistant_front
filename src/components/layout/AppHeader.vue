@@ -7,13 +7,13 @@
     </div>
 
     <div class="app-header__right">
-      <LangSwitch />
-
+      <!-- Bildirishnomalar (chat/task/sorov RightPanel'da ko'rinadi) -->
       <el-dropdown trigger="click">
-        <el-icon size="20" class="bell">
-          <Bell />
-          <el-badge v-if="notifications.unreadCount > 0" :value="notifications.unreadCount" />
-        </el-icon>
+        <span class="header-icon">
+          <el-badge :value="notifications.unreadCount" :hidden="notifications.unreadCount === 0" :max="99">
+            <el-icon size="20"><Bell /></el-icon>
+          </el-badge>
+        </span>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item @click="goNotifications">
@@ -24,6 +24,8 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+
+      <LangSwitch />
 
       <el-dropdown trigger="click">
         <span class="user-chip">
@@ -97,13 +99,20 @@ async function onLogout() {
   &__right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 18px;
   }
 }
 
-.bell {
+.header-icon {
   cursor: pointer;
-  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: #5a6c7d;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #409eff;
+  }
 }
 
 .user-chip {
@@ -111,6 +120,7 @@ async function onLogout() {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+
   &__name {
     font-size: 14px;
     color: #1f2d3d;

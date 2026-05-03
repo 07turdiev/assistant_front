@@ -76,6 +76,8 @@
   },
   "reports": {
     "create": "Новый",
+    "taskTitle": "Новое поручение",
+    "requestTitle": "Новый запрос",
     "activeTab": "Активные",
     "historyTab": "История",
     "empty": "Нет отчётов",
@@ -135,8 +137,40 @@
     "oldPassword": "Текущий пароль",
     "newPassword": "Новый пароль"
   },
+  "rightPanel": {
+    "chat": "Чат",
+    "task": "Поручение",
+    "request": "Запрос",
+    "noPartners": "Нет собеседников",
+    "noTasks": "Нет поручений",
+    "noRequests": "Нет запросов",
+    "taskTag": "Поручение",
+    "requestTag": "Запрос",
+    "newTask": "Новое поручение",
+    "newRequest": "Новый запрос",
+    "activeScope": "Активные",
+    "historyScope": "История"
+  },
   "event": {
     "create": "Новое мероприятие",
+    "formTitle": "Создание поручения",
+    "executionDate": "Срок исполнения",
+    "subject": "Тема поручения",
+    "content": "Содержание",
+    "contentHint": "Описание",
+    "closed": "Закрытое поручение",
+    "executionType": "Тип исполнения",
+    "importantToggle": "Важное поручение",
+    "reminderTime": "Время напоминания",
+    "executors": "Добавить исполнителей",
+    "searchHint": "Поиск пользователя",
+    "searchResults": "Результаты поиска",
+    "submitBtn": "Добавить поручение",
+    "reminder": {
+      "min": "за {n} мин",
+      "hour": "за {n} ч",
+      "day": "за {n} дн"
+    },
     "edit": "Редактировать мероприятие",
     "title": "Название",
     "titleHint": "Введите название",
@@ -237,6 +271,52 @@
     "parent": "Родительский элемент",
     "organisation": "Организация",
     "district": "Район",
-    "selectRegion": "Выберите регион, чтобы увидеть районы"
+    "selectRegion": "Выберите регион, чтобы увидеть районы",
+    "userDetail": {
+      "generalInfo": "Общая информация",
+      "organisation": "Организация",
+      "direction": "Направление",
+      "subordinates": "Нижестоящие сотрудники"
+    },
+    "userForm": {
+      "confirmPassword": "Повторите пароль",
+      "passwordMismatch": "Пароли не совпадают",
+      "sharifi": "Отчество",
+      "organisation": "Организация",
+      "direction": "Направление",
+      "position": "Должность",
+      "chief": "Руководитель",
+      "chiefHint": "Поиск пользователя",
+      "officePhone": "Рабочий телефон",
+      "selectRole": "Выберите роль",
+      "submitCreate": "Добавить пользователя",
+      "companyCar": "Закреплённая машина",
+      "car": {
+        "driver": "Водитель",
+        "model": "Модель",
+        "number": "Госномер",
+        "driverPhone": "Телефон водителя"
+      }
+    }
+  },
+  "userStatus": {
+    "atWork": "На работе",
+    "onHoliday": "В отпуске",
+    "workTrip": "В командировке",
+    "dismissed": "Уволен",
+    "childcare": "В декрете"
+  },
+  "directionsPage": {
+    "addTitle": "Добавить направление",
+    "listTitle": "Существующие направления",
+    "name": "Название направления",
+    "nameHint": "Введите название",
+    "parent": "Вышестоящее направление",
+    "parentHint": "Выберите направление",
+    "addBtn": "Добавить",
+    "confirmDelete": "Удалить направление?",
+    "itemsPerPage": "Записей на странице",
+    "page": "Страница",
+    "of": "из"
   }
 }

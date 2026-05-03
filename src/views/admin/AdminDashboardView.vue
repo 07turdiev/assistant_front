@@ -74,7 +74,7 @@ onMounted(async () => {
       adminRegionsApi.list(),
     ])
     stats.users = u.data.count
-    stats.directions = d.data.length
+    stats.directions = d.data.count
     stats.organisations = (o.data as { count?: number }).count ?? o.data.results?.length ?? 0
     stats.regions = r.data.length
   } catch (_e) {

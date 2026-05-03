@@ -27,32 +27,6 @@
         <template #title>{{ $t('nav.preEvents') }}</template>
       </el-menu-item>
 
-      <el-menu-item index="/reports/tasks" :route="{ name: 'reports.tasks' }">
-        <el-icon><List /></el-icon>
-        <template #title>{{ $t('nav.tasks') }}</template>
-      </el-menu-item>
-
-      <el-menu-item index="/reports/requests" :route="{ name: 'reports.requests' }">
-        <el-icon><Promotion /></el-icon>
-        <template #title>{{ $t('nav.requests') }}</template>
-      </el-menu-item>
-
-      <el-menu-item index="/chat" :route="{ name: 'chat.list' }">
-        <el-icon><ChatDotRound /></el-icon>
-        <template #title>
-          {{ $t('nav.chat') }}
-          <el-badge v-if="chat.unreadCount > 0" :value="chat.unreadCount" class="ml-2" />
-        </template>
-      </el-menu-item>
-
-      <el-menu-item index="/notifications" :route="{ name: 'notifications' }">
-        <el-icon><Bell /></el-icon>
-        <template #title>
-          {{ $t('nav.notifications') }}
-          <el-badge v-if="notifications.unreadCount > 0" :value="notifications.unreadCount" class="ml-2" />
-        </template>
-      </el-menu-item>
-
       <el-sub-menu v-if="canSeeAdmin" index="admin">
         <template #title>
           <el-icon><Setting /></el-icon>
@@ -65,7 +39,7 @@
           {{ $t('admin.users') }}
         </el-menu-item>
         <el-menu-item index="/admin/directions" :route="{ name: 'admin.directions' }">
-          {{ $t('admin.directions') }}
+          {{ $t('admin.directionsLabel') }}
         </el-menu-item>
         <el-menu-item index="/admin/organisations" :route="{ name: 'admin.organisations' }">
           {{ $t('admin.organisations') }}
@@ -81,25 +55,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useChatStore } from '@/stores/chat'
-import { useNotificationsStore } from '@/stores/notifications'
 import { useAuthStore } from '@/stores/auth'
 import {
   HomeFilled,
   Calendar,
   Document,
-  List,
-  Promotion,
-  ChatDotRound,
-  Bell,
   Setting,
 } from '@element-plus/icons-vue'
 
 defineProps<{ collapsed: boolean }>()
 
 const route = useRoute()
-const chat = useChatStore()
-const notifications = useNotificationsStore()
 const auth = useAuthStore()
 
 const activeKey = computed(() => route.path)
@@ -125,9 +91,5 @@ const canSeeAdmin = computed(() => auth.hasRole('SUPER_ADMIN', 'ADMIN'))
   :deep(.el-menu) {
     border-right: none;
   }
-}
-
-.ml-2 {
-  margin-left: 8px;
 }
 </style>

@@ -129,9 +129,16 @@ export const adminUsersApi = {
   },
 }
 
+export interface DirectionPage {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Direction[]
+}
+
 export const adminDirectionsApi = {
-  list(params?: { parent_id?: string; search?: string }) {
-    return apiClient.get<Direction[]>('/directions/', { params })
+  list(params?: { parent_id?: string; search?: string; page?: number; page_size?: number }) {
+    return apiClient.get<DirectionPage>('/directions/', { params })
   },
   tree() {
     return apiClient.get<Direction[]>('/directions/tree/')

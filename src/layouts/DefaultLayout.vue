@@ -3,18 +3,23 @@
     <AppSidebar :collapsed="sidebarCollapsed" />
     <el-container>
       <AppHeader @toggle-sidebar="sidebarCollapsed = !sidebarCollapsed" />
-      <el-main class="app-main">
-        <WebPushBanner v-if="auth.isAuthenticated" />
-        <slot />
-      </el-main>
+      <el-container class="content-wrapper">
+        <el-main class="app-main">
+          <WebPushBanner v-if="auth.isAuthenticated" />
+          <slot />
+        </el-main>
+        <RightPanel v-if="auth.isAuthenticated && showRightPanel" />
+      </el-container>
     </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
+import RightPanel from '@/components/layout/RightPanel.vue'
 import WebPushBanner from '@/components/notification/WebPushBanner.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -28,8 +33,12 @@ const notifications = useNotificationsStore()
 const chat = useChatStore()
 const lookup = useLookupStore()
 const webpush = useWebPushStore()
+const route = useRoute()
 
 const sidebarCollapsed = ref(false)
+
+// RightPanel doim ko'rinadi (production'dagidek)
+const showRightPanel = computed(() => true)
 
 useAppWebSocket()
 
@@ -58,8 +67,14 @@ watch(
   height: 100vh;
 }
 
+.content-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
 .app-main {
   background: #f5f7fa;
   padding: 24px;
+  overflow-y: auto;
 }
 </style>

@@ -2,7 +2,8 @@
   <el-card class="calendar-card" v-loading="loading">
     <template #header>
       <div class="header">
-        <span>{{ $t('nav.calendar') }}</span>
+        <span class="title">{{ $t('nav.calendar') }}</span>
+
         <el-button-group>
           <el-button :type="view === 'multiMonthYear' ? 'primary' : ''" @click="changeView('multiMonthYear')">
             {{ $t('calendar.year') }}
@@ -17,15 +18,52 @@
             {{ $t('calendar.day') }}
           </el-button>
         </el-button-group>
+
+        <div class="actions">
+          <el-button
+            v-if="canCreateEvent"
+            type="primary"
+            @click="$router.push({ name: 'events.create' })"
+          >
+            + {{ $t('event.create') }}
+          </el-button>
+          <el-button
+            v-if="canCreateTask"
+            type="success"
+            @click="taskDialogVisible = true"
+          >
+            + {{ $t('reports.create') }}
+          </el-button>
+        </div>
       </div>
     </template>
 
     <FullCalendar ref="calendarRef" :options="calendarOptions" />
+
+    <!-- Tezkor topshiriq/so'rov dialogi -->
+    <el-dialog v-model="taskDialogVisible" :title="taskDialogTitle" width="520px">
+      <el-form :model="taskForm" label-position="top">
+        <el-form-item :label="$t('reports.description')" required>
+          <el-input
+            v-model="taskForm.description"
+            type="textarea"
+            :rows="4"
+            :placeholder="$t('reports.descriptionHint')"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="taskDialogVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="creatingTask" @click="onCreateTask">
+          {{ $t('common.save') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </el-card>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
@@ -37,11 +75,47 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput } from '@fullcalendar/core'
 
 import { eventsApi } from '@/api/events'
+import { reportsApi } from '@/api/reports'
+import { useAuthStore } from '@/stores/auth'
 import { formatDate } from '@/utils/date'
 import type { Event } from '@/types/event'
 
 const router = useRouter()
 const { t, locale } = useI18n()
+const auth = useAuthStore()
+
+const canCreateEvent = computed(() =>
+  auth.hasRole('PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT')
+)
+const canCreateTask = computed(() =>
+  auth.hasRole('PREMIER_MINISTER', 'HEAD', 'ASSISTANT', 'ASSISTANT_PREMIER')
+)
+
+const taskDialogVisible = ref(false)
+const creatingTask = ref(false)
+const taskForm = reactive({ description: '' })
+
+const taskDialogTitle = computed(() => {
+  if (auth.hasRole('PREMIER_MINISTER', 'HEAD')) return t('reports.taskTitle')
+  if (auth.hasRole('ASSISTANT', 'ASSISTANT_PREMIER')) return t('reports.requestTitle')
+  return t('reports.create')
+})
+
+async function onCreateTask() {
+  if (!taskForm.description.trim()) return
+  creatingTask.value = true
+  try {
+    await reportsApi.create({ description: taskForm.description.trim() })
+    ElMessage.success(t('common.success'))
+    taskForm.description = ''
+    taskDialogVisible.value = false
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } } }
+    ElMessage.error(err.response?.data?.message || t('common.error'))
+  } finally {
+    creatingTask.value = false
+  }
+}
 
 const calendarRef = ref<InstanceType<typeof FullCalendar> | null>(null)
 const view = ref<'multiMonthYear' | 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'>('dayGridMonth')
@@ -140,6 +214,15 @@ onMounted(() => {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+
+  .title {
+    font-weight: 500;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
 }
 
 :deep(.fc) {

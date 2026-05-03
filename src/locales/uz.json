@@ -76,6 +76,8 @@
   },
   "reports": {
     "create": "Yangi yuborish",
+    "taskTitle": "Yangi topshiriq yuborish",
+    "requestTitle": "Yangi so'rov yuborish",
     "activeTab": "Faol",
     "historyTab": "Tarix",
     "empty": "Hisobotlar yo'q",
@@ -135,9 +137,41 @@
     "oldPassword": "Joriy parol",
     "newPassword": "Yangi parol"
   },
+  "rightPanel": {
+    "chat": "Chat",
+    "task": "Topshiriq",
+    "request": "So'rov",
+    "noPartners": "Suhbatdosh yo'q",
+    "noTasks": "Topshiriq yo'q",
+    "noRequests": "So'rov yo'q",
+    "taskTag": "Topshiriq",
+    "requestTag": "So'rov",
+    "newTask": "Yangi topshiriq",
+    "newRequest": "Yangi so'rov",
+    "activeScope": "Faol",
+    "historyScope": "Tarix"
+  },
   "event": {
     "create": "Yangi tadbir",
     "edit": "Tadbirni tahrirlash",
+    "formTitle": "Topshiriq yaratish",
+    "executionDate": "Topshiriqning ijro muddati",
+    "subject": "Topshiriq mavzusi",
+    "content": "Topshiriq mazmuni",
+    "contentHint": "Tavsif",
+    "closed": "Yopiq topshiriq",
+    "executionType": "Ijro turi",
+    "importantToggle": "Muhim topshiriq",
+    "reminderTime": "Topshiriqni eslatish vaqti",
+    "executors": "Ijrochilarni qo'shish",
+    "searchHint": "Foydalanuvchini qidiring",
+    "searchResults": "Topilgan natijalar",
+    "submitBtn": "Topshiriq qo'shish",
+    "reminder": {
+      "min": "{n} daqiqa oldin",
+      "hour": "{n} soat oldin",
+      "day": "{n} kun oldin"
+    },
     "title": "Sarlavha",
     "titleHint": "Tadbir nomini kiriting",
     "date": "Sana",
@@ -237,6 +271,52 @@
     "parent": "Bo'g'liq element",
     "organisation": "Tashkilot",
     "district": "Tuman",
-    "selectRegion": "Tumanlarni ko'rish uchun hududni tanlang"
+    "selectRegion": "Tumanlarni ko'rish uchun hududni tanlang",
+    "userDetail": {
+      "generalInfo": "Umumiy ma'lumotlar",
+      "organisation": "Tashkiloti",
+      "direction": "Yo'nalish",
+      "subordinates": "Quyi turuvchi xodimlar"
+    },
+    "userForm": {
+      "confirmPassword": "Parolni qayta kiriting",
+      "passwordMismatch": "Parollar mos kelmadi",
+      "sharifi": "Sharifi",
+      "organisation": "Tashkiloti",
+      "direction": "Yo'nalish",
+      "position": "Lavozimi",
+      "chief": "Bosh'liqni tanlash",
+      "chiefHint": "Foydalanuvchi qidiring",
+      "officePhone": "Ishxona telefoni",
+      "selectRole": "Rol tanlang",
+      "submitCreate": "Foydalanuvchini qo'shish",
+      "companyCar": "Foydalanuvchiga biriktirilgan mashina",
+      "car": {
+        "driver": "Haydovchi",
+        "model": "Mashina modeli",
+        "number": "Davlat raqami",
+        "driverPhone": "Haydovchi telefoni"
+      }
+    }
+  },
+  "userStatus": {
+    "atWork": "Ishda",
+    "onHoliday": "Ta'tilda",
+    "workTrip": "Komandirovkada",
+    "dismissed": "Ishdan bo'shagan",
+    "childcare": "Bola parvarishida"
+  },
+  "directionsPage": {
+    "addTitle": "Yo'nalish qo'shish",
+    "listTitle": "Mavjud yo'nalishlar",
+    "name": "Yo'nalish nomi",
+    "nameHint": "Yo'nalish nomini kiriting",
+    "parent": "Yuqori turuvchi yo'nalish",
+    "parentHint": "Yo'nalishni tanlang",
+    "addBtn": "Yo'nalish qo'shish",
+    "confirmDelete": "Yo'nalishni o'chirib tashlamoqchimisiz?",
+    "itemsPerPage": "Ko'rsatishlar soni",
+    "page": "Sahifa",
+    "of": "dan"
   }
 }

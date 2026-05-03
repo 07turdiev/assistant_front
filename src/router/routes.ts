@@ -61,36 +61,9 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/pre-events/PreEventListView.vue'),
     meta: { requiresAuth: true },
   },
-  {
-    path: '/reports/tasks',
-    name: 'reports.tasks',
-    component: () => import('@/views/reports/TaskListView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/reports/requests',
-    name: 'reports.requests',
-    component: () => import('@/views/reports/RequestListView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/chat',
-    name: 'chat.list',
-    component: () => import('@/views/chat/ChatListView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/chat/:userId',
-    name: 'chat.room',
-    component: () => import('@/views/chat/ChatRoomView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/notifications',
-    name: 'notifications',
-    component: () => import('@/views/notifications/NotificationListView.vue'),
-    meta: { requiresAuth: true, titleKey: 'nav.notifications' },
-  },
+  // Chat / Topshiriq / So'rov / Bildirishnoma — alohida sahifa sifatida ochilmaydi.
+  // Hammasi RightPanel ichida ko'rinadi (production'dagidek).
+  // Web Push sozlamalari faqat admin/foydalanuvchi sozlash uchun saqlanadi:
   {
     path: '/notifications/settings',
     name: 'notifications.settings',
@@ -127,6 +100,12 @@ export const routes: RouteRecordRaw[] = [
     path: '/admin/users/new',
     name: 'admin.users.create',
     component: () => import('@/views/admin/UserCreateView.vue'),
+    meta: { requiresAuth: true, roles: ['SUPER_ADMIN', 'ADMIN'] },
+  },
+  {
+    path: '/admin/users/:id',
+    name: 'admin.users.detail',
+    component: () => import('@/views/admin/UserDetailView.vue'),
     meta: { requiresAuth: true, roles: ['SUPER_ADMIN', 'ADMIN'] },
   },
   {
