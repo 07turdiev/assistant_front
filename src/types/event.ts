@@ -3,8 +3,8 @@ import type { User } from './user'
 export interface Visitor {
   id?: string
   full_name: string
-  position?: string
-  organisation_name?: string
+  position: string
+  organisation_name: string
 }
 
 export interface Attachment {
@@ -34,7 +34,7 @@ export interface Event {
   visitors: Visitor[]
   files: Attachment[]
   protocols: Attachment[]
-  notify_times: number[]
+  notify_time: number[]
   created_by_id: string
 }
 
@@ -49,7 +49,7 @@ export interface EventPayload {
   is_important?: boolean
   sphere: string
   type: string
-  notify_times?: number[]
+  notify_time_list?: number[]
   speaker_id: string
   participant_ids: string[]
   visitors?: Visitor[]

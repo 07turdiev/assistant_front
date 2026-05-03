@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Smart Assistant",
-    "subtitle": "Madaniyat va turizm vazirligi"
+    "subtitle": "Madaniyat vazirligi"
   },
   "common": {
     "actions": "Amallar",
@@ -18,7 +18,8 @@
     "search": "Qidirish",
     "back": "Orqaga",
     "confirm": "Tasdiqlang",
-    "required": "Bu maydon to'ldirilishi shart"
+    "required": "Bu maydon to'ldirilishi shart",
+    "add": "Qo'shish"
   },
   "auth": {
     "login": "Tizimga kirish",
@@ -58,6 +59,40 @@
     "seen": "Ko'rilgan",
     "empty": "Bildirishnomalar yo'q"
   },
+  "calendar": {
+    "year": "Yil",
+    "month": "Oy",
+    "week": "Hafta",
+    "day": "Kun",
+    "today": "Bugun"
+  },
+  "chat": {
+    "empty": "Hali xabar yo'q",
+    "placeholder": "Xabar yozing...",
+    "send": "Yuborish",
+    "noChatters": "Suhbat uchun foydalanuvchi yo'q",
+    "partner": "Suhbatdosh",
+    "unread": "O'qilmagan"
+  },
+  "reports": {
+    "create": "Yangi yuborish",
+    "activeTab": "Faol",
+    "historyTab": "Tarix",
+    "empty": "Hisobotlar yo'q",
+    "sender": "Yuboruvchi",
+    "receiver": "Qabul qiluvchi",
+    "description": "Mazmuni",
+    "descriptionHint": "Hisobot mazmunini yozing...",
+    "createdAt": "Yaratilgan",
+    "repliedAt": "Javob vaqti",
+    "reply": "Javob berish",
+    "replyTitle": "Hisobotga javob berish",
+    "replyOption": "Javob",
+    "notifyLater": "Eslatish",
+    "notifyLaterHint": "Necha minutdan keyin eslatma kerak?",
+    "minutes": "minut",
+    "confirmDelete": "Hisobotni o'chirib tashlamoqchimisiz?"
+  },
   "webpush": {
     "settings": "Push bildirishnomalar",
     "status": "Holat",
@@ -91,7 +126,64 @@
     "role": "Roli",
     "email": "Email",
     "phone": "Telefon",
-    "status": "Holati"
+    "status": "Holati",
+    "officeNumber": "Ofis raqami",
+    "editTitle": "Profilni tahrirlash",
+    "changeAvatar": "Rasmni o'zgartirish",
+    "changePasswordTitle": "Parolni o'zgartirish",
+    "changePassword": "O'zgartirish",
+    "oldPassword": "Joriy parol",
+    "newPassword": "Yangi parol"
+  },
+  "event": {
+    "create": "Yangi tadbir",
+    "edit": "Tadbirni tahrirlash",
+    "title": "Sarlavha",
+    "titleHint": "Tadbir nomini kiriting",
+    "date": "Sana",
+    "time": "Vaqt",
+    "startTime": "Boshlanishi",
+    "endTime": "Tugashi",
+    "address": "Manzil",
+    "addressHint": "Tadbir manzili",
+    "description": "Tafsilot",
+    "sphere": "Soha",
+    "type": "Turi",
+    "speaker": "Ma'ruzachi",
+    "direction": "Yo'nalish",
+    "participants": "Qatnashchilar",
+    "participantsHint": "Qatnashchilarni qidirib tanlang",
+    "searchUser": "Foydalanuvchi qidirish",
+    "isImportant": "Muhim",
+    "isPrivate": "Yopiq tadbir",
+    "important": "Muhim",
+    "private": "Yopiq",
+    "public": "Ochiq",
+    "privacy": "Maxfiylik",
+    "serialNumber": "Tartib raqami",
+    "notifyTitle": "Eslatma vaqtlari (minutlarda)",
+    "minutes": "minut",
+    "minutesBefore": "min oldin",
+    "visitors": "Mehmonlar",
+    "visitorName": "F.I.Sh.",
+    "visitorPosition": "Lavozim",
+    "visitorOrg": "Tashkilot",
+    "addVisitor": "Mehmon qo'shish",
+    "files": "Fayllar",
+    "addFile": "Fayl qo'shish",
+    "filesHint": "PDF, DOC, DOCX, XLS, XLSX, PNG, JPG (max 50 MB)",
+    "existingFiles": "Mavjud fayllar:",
+    "protocols": "Protokollar",
+    "uploadProtocol": "Protokol biriktirish",
+    "addProtocol": "Protokol fayl tanlash",
+    "uploadProtocolsBtn": "Yuklash",
+    "confirmDelete": "Tadbirni o'chirib tashlamoqchimisiz?"
+  },
+  "preEvent": {
+    "create": "Yangi loyiha",
+    "edit": "Loyihani tahrirlash",
+    "empty": "Tadbir loyihalari yo'q",
+    "confirmDelete": "Loyihani o'chirib tashlamoqchimisiz?"
   },
   "placeholder": {
     "title": "Sahifa tayyorlanmoqda",

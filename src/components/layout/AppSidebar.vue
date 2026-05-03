@@ -17,18 +17,10 @@
         <template #title>{{ $t('nav.dashboard') }}</template>
       </el-menu-item>
 
-      <el-sub-menu index="calendar">
-        <template #title>
-          <el-icon><Calendar /></el-icon>
-          <span>{{ $t('nav.calendar') }}</span>
-        </template>
-        <el-menu-item index="/calendar/week" :route="{ name: 'calendar.week' }">
-          {{ $t('nav.calendarWeek') }}
-        </el-menu-item>
-        <el-menu-item index="/calendar/month" :route="{ name: 'calendar.month' }">
-          {{ $t('nav.calendarMonth') }}
-        </el-menu-item>
-      </el-sub-menu>
+      <el-menu-item index="/calendar" :route="{ name: 'calendar' }">
+        <el-icon><Calendar /></el-icon>
+        <template #title>{{ $t('nav.calendar') }}</template>
+      </el-menu-item>
 
       <el-menu-item index="/pre-events" :route="{ name: 'preEvents.list' }">
         <el-icon><Document /></el-icon>

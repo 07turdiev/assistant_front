@@ -32,13 +32,21 @@ export function useAppWebSocket() {
   function handleMessage(payload: BasePayload) {
     switch (payload.channel) {
       case 'notify':
-        notificationsStore.pushIncoming(payload as never)
+        notificationsStore.pushIncoming({
+          id: `ws-${Date.now()}`,
+          user_id: auth.user?.id || '',
+          title: (payload.title as string) || 'Bildirishnoma',
+          notification_type: (payload.type as never) || 'NEW',
+          event_id: (payload.event_id as string) || null,
+          is_important: Boolean(payload.is_important),
+          seen: false,
+          created_at: new Date().toISOString(),
+        } as never)
         break
       case 'chat':
         chatStore.pushIncoming(payload as never)
         break
       case 'report':
-        // ReportListView ko'rsatilgan paytda manual refresh; bell'ga ham xabar
         notificationsStore.pushIncoming({
           id: `report-${Date.now()}`,
           user_id: auth.user?.id || '',

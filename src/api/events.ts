@@ -2,11 +2,17 @@ import apiClient from './client'
 import type { Event, EventPayload } from '@/types/event'
 
 export const eventsApi = {
-  list(params?: { month?: string; vice_id?: string }) {
-    return apiClient.get<Event[]>('/events/', { params })
+  /** Standart paginatsiyali list (admin/monitoring uchun). */
+  list(params?: { page?: number; page_size?: number; search?: string }) {
+    return apiClient.get<{ count: number; results: Event[] }>('/events/', { params })
   },
+  /** Oylik kalendar (production: GET /api/event/all?month=M-yyyy). */
+  byMonth(params: { month: string; vice_id?: string }) {
+    return apiClient.get<Event[]>('/events/all/', { params })
+  },
+  /** Diapazon bo'yicha kalendar (production: GET /api/event/all/by-period). */
   byPeriod(params: { start_date: string; end_date: string; vice_id?: string }) {
-    return apiClient.get<Event[]>('/events/by-period/', { params })
+    return apiClient.get<Event[]>('/events/all/by-period/', { params })
   },
   retrieve(id: string) {
     return apiClient.get<Event>(`/events/${id}/`)

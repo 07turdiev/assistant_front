@@ -29,22 +29,10 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, titleKey: 'nav.dashboard' },
   },
   {
-    path: '/calendar/week',
-    name: 'calendar.week',
-    component: () => import('@/views/calendar/WeekView.vue'),
-    meta: { requiresAuth: true, titleKey: 'nav.calendarWeek' },
-  },
-  {
-    path: '/calendar/month',
-    name: 'calendar.month',
-    component: () => import('@/views/calendar/MonthView.vue'),
-    meta: { requiresAuth: true, titleKey: 'nav.calendarMonth' },
-  },
-  {
-    path: '/calendar/vice/:id',
-    name: 'calendar.vice',
-    component: () => import('@/views/calendar/ViceCalendarView.vue'),
-    meta: { requiresAuth: true, roles: ['PREMIER_MINISTER'] },
+    path: '/calendar',
+    name: 'calendar',
+    component: () => import('@/views/calendar/CalendarView.vue'),
+    meta: { requiresAuth: true, titleKey: 'nav.calendar' },
   },
   {
     path: '/events/new',

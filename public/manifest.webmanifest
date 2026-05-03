@@ -1,7 +1,7 @@
 {
   "name": "Smart Assistant",
   "short_name": "Assistant",
-  "description": "Madaniyat va turizm vazirligi raqamli yordamchisi",
+  "description": "Madaniyat vazirligi raqamli yordamchisi",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

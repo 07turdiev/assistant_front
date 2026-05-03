@@ -10,7 +10,8 @@ interface PageResp<T> {
 
 export const reportsApi = {
   create(payload: { description: string }) {
-    return apiClient.post<Report>('/reports/', payload)
+    // Backend bir nechta Report qaytarishi mumkin (Premier → har yordamchi uchun alohida)
+    return apiClient.post<Report[]>('/reports/', payload)
   },
   reply(payload: { report_id: string; reply?: string; notify_time?: number }) {
     return apiClient.post('/reports/reply/', payload)
