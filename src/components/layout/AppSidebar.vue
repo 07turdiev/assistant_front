@@ -1,25 +1,45 @@
 <template>
   <aside class="gc-sidebar" :class="{ 'gc-sidebar--collapsed': collapsed }">
-    <!-- Create button (Google Material FAB-style) -->
-    <button
-      v-if="!collapsed && canCreate"
-      class="create-btn"
-      @click="onCreate"
+    <!-- Create button — dropdown with consistent options -->
+    <el-dropdown
+      v-if="canCreate"
+      trigger="click"
+      placement="bottom-start"
+      popper-class="create-popper"
+      @command="onCreateCommand"
     >
-      <span class="create-btn__icon">
-        <el-icon><Plus /></el-icon>
-      </span>
-      <span class="create-btn__label">{{ $t('reports.create') }}</span>
-      <el-icon class="create-btn__caret"><ArrowDown /></el-icon>
-    </button>
-    <button
-      v-else-if="collapsed && canCreate"
-      class="create-btn create-btn--collapsed"
-      :title="$t('reports.create')"
-      @click="onCreate"
-    >
-      <el-icon size="22"><Plus /></el-icon>
-    </button>
+      <button v-if="!collapsed" class="create-btn" type="button">
+        <span class="create-btn__icon">
+          <el-icon><Plus /></el-icon>
+        </span>
+        <span class="create-btn__label">{{ $t('reports.create') }}</span>
+        <el-icon class="create-btn__caret"><ArrowDown /></el-icon>
+      </button>
+      <button
+        v-else
+        class="create-btn create-btn--collapsed"
+        type="button"
+        :title="$t('reports.create')"
+      >
+        <el-icon size="22"><Plus /></el-icon>
+      </button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item v-if="canCreateEvent" command="event">
+            <el-icon><Calendar /></el-icon>
+            <span>{{ $t('event.create') }}</span>
+          </el-dropdown-item>
+          <el-dropdown-item v-if="canCreateTask" command="task">
+            <el-icon><Document /></el-icon>
+            <span>{{ $t('reports.taskTitle') }}</span>
+          </el-dropdown-item>
+          <el-dropdown-item v-if="canCreateRequest" command="request">
+            <el-icon><ChatLineRound /></el-icon>
+            <span>{{ $t('reports.requestTitle') }}</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
 
     <!-- Navigatsiya -->
     <nav class="nav">
@@ -56,8 +76,8 @@
       </template>
     </nav>
 
-    <!-- Tezkor topshiriq dialogi -->
-    <el-dialog v-model="createDialogOpen" :title="$t('reports.create')" width="520px">
+    <!-- Tezkor topshiriq/so'rov dialogi -->
+    <el-dialog v-model="createDialogOpen" :title="createDialogTitle" width="520px">
       <el-form :model="createForm" label-position="top">
         <el-form-item :label="$t('reports.description')" required>
           <el-input
@@ -86,6 +106,7 @@ import { ElMessage } from 'element-plus'
 import {
   ArrowDown,
   Calendar,
+  ChatLineRound,
   Document,
   HomeFilled,
   OfficeBuilding,
@@ -107,6 +128,7 @@ const navItems = [
   { name: 'dashboard', path: '/dashboard', label: 'nav.dashboard', icon: HomeFilled },
   { name: 'calendar', path: '/calendar', label: 'nav.calendar', icon: Calendar },
   { name: 'preEvents.list', path: '/pre-events', label: 'nav.preEvents', icon: Document },
+  { name: 'drafts.list', path: '/drafts', label: 'nav.drafts', icon: Document },
 ]
 
 const canSeeAdmin = computed(() => auth.hasRole('SUPER_ADMIN', 'ADMIN'))
@@ -124,21 +146,36 @@ function isActive(path: string): boolean {
   return route.path === path || route.path.startsWith(path + '/')
 }
 
-// "Create" — tezkor topshiriq yaratish dialog'ini ochadi
+// Yaratish ruxsatlari rol bo'yicha (backend permissions bilan moslashgan)
+const canCreateEvent = computed(() =>
+  auth.hasRole('PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT', 'SUPER_ADMIN'),
+)
+const canCreateTask = computed(() => auth.hasRole('PREMIER_MINISTER', 'HEAD'))
+const canCreateRequest = computed(() => auth.hasRole('ASSISTANT', 'ASSISTANT_PREMIER'))
+
 const canCreate = computed(() =>
-  auth.hasRole('PREMIER_MINISTER', 'HEAD', 'ASSISTANT', 'ASSISTANT_PREMIER',
-    'VICE_MINISTER', 'SUPER_ADMIN', 'ADMIN'),
+  canCreateEvent.value || canCreateTask.value || canCreateRequest.value,
 )
 
 const createDialogOpen = ref(false)
+const createDialogKind = ref<'task' | 'request'>('task')
 const creating = ref(false)
 const createForm = reactive({ description: '' })
 
-function onCreate() {
-  // Kalendar sahifasida bo'lsa — tadbir yaratish; aks holda topshiriq
-  if (route.path === '/calendar' && auth.hasRole('PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT')) {
+const createDialogTitle = computed(() =>
+  createDialogKind.value === 'request' ? t('reports.requestTitle') : t('reports.taskTitle'),
+)
+
+function onCreateCommand(cmd: string) {
+  if (cmd === 'event') {
     router.push({ name: 'events.create' })
-  } else {
+  } else if (cmd === 'task') {
+    createDialogKind.value = 'task'
+    createForm.description = ''
+    createDialogOpen.value = true
+  } else if (cmd === 'request') {
+    createDialogKind.value = 'request'
+    createForm.description = ''
     createDialogOpen.value = true
   }
 }

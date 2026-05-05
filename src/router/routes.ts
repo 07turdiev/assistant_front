@@ -55,6 +55,26 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/events/EventEditView.vue'),
     meta: { requiresAuth: true },
   },
+  // AI Drafts (Telegram orqali ovozdan yaratilgan qoralamalar)
+  {
+    path: '/drafts',
+    name: 'drafts.list',
+    component: () => import('@/views/drafts/DraftsListView.vue'),
+    meta: { requiresAuth: true, titleKey: 'nav.drafts' },
+  },
+  {
+    path: '/drafts/event/:id',
+    name: 'drafts.event.edit',
+    component: () => import('@/views/drafts/EventDraftEditView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/drafts/report/:id',
+    name: 'drafts.report.edit',
+    component: () => import('@/views/drafts/ReportDraftEditView.vue'),
+    meta: { requiresAuth: true },
+  },
+
   {
     path: '/pre-events',
     name: 'preEvents.list',
