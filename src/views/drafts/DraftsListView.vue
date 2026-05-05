@@ -115,13 +115,14 @@ function onRowClick(row: EventDraft | ReportDraft) {
   })
 }
 
-function statusType(s: DraftStatus): string {
-  return {
-    PENDING_REVIEW: 'warning',
-    PUBLISHED: 'success',
-    REJECTED: 'info',
-    EXPIRED: 'danger',
-  }[s] || ''
+function statusType(s: DraftStatus): 'primary' | 'success' | 'warning' | 'info' | 'danger' | undefined {
+  const map = {
+    PENDING_REVIEW: 'warning' as const,
+    PUBLISHED: 'success' as const,
+    REJECTED: 'info' as const,
+    EXPIRED: 'danger' as const,
+  }
+  return map[s] || undefined
 }
 
 function statusLabel(s: DraftStatus): string {
