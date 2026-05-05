@@ -32,7 +32,7 @@
           {{ auth.user.phone_number || '—' }}
         </el-descriptions-item>
         <el-descriptions-item :label="$t('profile.status')">
-          {{ auth.user.status }}
+          {{ statusLabel }}
         </el-descriptions-item>
       </el-descriptions>
     </div>
@@ -46,7 +46,19 @@ import { Edit } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
-const { locale } = useI18n()
+const { t, locale } = useI18n()
+
+const statusLabel = computed(() => {
+  if (!auth.user) return ''
+  switch (auth.user.status) {
+    case 'AT_WORK': return t('userStatus.atWork')
+    case 'ON_HOLIDAY': return t('userStatus.onHoliday')
+    case 'WORK_TRIP': return t('userStatus.workTrip')
+    case 'DISMISSED': return t('userStatus.dismissed')
+    case 'IN_CHILDHOOD_RAISING': return t('userStatus.childcare')
+    default: return auth.user.status
+  }
+})
 
 const fullName = computed(() => {
   if (!auth.user) return ''
@@ -60,7 +72,7 @@ const initials = computed(() => {
 
 const position = computed(() => {
   if (!auth.user) return ''
-  return locale.value === 'ru' ? auth.user.position_ru : auth.user.position_uz
+  return locale.value !== 'uz' ? auth.user.position_ru : auth.user.position_uz
 })
 </script>
 

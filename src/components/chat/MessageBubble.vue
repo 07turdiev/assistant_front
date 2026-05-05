@@ -10,7 +10,8 @@
           target="_blank"
           class="bubble__file"
         >
-          📎 {{ f.file_name }}
+          <el-icon><Paperclip /></el-icon>
+          <span>{{ f.file_name }}</span>
         </a>
       </div>
       <span class="bubble__time">{{ time }}</span>
@@ -20,6 +21,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Paperclip } from '@element-plus/icons-vue'
 import { formatTime } from '@/utils/date'
 import type { ChatMessage } from '@/types/chat'
 
@@ -66,10 +68,15 @@ const time = computed(() => formatTime(props.message.created_at))
   }
 
   &__file {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     color: #1976d2;
     font-size: 13px;
     text-decoration: none;
     &:hover { text-decoration: underline; }
+
+    .el-icon { font-size: 14px; }
   }
 
   &__time {

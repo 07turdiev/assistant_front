@@ -102,14 +102,14 @@
       <el-col :span="8">
         <el-form-item :label="$t('event.organisation')">
           <el-select v-model="filterOrganisationId" clearable style="width: 100%" @change="reloadParticipants">
-            <el-option v-for="o in organisations" :key="o.id" :value="o.id" :label="locale === 'ru' ? o.name_ru : o.name_uz" />
+            <el-option v-for="o in organisations" :key="o.id" :value="o.id" :label="locale !== 'uz' ? o.name_ru : o.name_uz" />
           </el-select>
         </el-form-item>
       </el-col>
       <el-col :span="8">
         <el-form-item :label="$t('event.direction')">
           <el-select v-model="filterDirectionId" clearable style="width: 100%" @change="reloadParticipants">
-            <el-option v-for="d in directions" :key="d.id" :value="d.id" :label="locale === 'ru' ? d.name_ru : d.name_uz" />
+            <el-option v-for="d in directions" :key="d.id" :value="d.id" :label="locale !== 'uz' ? d.name_ru : d.name_uz" />
           </el-select>
         </el-form-item>
       </el-col>

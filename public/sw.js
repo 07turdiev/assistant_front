@@ -25,10 +25,10 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data ? event.data.json() : {}
   } catch (_e) {
-    payload = { title: 'Smart Assistant', body: event.data ? event.data.text() : '' }
+    payload = { title: 'Smart assistant', body: event.data ? event.data.text() : '' }
   }
 
-  const title = payload.title || 'Smart Assistant'
+  const title = payload.title || 'Smart assistant'
   const data = payload.data || {}
   const options = {
     body: payload.body || '',

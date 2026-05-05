@@ -1,13 +1,10 @@
 <template>
   <header class="gc-header">
-    <!-- Chap: hamburger + brand -->
+    <!-- Chap: brand -->
     <div class="gc-header__brand">
-      <button class="icon-btn" @click="$emit('toggle-sidebar')" aria-label="Menu">
-        <el-icon size="22"><Menu /></el-icon>
-      </button>
       <router-link to="/" class="brand">
-        <el-icon class="brand__icon" size="32"><Calendar /></el-icon>
-        <span class="brand__name">Smart Assistant</span>
+        <img src="/favicon.svg" alt="Smart assistant" class="brand__icon" />
+        <span class="brand__name">Smart assistant</span>
       </router-link>
     </div>
 
@@ -103,7 +100,7 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Bell, Menu, User, Edit, Setting, SwitchButton, Calendar } from '@element-plus/icons-vue'
+import { Bell, User, Edit, Setting, SwitchButton } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatTime } from '@/utils/date'
@@ -124,7 +121,7 @@ const fullNameWithFather = computed(() => {
 
 const positionLabel = computed(() => {
   if (!auth.user) return ''
-  return locale.value === 'ru' ? auth.user.position_ru || '' : auth.user.position_uz || ''
+  return locale.value !== 'uz' ? auth.user.position_ru || '' : auth.user.position_uz || ''
 })
 
 const initials = computed(() => {
@@ -209,7 +206,11 @@ onMounted(async () => {
   }
 
   &__icon {
-    color: $color-primary;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
   }
 
   &__name {
