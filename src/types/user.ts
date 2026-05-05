@@ -46,3 +46,14 @@ export interface User {
 export interface UserMe extends User {
   position?: string
 }
+
+export interface UserShort {
+  id: string
+  username: string
+  first_name: string
+  last_name: string
+  father_name?: string | null
+  position_uz?: string | null
+  position_ru?: string | null
+  avatar_url?: string | null
+}

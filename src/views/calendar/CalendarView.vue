@@ -113,7 +113,7 @@ const UZ_MONTHS = [
 const UZ_DAYS_SHORT = ['Yak', 'Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha']
 const UZ_DAYS_LONG = ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba']
 
-const uzLocale: LocaleInput = {
+const uzLocale = {
   code: 'uz',
   week: { dow: 1, doy: 7 },
   buttonText: {
@@ -128,11 +128,11 @@ const uzLocale: LocaleInput = {
   },
   weekText: 'Hafta',
   allDayText: "Kun bo'yi",
-  moreLinkText: (n) => `+${n} ko'proq`,
+  moreLinkText: (n: number) => `+${n} ko'proq`,
   noEventsText: "Tadbir yo'q",
 }
 
-const ruLocale: LocaleInput = {
+const ruLocale = {
   code: 'ru',
   week: { dow: 1, doy: 7 },
   buttonText: {
@@ -147,7 +147,7 @@ const ruLocale: LocaleInput = {
   },
   weekText: 'Нед',
   allDayText: 'Весь день',
-  moreLinkText: (n) => `Ещё ${n}`,
+  moreLinkText: (n: number) => `Ещё ${n}`,
   noEventsText: 'Нет мероприятий',
 }
 
