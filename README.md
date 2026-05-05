@@ -1,4 +1,4 @@
-# Smart Assistant — Frontend
+# Smart assistant — Frontend
 
 Vue 3 + TypeScript + Vite + Pinia + Element Plus.
 

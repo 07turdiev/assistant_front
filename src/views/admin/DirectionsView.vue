@@ -21,7 +21,7 @@
                   v-for="d in items"
                   :key="d.id"
                   :value="d.id"
-                  :label="locale === 'ru' ? d.name_ru : d.name_uz"
+                  :label="locale !== 'uz' ? d.name_ru : d.name_uz"
                   :disabled="editing?.id === d.id"
                 />
               </el-select>
@@ -48,7 +48,7 @@
         <el-table-column :label="$t('directionsPage.name')" prop="name_uz">
           <template #default="{ row }">
             <a class="direction-link" @click.prevent="openEdit(row)">
-              {{ locale === 'ru' ? row.name_ru : row.name_uz }}
+              {{ locale !== 'uz' ? row.name_ru : row.name_uz }}
             </a>
           </template>
         </el-table-column>
@@ -138,7 +138,7 @@ const indexFrom = computed(() => (page.value - 1) * pageSize.value + 1)
 function parentName(parentId: string | null): string {
   if (!parentId) return ''
   const p = items.value.find((d) => d.id === parentId)
-  return p ? (locale.value === 'ru' ? p.name_ru : p.name_uz) : ''
+  return p ? (locale.value !== 'uz' ? p.name_ru : p.name_uz) : ''
 }
 
 function resetForm() {

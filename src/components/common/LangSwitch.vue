@@ -1,10 +1,17 @@
 <template>
   <el-dropdown trigger="click" @command="onCommand">
-    <span class="lang-switch">{{ current.toUpperCase() }}</span>
+    <span class="lang-switch">{{ currentLabel }}</span>
     <template #dropdown>
       <el-dropdown-menu>
-        <el-dropdown-item command="uz">O'zbek</el-dropdown-item>
-        <el-dropdown-item command="ru">Русский</el-dropdown-item>
+        <el-dropdown-item command="uz" :class="{ 'is-active': current === 'uz' }">
+          O'zbek (lotin)
+        </el-dropdown-item>
+        <el-dropdown-item command="uz-Cyrl" :class="{ 'is-active': current === 'uz-Cyrl' }">
+          Ўзбек (кирилл)
+        </el-dropdown-item>
+        <el-dropdown-item command="ru" :class="{ 'is-active': current === 'ru' }">
+          Русский
+        </el-dropdown-item>
       </el-dropdown-menu>
     </template>
   </el-dropdown>
@@ -18,6 +25,15 @@ import { setLocale, type Locale } from '@/i18n'
 const { locale } = useI18n()
 
 const current = computed(() => locale.value)
+
+const currentLabel = computed(() => {
+  switch (locale.value) {
+    case 'ru': return 'RU'
+    case 'uz-Cyrl': return 'УЗ'
+    case 'uz':
+    default: return 'UZ'
+  }
+})
 
 function onCommand(value: Locale) {
   setLocale(value)
@@ -33,5 +49,11 @@ function onCommand(value: Locale) {
   border: 1px solid #dcdfe6;
   border-radius: 6px;
   font-size: 13px;
+}
+
+:global(.el-dropdown-menu__item.is-active) {
+  background: rgba(26, 115, 232, 0.08);
+  color: #1a73e8;
+  font-weight: 600;
 }
 </style>

@@ -63,7 +63,7 @@
               v-for="o in organisations"
               :key="o.id"
               :value="o.id"
-              :label="locale === 'ru' ? o.name_ru : o.name_uz"
+              :label="locale !== 'uz' ? o.name_ru : o.name_uz"
             />
           </el-select>
         </el-form-item>
@@ -79,7 +79,7 @@
               v-for="d in directions"
               :key="d.id"
               :value="d.id"
-              :label="locale === 'ru' ? d.name_ru : d.name_uz"
+              :label="locale !== 'uz' ? d.name_ru : d.name_uz"
             />
           </el-select>
         </el-form-item>
@@ -348,7 +348,7 @@ watch(
       first_name: u.first_name,
       last_name: u.last_name,
       father_name: u.father_name || '',
-      position: locale.value === 'ru' ? u.position_ru || '' : u.position_uz || '',
+      position: locale.value !== 'uz' ? u.position_ru || '' : u.position_uz || '',
       position_uz: u.position_uz || '',
       position_ru: u.position_ru || '',
       phone_number: u.phone_number || '',

@@ -113,7 +113,14 @@ const UZ_MONTHS = [
 const UZ_DAYS_SHORT = ['Yak', 'Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha']
 const UZ_DAYS_LONG = ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba']
 
-const uzLocale = {
+const UZ_CYR_MONTHS = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+]
+const UZ_CYR_DAYS_SHORT = ['Як', 'Ду', 'Се', 'Чо', 'Па', 'Жу', 'Ша']
+const UZ_CYR_DAYS_LONG = ['Якшанба', 'Душанба', 'Сешанба', 'Чоршанба', 'Пайшанба', 'Жума', 'Шанба']
+
+const uzLocale: LocaleInput = {
   code: 'uz',
   week: { dow: 1, doy: 7 },
   buttonText: {
@@ -132,7 +139,26 @@ const uzLocale = {
   noEventsText: "Tadbir yo'q",
 }
 
-const ruLocale = {
+const uzCyrlLocale: LocaleInput = {
+  code: 'uz-Cyrl',
+  week: { dow: 1, doy: 7 },
+  buttonText: {
+    prev: 'Олдинги',
+    next: 'Кейинги',
+    today: 'Бугун',
+    year: 'Йил',
+    month: 'Ой',
+    week: 'Ҳафта',
+    day: 'Кун',
+    list: 'Рўйхат',
+  },
+  weekText: 'Ҳафта',
+  allDayText: 'Кун бўйи',
+  moreLinkText: (n) => `+${n} кўпроқ`,
+  noEventsText: 'Тадбир йўқ',
+}
+
+const ruLocale: LocaleInput = {
   code: 'ru',
   week: { dow: 1, doy: 7 },
   buttonText: {
@@ -151,13 +177,16 @@ const ruLocale = {
   noEventsText: 'Нет мероприятий',
 }
 
-function uzFormat(date: Date, opts?: { month?: 'long' | 'short'; weekday?: 'long' | 'short' | 'narrow'; day?: 'numeric'; year?: 'numeric' }): string {
+function uzFormat(date: Date, opts?: { month?: 'long' | 'short'; weekday?: 'long' | 'short' | 'narrow'; day?: 'numeric'; year?: 'numeric' }, cyrl = false): string {
+  const months = cyrl ? UZ_CYR_MONTHS : UZ_MONTHS
+  const daysShort = cyrl ? UZ_CYR_DAYS_SHORT : UZ_DAYS_SHORT
+  const daysLong = cyrl ? UZ_CYR_DAYS_LONG : UZ_DAYS_LONG
   const parts: string[] = []
-  if (opts?.weekday === 'long') parts.push(UZ_DAYS_LONG[date.getUTCDay()])
-  else if (opts?.weekday === 'short') parts.push(UZ_DAYS_SHORT[date.getUTCDay()])
+  if (opts?.weekday === 'long') parts.push(daysLong[date.getUTCDay()])
+  else if (opts?.weekday === 'short') parts.push(daysShort[date.getUTCDay()])
   if (opts?.day) parts.push(String(date.getUTCDate()))
-  if (opts?.month === 'long') parts.push(UZ_MONTHS[date.getUTCMonth()])
-  else if (opts?.month === 'short') parts.push(UZ_MONTHS[date.getUTCMonth()].slice(0, 3))
+  if (opts?.month === 'long') parts.push(months[date.getUTCMonth()])
+  else if (opts?.month === 'short') parts.push(months[date.getUTCMonth()].slice(0, 3))
   if (opts?.year) parts.push(String(date.getUTCFullYear()))
   return parts.join(' ')
 }
@@ -211,16 +240,20 @@ const typeColors: Record<string, string> = {
   Seminar: '#9a60b4',
 }
 
-const typeLabels = computed<Record<string, string>>(() => ({
-  Collection: locale.value === 'ru' ? 'Собрание' : "Yig'ilish",
-  Presidium: locale.value === 'ru' ? 'Президиум' : 'Prezidium',
-  Selector: locale.value === 'ru' ? 'Селектор' : 'Selektor',
-  Discussion: locale.value === 'ru' ? 'Обсуждение' : 'Muhokama',
-  Presentation: locale.value === 'ru' ? 'Презентация' : 'Taqdimot',
-  Meeting: locale.value === 'ru' ? 'Встреча' : 'Uchrashuv',
-  Forum: 'Forum',
-  Seminar: 'Seminar',
-}))
+const typeLabels = computed<Record<string, string>>(() => {
+  const isCyr = locale.value === 'uz-Cyrl'
+  const isRu = locale.value === 'ru'
+  return {
+    Collection: isRu ? 'Собрание' : isCyr ? "Йиғилиш" : "Yig'ilish",
+    Presidium: isRu ? 'Президиум' : isCyr ? 'Президиум' : 'Prezidium',
+    Selector: isRu ? 'Селектор' : isCyr ? 'Селектор' : 'Selektor',
+    Discussion: isRu ? 'Обсуждение' : isCyr ? 'Муҳокама' : 'Muhokama',
+    Presentation: isRu ? 'Презентация' : isCyr ? 'Тақдимот' : 'Taqdimot',
+    Meeting: isRu ? 'Встреча' : isCyr ? 'Учрашув' : 'Uchrashuv',
+    Forum: 'Forum',
+    Seminar: 'Seminar',
+  }
+})
 
 type CalView = 'multiMonthYear' | 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'
 
@@ -272,13 +305,17 @@ const fcEvents = computed<EventInput[]>(() =>
 )
 
 const calendarOptions = computed<CalendarOptions>(() => {
-  const isUz = locale.value !== 'ru'
+  const isRu = locale.value === 'ru'
+  const isCyrl = locale.value === 'uz-Cyrl'
+  const isUz = !isRu // uz yoki uz-Cyrl
+  const fcLocale = isRu ? 'ru' : isCyrl ? 'uz-Cyrl' : 'uz'
+  const daysShort = isCyrl ? UZ_CYR_DAYS_SHORT : UZ_DAYS_SHORT
   return {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin],
     initialView: view.value,
     headerToolbar: false,
-    locales: [uzLocale, ruLocale],
-    locale: isUz ? 'uz' : 'ru',
+    locales: [uzLocale, uzCyrlLocale, ruLocale],
+    locale: fcLocale,
     firstDay: 1,
     weekends: true,
     height: 'auto',
@@ -304,13 +341,13 @@ const calendarOptions = computed<CalendarOptions>(() => {
     eventContent: renderEventContent,
     // O'zbek lokalida hafta nomlari va oy nomlarini qo'lda formatlaymiz
     dayHeaderFormat: isUz
-      ? (arg: { date: { marker: Date } }) => UZ_DAYS_SHORT[arg.date.marker.getUTCDay()]
+      ? (arg: { date: { marker: Date } }) => daysShort[arg.date.marker.getUTCDay()]
       : { weekday: 'short' },
     multiMonthTitleFormat: isUz
-      ? (arg: { date: { marker: Date } }) => uzFormat(arg.date.marker, { month: 'long', year: 'numeric' })
+      ? (arg: { date: { marker: Date } }) => uzFormat(arg.date.marker, { month: 'long', year: 'numeric' }, isCyrl)
       : { year: 'numeric', month: 'long' },
     titleFormat: isUz
-      ? (arg: { date: { marker: Date } }) => uzFormat(arg.date.marker, { month: 'long', year: 'numeric' })
+      ? (arg: { date: { marker: Date } }) => uzFormat(arg.date.marker, { month: 'long', year: 'numeric' }, isCyrl)
       : { year: 'numeric', month: 'long' },
     slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
   } as CalendarOptions

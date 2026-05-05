@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Smart Assistant",
+    "title": "Smart assistant",
     "subtitle": "Madaniyat vazirligi",
     "ministry1": "O'zbekiston Respublikasi",
     "ministry2": "Madaniyat vazirligi"
@@ -86,7 +86,7 @@
     "unread": "O'qilmagan"
   },
   "reports": {
-    "create": "Yangi yuborish",
+    "create": "Yangi",
     "taskTitle": "Yangi topshiriq yuborish",
     "requestTitle": "Yangi so'rov yuborish",
     "activeTab": "Faol",

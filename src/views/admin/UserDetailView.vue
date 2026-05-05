@@ -88,7 +88,7 @@ const loading = ref(false)
 const initials = computed(() => initialsFor(user.value))
 const position = computed(() => {
   if (!user.value) return ''
-  return locale.value === 'ru' ? user.value.position_ru || '' : user.value.position_uz || ''
+  return locale.value !== 'uz' ? user.value.position_ru || '' : user.value.position_uz || ''
 })
 
 const statusLabel = computed(() => {
@@ -134,7 +134,7 @@ async function loadUser() {
     if (data.direction_id) {
       try {
         const { data: dir } = await import('@/api/admin').then((m) => m.adminDirectionsApi.retrieve(data.direction_id!))
-        directionName.value = locale.value === 'ru' ? dir.name_ru : dir.name_uz
+        directionName.value = locale.value !== 'uz' ? dir.name_ru : dir.name_uz
       } catch (_e) { /* ignore */ }
     }
 

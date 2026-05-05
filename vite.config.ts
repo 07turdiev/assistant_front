@@ -52,11 +52,6 @@ export default defineConfig(({ mode }) => {
           target: apiTarget,
           changeOrigin: true,
         },
-        // Legacy frontend referens (JAR'dan ko'chirilgan Vue 2 SPA, /legacy/ ostida)
-        '/legacy': {
-          target: apiTarget,
-          changeOrigin: true,
-        },
         // WebSocket
         '/ws': {
           target: apiTarget.replace(/^http/, 'ws'),
