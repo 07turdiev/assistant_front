@@ -47,20 +47,13 @@ export interface UserMe extends User {
   position?: string
 }
 
-<<<<<<< HEAD
 export interface UserShort {
-=======
-export type UserShort = {
->>>>>>> 2f433176a0ba23219c2124bed4493f2d112de16e
   id: string
   username: string
   first_name: string
   last_name: string
-<<<<<<< HEAD
   father_name?: string | null
   position_uz?: string | null
   position_ru?: string | null
   avatar_url?: string | null
-=======
->>>>>>> 2f433176a0ba23219c2124bed4493f2d112de16e
 }
