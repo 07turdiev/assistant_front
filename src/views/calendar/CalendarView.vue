@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
@@ -97,13 +97,70 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import multiMonthPlugin from '@fullcalendar/multimonth'
-import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput, EventContentArg } from '@fullcalendar/core'
+import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput, EventContentArg, LocaleInput } from '@fullcalendar/core'
 
 import { eventsApi } from '@/api/events'
 import { reportsApi } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
 import { formatDate } from '@/utils/date'
 import type { Event } from '@/types/event'
+
+// ---- O'zbek (Latin) oy va hafta nomlari ----
+const UZ_MONTHS = [
+  'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
+  'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr',
+]
+const UZ_DAYS_SHORT = ['Yak', 'Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha']
+const UZ_DAYS_LONG = ['Yakshanba', 'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba']
+
+const uzLocale: LocaleInput = {
+  code: 'uz',
+  week: { dow: 1, doy: 7 },
+  buttonText: {
+    prev: 'Oldingi',
+    next: 'Keyingi',
+    today: 'Bugun',
+    year: 'Yil',
+    month: 'Oy',
+    week: 'Hafta',
+    day: 'Kun',
+    list: "Ro'yxat",
+  },
+  weekText: 'Hafta',
+  allDayText: "Kun bo'yi",
+  moreLinkText: (n) => `+${n} ko'proq`,
+  noEventsText: "Tadbir yo'q",
+}
+
+const ruLocale: LocaleInput = {
+  code: 'ru',
+  week: { dow: 1, doy: 7 },
+  buttonText: {
+    prev: 'Назад',
+    next: 'Вперёд',
+    today: 'Сегодня',
+    year: 'Год',
+    month: 'Месяц',
+    week: 'Неделя',
+    day: 'День',
+    list: 'Список',
+  },
+  weekText: 'Нед',
+  allDayText: 'Весь день',
+  moreLinkText: (n) => `Ещё ${n}`,
+  noEventsText: 'Нет мероприятий',
+}
+
+function uzFormat(date: Date, opts?: { month?: 'long' | 'short'; weekday?: 'long' | 'short' | 'narrow'; day?: 'numeric'; year?: 'numeric' }): string {
+  const parts: string[] = []
+  if (opts?.weekday === 'long') parts.push(UZ_DAYS_LONG[date.getUTCDay()])
+  else if (opts?.weekday === 'short') parts.push(UZ_DAYS_SHORT[date.getUTCDay()])
+  if (opts?.day) parts.push(String(date.getUTCDate()))
+  if (opts?.month === 'long') parts.push(UZ_MONTHS[date.getUTCMonth()])
+  else if (opts?.month === 'short') parts.push(UZ_MONTHS[date.getUTCMonth()].slice(0, 3))
+  if (opts?.year) parts.push(String(date.getUTCFullYear()))
+  return parts.join(' ')
+}
 
 const router = useRouter()
 const { t, locale } = useI18n()
@@ -214,37 +271,50 @@ const fcEvents = computed<EventInput[]>(() =>
   })
 )
 
-const calendarOptions = computed<CalendarOptions>(() => ({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin],
-  initialView: view.value,
-  // Headerni o'zimiz qildik — FC default yashirin
-  headerToolbar: false,
-  locale: locale.value === 'ru' ? 'ru' : 'en',
-  firstDay: 1,
-  weekends: true,
-  height: 'auto',
-  expandRows: true,
-  events: fcEvents.value,
-  eventClick: onEventClick,
-  datesSet: onDatesSet,
-  dayMaxEvents: 3,
-  nowIndicator: true,
-  navLinks: true,
-  navLinkDayClick: onNavToDay,
-  multiMonthMaxColumns: 3,
-  slotMinTime: '07:00:00',
-  slotMaxTime: '21:00:00',
-  slotDuration: '00:30:00',
-  allDaySlot: false,
-  scrollTime: '08:00:00',
-  businessHours: {
-    daysOfWeek: [1, 2, 3, 4, 5],
-    startTime: '09:00',
-    endTime: '18:00',
-  },
-  eventContent: renderEventContent,
-  dayHeaderFormat: { weekday: 'short' },
-}))
+const calendarOptions = computed<CalendarOptions>(() => {
+  const isUz = locale.value !== 'ru'
+  return {
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, multiMonthPlugin],
+    initialView: view.value,
+    headerToolbar: false,
+    locales: [uzLocale, ruLocale],
+    locale: isUz ? 'uz' : 'ru',
+    firstDay: 1,
+    weekends: true,
+    height: 'auto',
+    expandRows: true,
+    // Diqqat: events bu yerda BERILMAYDI — `watch(events, ...)` orqali API
+    // bilan yangilanadi, aks holda har data fetch FullCalendar'ni qayta
+    // render qiladi va datesSet qayta ishga tushib cheksiz loop yaratadi.
+    eventClick: onEventClick,
+    datesSet: onDatesSet,
+    dayMaxEvents: 3,
+    nowIndicator: true,
+    navLinks: true,
+    navLinkDayClick: onNavToDay,
+    // Yil view: 1 ustun × 12 qator — har oy butun ekran kengligida (oy view kabi)
+    multiMonthMaxColumns: 1,
+    multiMonthMinWidth: 600,
+    slotMinTime: '07:00:00',
+    slotMaxTime: '21:00:00',
+    slotDuration: '00:30:00',
+    allDaySlot: false,
+    scrollTime: '08:00:00',
+    businessHours: { daysOfWeek: [1, 2, 3, 4, 5], startTime: '09:00', endTime: '18:00' },
+    eventContent: renderEventContent,
+    // O'zbek lokalida hafta nomlari va oy nomlarini qo'lda formatlaymiz
+    dayHeaderFormat: isUz
+      ? (arg: { date: { marker: Date } }) => UZ_DAYS_SHORT[arg.date.marker.getUTCDay()]
+      : { weekday: 'short' },
+    multiMonthTitleFormat: isUz
+      ? (arg: { date: { marker: Date } }) => uzFormat(arg.date.marker, { month: 'long', year: 'numeric' })
+      : { year: 'numeric', month: 'long' },
+    titleFormat: isUz
+      ? (arg: { date: { marker: Date } }) => uzFormat(arg.date.marker, { month: 'long', year: 'numeric' })
+      : { year: 'numeric', month: 'long' },
+    slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+  } as CalendarOptions
+})
 
 function renderEventContent(arg: EventContentArg) {
   const time = arg.event.extendedProps.start_time as string | undefined
@@ -320,7 +390,52 @@ async function loadEvents(startDate: string, endDate: string) {
   }
 }
 
-onMounted(() => { /* datesSet trigger qiladi */ })
+// fcEvents o'zgarganda FullCalendar API orqali yangilanadi (computed options
+// ichida BERILMAGAN — aks holda re-render → datesSet → loop)
+watch(fcEvents, (newEvents) => {
+  const api = calendarRef.value?.getApi()
+  if (!api) return
+  api.removeAllEvents()
+  for (const ev of newEvents) {
+    api.addEvent(ev)
+  }
+}, { deep: true })
+
+onMounted(async () => {
+  // Calendar mount bo'lib, datesSet ishga tushgandan keyin events yuklanadi.
+  // Initial render uchun nextTick'da fcEvents'ni qo'shamiz (datesSet'dan keyin).
+  await nextTick()
+  const api = calendarRef.value?.getApi()
+  if (api && fcEvents.value.length > 0) {
+    for (const ev of fcEvents.value) api.addEvent(ev)
+  }
+
+  // Yil view'dagi oy sarlavhalariga click handler — o'sha oyning view'iga o'tkazadi
+  setupMonthTitleClick()
+})
+
+function setupMonthTitleClick() {
+  const calEl = calendarRef.value?.$el as HTMLElement | undefined
+  if (!calEl) return
+  calEl.addEventListener('click', (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    const titleEl = target.closest('.fc-multimonth-title')
+    if (!titleEl) return
+
+    // Click qaysi oy ekanligini topish — multimonth ichidagi indeks bo'yicha
+    const allTitles = Array.from(calEl.querySelectorAll('.fc-multimonth-title'))
+    const idx = allTitles.indexOf(titleEl as Element)
+    if (idx < 0) return
+
+    const api = calendarRef.value?.getApi()
+    if (!api) return
+    // Yil view'da currentStart = Yanvar 1, idx 0..11
+    const yearStart = new Date(api.view.currentStart)
+    const target_date = new Date(yearStart.getFullYear(), yearStart.getMonth() + idx, 1)
+    view.value = 'dayGridMonth'
+    api.changeView('dayGridMonth', target_date)
+  })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -753,34 +868,61 @@ $shadow-event-hover: 0 2px 8px rgba(15, 23, 42, 0.08);
 /* ============================================================
    Multi-month (year view)
    ============================================================ */
-:deep(.fc-multimonth) { border: none; }
+:deep(.fc-multimonth) {
+  border: none;
+  width: 100%;
+}
 
 :deep(.fc-multimonth-month) {
-  padding: 8px 10px;
+  padding: 12px 16px 16px;
   border: 1px solid $border-soft;
-  border-radius: 8px;
-  margin: 4px;
+  border-radius: 10px;
   background: #fff;
+  /* Margin yo'q — table chegaralar bilan to'g'ri taqsimlanadi */
 }
 
 :deep(.fc-multimonth-title) {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   color: $text-primary;
   text-transform: capitalize;
-  padding: 4px 0 8px;
+  padding: 6px 12px;
+  margin: 0 auto 8px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  display: inline-block;
+
+  &:hover {
+    background: rgba(64, 158, 255, 0.08);
+    color: $brand;
+  }
 }
 
 :deep(.fc-multimonth-daygrid-table) {
-  font-size: 11px;
+  font-size: 13px;
+  width: 100%;
+  table-layout: fixed;
+}
+
+:deep(.fc-multimonth-daygrid-table td) {
+  height: 36px;
+  vertical-align: top;
+}
+
+:deep(.fc-multimonth-daygrid-day-number) {
+  font-size: 12px;
+  padding: 4px 6px;
 }
 
 :deep(.fc-multimonth-daygrid-table th) {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: $text-muted;
   font-weight: 500;
+  padding: 6px 0;
 }
 
 /* ============================================================

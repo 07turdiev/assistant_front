@@ -109,6 +109,9 @@ export const adminUsersApi = {
       headers: isForm ? { 'Content-Type': 'multipart/form-data' } : undefined,
     })
   },
+  patch(id: string, payload: Partial<AdminUserUpdatePayload>) {
+    return apiClient.patch<User>(`/users/${id}/`, payload)
+  },
   delete(id: string) {
     return apiClient.delete(`/users/${id}/`)
   },

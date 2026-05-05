@@ -51,34 +51,47 @@
         </template>
       </el-table-column>
       <el-table-column prop="phone_number" :label="$t('profile.phone')" width="160" />
-      <el-table-column :label="$t('admin.userTable.status')" width="170">
+      <el-table-column :label="$t('admin.userTable.status')" width="180">
         <template #default="{ row }">
           <el-dropdown
             trigger="click"
+            placement="bottom-start"
             :disabled="row.id === statusUpdatingId"
+            popper-class="status-popper"
             @command="(s: UserStatus) => onChangeStatus(row, s)"
           >
-            <el-tag
-              :type="statusTagType(row.status)"
-              effect="light"
-              class="status-tag"
-              :loading="row.id === statusUpdatingId"
+            <button
+              type="button"
+              class="status-pill"
+              :class="`status-pill--${statusVariant(row.status)}`"
+              :disabled="row.id === statusUpdatingId"
               @click.stop
             >
-              {{ statusLabel(row.status) }}
-              <el-icon class="caret"><CaretBottom /></el-icon>
-            </el-tag>
+              <span class="status-pill__dot"></span>
+              <span class="status-pill__label">{{ statusLabel(row.status) }}</span>
+              <el-icon v-if="row.id === statusUpdatingId" class="status-pill__spinner is-spin">
+                <Loading />
+              </el-icon>
+              <el-icon v-else class="status-pill__caret"><CaretBottom /></el-icon>
+            </button>
             <template #dropdown>
-              <el-dropdown-menu>
+              <el-dropdown-menu class="status-menu">
                 <el-dropdown-item
                   v-for="opt in statusOptions"
                   :key="opt.value"
                   :command="opt.value"
                   :disabled="opt.value === row.status"
+                  class="status-menu__item"
+                  :class="[
+                    `status-menu__item--${statusVariant(opt.value)}`,
+                    { 'is-active': opt.value === row.status },
+                  ]"
                 >
-                  <el-tag :type="statusTagType(opt.value)" effect="plain" size="small">
-                    {{ opt.label }}
-                  </el-tag>
+                  <span class="status-menu__dot"></span>
+                  <span class="status-menu__label">{{ opt.label }}</span>
+                  <el-icon v-if="opt.value === row.status" class="status-menu__check">
+                    <Check />
+                  </el-icon>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -135,7 +148,7 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { CaretBottom, Edit, Delete, Key } from '@element-plus/icons-vue'
+import { CaretBottom, Check, Edit, Delete, Key, Loading } from '@element-plus/icons-vue'
 import { adminUsersApi } from '@/api/admin'
 import { useLookupStore } from '@/stores/lookup'
 import type { User } from '@/types/user'
@@ -182,6 +195,17 @@ function statusTagType(status: string): TagType {
     case 'WORK_TRIP': return 'primary'
     case 'IN_CHILDHOOD_RAISING': return 'warning'
     default: return 'info'
+  }
+}
+
+function statusVariant(status: string): string {
+  switch (status) {
+    case 'AT_WORK': return 'work'
+    case 'ON_HOLIDAY': return 'holiday'
+    case 'WORK_TRIP': return 'trip'
+    case 'IN_CHILDHOOD_RAISING': return 'childcare'
+    case 'DISMISSED': return 'dismissed'
+    default: return 'unknown'
   }
 }
 
@@ -246,10 +270,11 @@ function onPageChange(page: number) {
 async function onToggleEnabled(row: User) {
   togglingId.value = row.id
   try {
-    await adminUsersApi.update(row.id, { enabled: !row.enabled } as never)
+    await adminUsersApi.patch(row.id, { enabled: !row.enabled })
     row.enabled = !row.enabled
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { message?: string } } }
+    ElMessage.error(err.response?.data?.message || t('common.error'))
   } finally {
     togglingId.value = null
   }
@@ -279,8 +304,17 @@ async function onDelete(row: User) {
     await adminUsersApi.delete(row.id)
     ElMessage.success(t('common.success'))
     await reload()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    const err = e as { response?: { status?: number; data?: { message?: string } } }
+    const msg = err.response?.data?.message
+    if (msg) {
+      ElMessageBox.alert(msg, t('common.error'), {
+        type: 'warning',
+        confirmButtonText: t('common.confirm'),
+      })
+    } else {
+      ElMessage.error(t('common.error'))
+    }
   }
 }
 
@@ -306,21 +340,211 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
-.status-tag {
-  cursor: pointer;
+/* ============================================================
+   Status pill (jadval ichida)
+   ============================================================ */
+.status-pill {
+  --status-bg: #f0f9ff;
+  --status-fg: #1976d2;
+  --status-border: rgba(64, 158, 255, 0.18);
+  --status-dot: #409eff;
+
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  padding: 5px 10px 5px 10px;
+  border-radius: 999px;
+  background: var(--status-bg);
+  color: var(--status-fg);
+  border: 1px solid var(--status-border);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
   user-select: none;
-  transition: filter 0.15s ease;
+  font-family: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.06s ease;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: var(--status-dot);
+    transform: translateY(-0.5px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--status-dot);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+  }
+
+  &__label {
+    flex: 1;
+  }
+
+  &__caret {
+    font-size: 11px;
+    opacity: 0.55;
+    margin-left: 2px;
+    transition: transform 0.15s ease;
+  }
+
+  &__spinner {
+    font-size: 13px;
+    margin-left: 2px;
+  }
+
+  &.is-spin {
+    animation: spin 0.8s linear infinite;
+  }
 }
 
-.status-tag:hover {
-  filter: brightness(0.96);
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.status-tag .caret {
-  font-size: 10px;
-  opacity: 0.6;
+/* Pulse animation faqat AT_WORK uchun */
+.status-pill--work .status-pill__dot {
+  animation: status-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(103, 194, 58, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.6); }
+  50% { box-shadow: 0 0 0 4px rgba(103, 194, 58, 0), 0 0 0 2px rgba(255, 255, 255, 0.6); }
+}
+
+/* Variantlar — fon, matn, dot */
+.status-pill--work {
+  --status-bg: #ecfdf3;
+  --status-fg: #027a48;
+  --status-border: rgba(103, 194, 58, 0.22);
+  --status-dot: #67c23a;
+}
+
+.status-pill--holiday {
+  --status-bg: #fff7ed;
+  --status-fg: #b45309;
+  --status-border: rgba(230, 162, 60, 0.22);
+  --status-dot: #f59e0b;
+}
+
+.status-pill--trip {
+  --status-bg: #eff6ff;
+  --status-fg: #1e40af;
+  --status-border: rgba(64, 158, 255, 0.22);
+  --status-dot: #3b82f6;
+}
+
+.status-pill--childcare {
+  --status-bg: #fdf4ff;
+  --status-fg: #86198f;
+  --status-border: rgba(217, 70, 239, 0.22);
+  --status-dot: #d946ef;
+}
+
+.status-pill--dismissed {
+  --status-bg: #f5f5f5;
+  --status-fg: #6b7280;
+  --status-border: rgba(144, 147, 153, 0.32);
+  --status-dot: #9ca3af;
+}
+
+.status-pill--unknown {
+  --status-bg: #f5f5f5;
+  --status-fg: #909399;
+  --status-border: #e4e7ed;
+  --status-dot: #c0c4cc;
+}
+</style>
+
+<!-- Status dropdown menyusi (body'ga teleport qilinadi — global) -->
+<style lang="scss">
+.status-popper.el-popper {
+  --el-popper-border-radius: 12px;
+
+  padding: 6px !important;
+  border: 1px solid #ebeef5 !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+  min-width: 200px;
+
+  .el-popper__arrow { display: none !important; }
+}
+
+.status-menu.el-dropdown-menu {
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-menu__item.el-dropdown-menu__item {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-size: 13px;
+  color: #1f2d3d;
+  line-height: 1.3;
+  user-select: none;
+  margin: 0 !important;
+  height: auto;
+
+  --status-dot: #409eff;
+
+  &:not(.is-disabled):hover,
+  &:not(.is-disabled):focus {
+    background: #f5f7fa !important;
+    color: #1f2d3d !important;
+    outline: none;
+  }
+
+  &.is-active,
+  &.is-disabled {
+    background: rgba(64, 158, 255, 0.06) !important;
+    color: #1976d2 !important;
+    cursor: default !important;
+    font-weight: 600;
+    opacity: 1 !important;
+  }
+
+  &--work { --status-dot: #67c23a; }
+  &--holiday { --status-dot: #f59e0b; }
+  &--trip { --status-dot: #3b82f6; }
+  &--childcare { --status-dot: #d946ef; }
+  &--dismissed { --status-dot: #9ca3af; }
+
+  .status-menu__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--status-dot);
+    flex-shrink: 0;
+  }
+
+  .status-menu__label {
+    flex: 1;
+  }
+
+  .status-menu__check {
+    font-size: 14px;
+    color: #67c23a;
+    flex-shrink: 0;
+  }
 }
 </style>

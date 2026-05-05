@@ -59,11 +59,13 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/variables.scss' as *;
+
 .app-shell {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5f7fa;
+  background: $color-bg;
 }
 
 .app-body {
@@ -75,7 +77,7 @@ watch(
 .app-main {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
-  background: #f5f7fa;
+  padding: 16px 24px 24px;
+  background: $color-bg-soft;
 }
 </style>

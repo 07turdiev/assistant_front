@@ -3,19 +3,24 @@
     <h2 class="form-title">{{ $t('event.formTitle') }}</h2>
     <el-divider class="title-divider" />
 
-    <!-- Sana, Tugash vaqti, Mavzusi -->
+    <!-- Sana, Boshlanish vaqti, Tugash vaqti, Mavzusi -->
     <el-row :gutter="24">
-      <el-col :span="8">
+      <el-col :span="6">
         <el-form-item :label="$t('event.executionDate')" prop="date" required>
           <el-date-picker v-model="form.date" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
         </el-form-item>
       </el-col>
-      <el-col :span="8">
-        <el-form-item :label="$t('event.endTime')" prop="end_time" required>
+      <el-col :span="6">
+        <el-form-item :label="$t('event.startTime')" prop="start_time" required>
+          <el-time-picker v-model="form.start_time" value-format="HH:mm" format="HH:mm" style="width: 100%" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="6">
+        <el-form-item :label="$t('event.endTime')" prop="end_time">
           <el-time-picker v-model="form.end_time" value-format="HH:mm" format="HH:mm" style="width: 100%" />
         </el-form-item>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <el-form-item :label="$t('event.subject')" prop="title" required>
           <el-input v-model="form.title" :placeholder="$t('event.subject')" />
         </el-form-item>
@@ -281,7 +286,7 @@ const deletedFileIds = ref<string[]>([])
 const rules: FormRules = {
   title: [{ required: true, message: () => t('common.required'), trigger: 'blur' }],
   date: [{ required: true, message: () => t('common.required'), trigger: 'change' }],
-  end_time: [{ required: true, message: () => t('common.required'), trigger: 'change' }],
+  start_time: [{ required: true, message: () => t('common.required'), trigger: 'change' }],
   type: [{ required: true, message: () => t('common.required'), trigger: 'change' }],
 }
 
@@ -408,8 +413,7 @@ watch(
 async function onSubmit() {
   if (!formRef.value) return
 
-  // Production'da yashirin field'lar uchun default
-  if (!form.start_time) form.start_time = '09:00'
+  // Default speaker — joriy foydalanuvchi
   if (!form.speaker_id && auth.user) form.speaker_id = auth.user.id
   if (!form.direction_id && auth.user?.direction_id) form.direction_id = auth.user.direction_id
   form.notify_time_list = [reminderMinutes.value]
@@ -418,11 +422,23 @@ async function onSubmit() {
   if (!valid) return
   if (form.participant_ids.length === 0) return
 
+  // end_time bo'sh bo'lsa — start_time + 1 soat (backend majburiy bo'lsa)
+  const dto = { ...form }
+  if (!dto.end_time && dto.start_time) {
+    dto.end_time = addOneHour(dto.start_time)
+  }
+
   emit('submit', {
-    dto: { ...form },
+    dto,
     files: newFiles.value.map((f) => f.raw as File).filter(Boolean),
     deletedFileIds: [...deletedFileIds.value],
   })
+}
+
+function addOneHour(time: string): string {
+  const [h, m] = time.split(':').map(Number)
+  const hh = (h + 1) % 24
+  return `${String(hh).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
 onMounted(async () => {

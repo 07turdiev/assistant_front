@@ -1,26 +1,27 @@
 <template>
-  <header class="app-header">
-    <!-- Chap: hamburger + vazirlik nomi -->
-    <div class="app-header__left">
-      <button class="hamburger" @click="$emit('toggle-sidebar')">
+  <header class="gc-header">
+    <!-- Chap: hamburger + brand -->
+    <div class="gc-header__brand">
+      <button class="icon-btn" @click="$emit('toggle-sidebar')" aria-label="Menu">
         <el-icon size="22"><Menu /></el-icon>
       </button>
-      <div class="ministry">
-        <span class="ministry__line">{{ $t('app.ministry1') }}</span>
-        <span class="ministry__line">{{ $t('app.ministry2') }}</span>
-      </div>
+      <router-link to="/" class="brand">
+        <el-icon class="brand__icon" size="32"><Calendar /></el-icon>
+        <span class="brand__name">Smart Assistant</span>
+      </router-link>
     </div>
 
-    <!-- Markaz: foydalanuvchi nomi va lavozimi -->
-    <div class="app-header__center">
-      <span v-if="auth.user" class="user-fullname">{{ fullNameWithFather }}</span>
-      <span v-if="positionLabel" class="user-position">— {{ positionLabel }}</span>
+    <!-- Markaz: sarlavha (joriy sahifa nomi yoki bo'sh) -->
+    <div class="gc-header__center">
+      <span v-if="auth.user" class="user-greeting">
+        {{ fullNameWithFather }}<span v-if="positionLabel"> · {{ positionLabel }}</span>
+      </span>
     </div>
 
-    <!-- O'ng: bildirishnoma + til + profil -->
-    <div class="app-header__right">
+    <!-- O'ng: bildirishnoma + til + apps + profil -->
+    <div class="gc-header__actions">
       <el-dropdown trigger="click" placement="bottom-end" :hide-on-click="false">
-        <button class="icon-btn">
+        <button class="icon-btn" aria-label="Notifications">
           <el-badge
             :value="notifications.unreadCount"
             :hidden="notifications.unreadCount === 0"
@@ -67,9 +68,13 @@
 
       <LangSwitch />
 
+      <button class="icon-btn" @click="goProfile" aria-label="Profile">
+        <el-icon size="22"><Setting /></el-icon>
+      </button>
+
       <el-dropdown trigger="click" placement="bottom-end">
-        <button class="profile-chip">
-          <el-avatar :size="36" :src="auth.user?.avatar_url || undefined">
+        <button class="profile-chip" aria-label="Account">
+          <el-avatar :size="32" :src="auth.user?.avatar_url || undefined">
             {{ initials }}
           </el-avatar>
         </button>
@@ -98,7 +103,7 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Bell, Menu, User, Edit, Setting, SwitchButton } from '@element-plus/icons-vue'
+import { Bell, Menu, User, Edit, Setting, SwitchButton, Calendar } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatTime } from '@/utils/date'
@@ -127,23 +132,13 @@ const initials = computed(() => {
   return `${auth.user.last_name?.[0] ?? ''}${auth.user.first_name?.[0] ?? ''}`.toUpperCase()
 })
 
-function goProfile() {
-  router.push({ name: 'profile' })
-}
-
-function goProfileEdit() {
-  router.push({ name: 'profile.edit' })
-}
-
-function goWebPushSettings() {
-  router.push({ name: 'notifications.settings' })
-}
+function goProfile() { router.push({ name: 'profile' }) }
+function goProfileEdit() { router.push({ name: 'profile.edit' }) }
+function goWebPushSettings() { router.push({ name: 'notifications.settings' }) }
 
 async function markAllRead() {
   const ids = notifications.items.filter((n) => !n.seen).map((n) => n.id)
-  if (ids.length > 0) {
-    await notifications.markRead(ids)
-  }
+  if (ids.length > 0) await notifications.markRead(ids)
 }
 
 async function onLogout() {
@@ -159,131 +154,148 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.app-header {
-  height: 64px;
+@use '@/assets/styles/variables.scss' as *;
+
+/* ============================================================
+   Google Calendar style header
+   ============================================================ */
+.gc-header {
+  height: $header-height;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: #fff;
-  border-bottom: 1px solid #ebeef5;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 0 16px;
+  background: $color-bg;
+  border-bottom: 1px solid $color-border-soft;
   flex-shrink: 0;
   z-index: 10;
   position: relative;
 
-  &__left {
+  &__brand {
     display: flex;
     align-items: center;
-    gap: 16px;
-    min-width: 280px;
+    gap: 8px;
+    min-width: 240px;
   }
 
   &__center {
     flex: 1;
-    text-align: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    padding: 0 16px;
-  }
-
-  &__right {
     display: flex;
     align-items: center;
-    gap: 14px;
-    min-width: 200px;
-    justify-content: flex-end;
+    justify-content: center;
+    padding: 0 24px;
+    overflow: hidden;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
   }
 }
 
-.hamburger {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: #5a6c7d;
-  padding: 8px;
-  border-radius: 6px;
-  transition: background 0.15s;
+.brand {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: $radius-sm;
+  text-decoration: none;
+  color: $color-text;
 
   &:hover {
-    background: #f5f7fa;
-    color: #1976d2;
+    background: $color-bg-hover;
+    text-decoration: none;
+  }
+
+  &__icon {
+    color: $color-primary;
+  }
+
+  &__name {
+    font-family: $font-family-product;
+    font-size: 22px;
+    font-weight: 400;
+    color: #5f6368;
+    letter-spacing: 0.05em;
   }
 }
 
-.ministry {
-  display: flex;
-  flex-direction: column;
-  font-size: 11px;
-  line-height: 1.3;
-  color: #5a6c7d;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+.user-greeting {
+  font-size: 14px;
+  color: $color-text-muted;
+  font-weight: 400;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.user-fullname {
-  font-size: 15px;
-  font-weight: 500;
-  color: #1f2d3d;
-}
-
-.user-position {
-  font-size: 13px;
-  color: #909399;
-  margin-left: 6px;
-}
-
+/* ============================================================
+   Action buttons (Google Material — circular + ripple-like hover)
+   ============================================================ */
 .icon-btn {
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #5a6c7d;
-  padding: 6px;
+  color: $color-text-muted;
   border-radius: 50%;
-  transition: all 0.15s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.12s ease, color 0.12s ease;
 
   &:hover {
-    background: #ecf5ff;
-    color: #1976d2;
+    background: $color-bg-hover;
+    color: $color-text;
+  }
+
+  &:active {
+    background: $color-border-soft;
   }
 }
 
 .profile-chip {
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
   cursor: pointer;
   padding: 0;
   border-radius: 50%;
-  transition: box-shadow 0.15s;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.15s ease;
+  margin-left: 4px;
 
   &:hover {
-    box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.2);
+    box-shadow: 0 0 0 4px $color-bg-hover;
   }
 }
 
+/* ============================================================
+   Notification dropdown
+   ============================================================ */
 .notify-dropdown {
   width: 360px;
   max-height: 480px;
   display: flex;
   flex-direction: column;
+  border-radius: $radius-md !important;
+  overflow: hidden;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 16px;
-    border-bottom: 1px solid #ebeef5;
+    padding: 12px 16px;
+    border-bottom: 1px solid $color-border-soft;
     font-weight: 500;
-    color: #1f2d3d;
+    color: $color-text;
+    font-size: 14px;
   }
 }
 
@@ -294,37 +306,56 @@ onMounted(async () => {
 }
 
 .notify-empty {
-  padding: 24px 16px;
-  color: #909399;
+  padding: 32px 16px;
+  color: $color-text-muted;
   text-align: center;
   font-size: 13px;
 }
 
 .notify-item {
-  padding: 10px 16px;
-  border-bottom: 1px solid #f5f7fa;
+  padding: 12px 16px;
+  border-bottom: 1px solid $color-border-soft;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background-color 0.12s ease;
+
+  &:last-child { border-bottom: none; }
 
   &:hover {
-    background: #f5f7fa;
+    background: $color-bg-hover;
   }
 
   &--unread {
-    background: #ecf5ff;
-    border-left: 3px solid #409eff;
+    background: $color-primary-soft;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $color-primary;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
   }
 
   &__title {
     font-size: 13px;
-    color: #1f2d3d;
+    color: $color-text;
     font-weight: 500;
+    line-height: 1.4;
   }
 
   &__time {
-    font-size: 11px;
-    color: #909399;
+    font-size: 12px;
+    color: $color-text-muted;
     margin-top: 2px;
   }
+}
+
+@media (max-width: 768px) {
+  .gc-header__center { display: none; }
+  .gc-header__brand { min-width: 0; }
+  .brand__name { display: none; }
 }
 </style>
