@@ -122,7 +122,7 @@ const UZ_CYR_DAYS_LONG = ['Якшанба', 'Душанба', 'Сешанба', 
 
 const uzLocale: LocaleInput = {
   code: 'uz',
-  week: { dow: 1, doy: 7 },
+  firstDay: 1,
   buttonText: {
     prev: 'Oldingi',
     next: 'Keyingi',
@@ -141,7 +141,7 @@ const uzLocale: LocaleInput = {
 
 const uzCyrlLocale: LocaleInput = {
   code: 'uz-Cyrl',
-  week: { dow: 1, doy: 7 },
+  firstDay: 1,
   buttonText: {
     prev: 'Олдинги',
     next: 'Кейинги',
@@ -160,7 +160,7 @@ const uzCyrlLocale: LocaleInput = {
 
 const ruLocale: LocaleInput = {
   code: 'ru',
-  week: { dow: 1, doy: 7 },
+  firstDay: 1,
   buttonText: {
     prev: 'Назад',
     next: 'Вперёд',

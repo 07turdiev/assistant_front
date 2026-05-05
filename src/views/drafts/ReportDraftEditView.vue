@@ -130,7 +130,7 @@ const statusType = computed(() => ({
   PUBLISHED: 'success',
   REJECTED: 'info',
   EXPIRED: 'danger',
-}[draft.value?.status as DraftStatus] || ''))
+}[draft.value?.status as DraftStatus] || undefined) as 'primary' | 'success' | 'warning' | 'info' | 'danger' | undefined)
 
 const statusLabel = computed(() => ({
   PENDING_REVIEW: 'Tahrir kutilmoqda',
