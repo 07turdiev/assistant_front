@@ -322,7 +322,9 @@
     "onHoliday": "Таътилда",
     "workTrip": "Командировкада",
     "dismissed": "Ишдан бўшаган",
-    "childcare": "Бола парваришида"
+    "childcare": "Бола парваришида",
+    "unavailableSelect": "{name} ҳозир {status} — уни белгилаб бўлмайди",
+    "unavailableHint": "Фойдаланувчи {status} бўлгани учун танлаш мумкин эмас"
   },
   "directionsPage": {
     "addTitle": "Йўналиш қўшиш",

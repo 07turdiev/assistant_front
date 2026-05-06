@@ -322,7 +322,9 @@
     "onHoliday": "В отпуске",
     "workTrip": "В командировке",
     "dismissed": "Уволен",
-    "childcare": "В декрете"
+    "childcare": "В декрете",
+    "unavailableSelect": "{name} сейчас {status} — назначить нельзя",
+    "unavailableHint": "Пользователь {status} — выбор недоступен"
   },
   "directionsPage": {
     "addTitle": "Добавить направление",

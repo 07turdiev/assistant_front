@@ -322,7 +322,9 @@
     "onHoliday": "Ta'tilda",
     "workTrip": "Komandirovkada",
     "dismissed": "Ishdan bo'shagan",
-    "childcare": "Bola parvarishida"
+    "childcare": "Bola parvarishida",
+    "unavailableSelect": "{name} hozir {status} — uni belgilab bo'lmaydi",
+    "unavailableHint": "Foydalanuvchi {status} bo'lgani uchun tanlash mumkin emas"
   },
   "directionsPage": {
     "addTitle": "Yo'nalish qo'shish",

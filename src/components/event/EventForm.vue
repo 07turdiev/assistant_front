@@ -161,7 +161,11 @@
           :class="{
             'is-selected': form.participant_ids.includes(u.id),
             'is-subordinate': u.chief_id && form.participant_ids.includes(u.chief_id),
+            'is-unavailable': !isUserAvailable(u) && !form.participant_ids.includes(u.id),
           }"
+          :title="!isUserAvailable(u)
+            ? $t('userStatus.unavailableHint', { status: statusLabel(u.status) })
+            : ''"
           @click="toggleParticipant(u)"
         >
           <el-avatar :size="36" :src="u.avatar_url || undefined" class="participant-row__avatar">
@@ -172,7 +176,17 @@
             <span v-if="u.position_uz" class="participant-row__position">{{ u.position_uz }}</span>
           </div>
           <el-tag
-            v-if="u.chief_id && form.participant_ids.includes(u.chief_id)"
+            v-if="!isUserAvailable(u)"
+            size="small"
+            type="warning"
+            effect="light"
+            class="participant-row__badge participant-row__status-tag"
+          >
+            <el-icon class="status-tag__icon"><Lock /></el-icon>
+            {{ statusLabel(u.status) }}
+          </el-tag>
+          <el-tag
+            v-else-if="u.chief_id && form.participant_ids.includes(u.chief_id)"
             size="small"
             type="success"
             effect="plain"
@@ -198,16 +212,16 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue'
-import type { FormInstance, FormRules, UploadFile } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Check, DocumentAdd, Search, User as UserIcon } from '@element-plus/icons-vue'
+import { Check, DocumentAdd, Lock, Search, User as UserIcon } from '@element-plus/icons-vue'
 import { useLookupStore } from '@/stores/lookup'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
 import { adminDirectionsApi, adminOrganisationsApi, type Direction, type Organisation } from '@/api/admin'
 import { fullName } from '@/utils/format'
 import type { Event, Visitor, Attachment } from '@/types/event'
-import type { User } from '@/types/user'
+import type { User, UserStatus } from '@/types/user'
 
 interface FormShape {
   title: string
@@ -298,6 +312,28 @@ function initials(u: User): string {
   return `${u.last_name?.[0] || ''}${u.first_name?.[0] || ''}`.toUpperCase()
 }
 
+// Tanlanishi mumkin bo'lmagan statuslar — ta'tilda, ishdan bo'shagan, bola parvarishida
+const UNAVAILABLE_STATUSES: ReadonlyArray<UserStatus> = [
+  'ON_HOLIDAY',
+  'DISMISSED',
+  'IN_CHILDHOOD_RAISING',
+]
+
+function isUserAvailable(u: User | null | undefined): boolean {
+  if (!u) return true
+  return !UNAVAILABLE_STATUSES.includes(u.status)
+}
+
+function statusLabel(status: UserStatus): string {
+  switch (status) {
+    case 'ON_HOLIDAY': return t('userStatus.onHoliday')
+    case 'WORK_TRIP': return t('userStatus.workTrip')
+    case 'DISMISSED': return t('userStatus.dismissed')
+    case 'IN_CHILDHOOD_RAISING': return t('userStatus.childcare')
+    default: return t('userStatus.atWork')
+  }
+}
+
 let participantTimer: number | null = null
 function onParticipantSearch() {
   if (participantTimer) clearTimeout(participantTimer)
@@ -324,19 +360,29 @@ async function reloadParticipants() {
   }
 }
 
-/** Foydalanuvchi tanlanganda — uning yordamchilarini fetch va auto-add qilish. */
+/** Foydalanuvchi tanlanganda — uning yordamchilarini fetch va ro'yxatga suggestion qilish. */
 async function fetchAndShowSubordinates(userId: string) {
   try {
     const { data } = await usersApi.subordinates(userId)
     if (data.length === 0) return
     for (const sub of data) {
       participantMap.value[sub.id] = sub
-      // Subordinatlar suggestion sifatida participantOptions ga qo'shamiz (top'da bo'lsin)
+      // Subordinatlar suggestion sifatida participantOptions ga qo'shamiz (top'da bo'lsin) —
+      // ta'til/dismissed bo'lganlar ham ko'rinadi, lekin status tag bilan bloklangan
       if (!participantOptions.value.find((u) => u.id === sub.id)) {
         participantOptions.value.unshift(sub)
       }
     }
   } catch (_e) { /* ignore */ }
+}
+
+function notifyUnavailable(u: User) {
+  ElMessage.warning(
+    t('userStatus.unavailableSelect', {
+      name: formatUser(u),
+      status: statusLabel(u.status),
+    }),
+  )
 }
 
 async function loadLookups() {
@@ -352,12 +398,18 @@ function toggleParticipant(u: User) {
   participantMap.value[u.id] = u
   const i = form.participant_ids.indexOf(u.id)
   if (i >= 0) {
+    // Tanlanganlarni har doim olib tashlash mumkin — bloklamaymiz
     form.participant_ids.splice(i, 1)
-  } else {
-    form.participant_ids.push(u.id)
-    // Tanlangan foydalanuvchining yordamchilarini ro'yxatga qo'shamiz (production'dagidek)
-    fetchAndShowSubordinates(u.id)
+    return
   }
+  // Yangi tanlash — status tekshiruvi
+  if (!isUserAvailable(u)) {
+    notifyUnavailable(u)
+    return
+  }
+  form.participant_ids.push(u.id)
+  // Tanlangan foydalanuvchining yordamchilarini ro'yxatga qo'shamiz (production'dagidek)
+  fetchAndShowSubordinates(u.id)
 }
 
 function removeParticipant(id: string) {
@@ -699,6 +751,51 @@ onMounted(async () => {
     border-left: 3px solid #67c23a;
     padding-left: 9px;
     border-radius: 0 8px 8px 0;
+  }
+
+  /* Tanlanishi mumkin bo'lmagan foydalanuvchilar (ta'tilda, ishdan bo'shagan, bola parvarishida) */
+  &.is-unavailable {
+    background: #fafafa;
+    cursor: not-allowed;
+
+    .participant-row__avatar {
+      filter: grayscale(0.6);
+      opacity: 0.7;
+    }
+
+    .participant-row__name {
+      color: #909399;
+      text-decoration: line-through;
+      text-decoration-color: rgba(144, 147, 153, 0.5);
+      text-decoration-thickness: 1px;
+    }
+
+    .participant-row__position {
+      color: #c0c4cc;
+    }
+
+    .participant-row__check {
+      border-color: #f0a020;
+      background: rgba(240, 160, 32, 0.08);
+    }
+
+    &:hover {
+      background: #fef6ec;
+    }
+
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+.participant-row__status-tag {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+
+  .status-tag__icon {
+    font-size: 11px;
   }
 }
 
