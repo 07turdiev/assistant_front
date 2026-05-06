@@ -14,14 +14,14 @@
         v-model="filters.search"
         :placeholder="$t('common.search')"
         clearable
-        style="width: 240px"
+        class="filter-input filter-input--search"
         @input="onSearch"
       />
       <el-select
         v-model="filters.role"
         :placeholder="$t('admin.filterRole')"
         clearable
-        style="width: 200px"
+        class="filter-input filter-input--role"
         @change="reload"
       >
         <el-option v-for="r in lookup.roles" :key="r.value" :label="r.label" :value="r.value" />
@@ -30,7 +30,7 @@
         v-model="filters.enabled"
         :placeholder="$t('admin.filterEnabled')"
         clearable
-        style="width: 160px"
+        class="filter-input filter-input--enabled"
         @change="reload"
       >
         <el-option :label="$t('common.yes')" :value="true" />
@@ -324,15 +324,43 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .filters {
   display: flex;
   gap: 12px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
+.filter-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.filter-input--search { max-width: 240px; }
+.filter-input--role { max-width: 200px; }
+.filter-input--enabled { max-width: 160px; }
 .pagination {
   margin-top: 16px;
   justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+  :deep(.el-card__header) {
+    padding: 12px 14px;
+  }
+  :deep(.el-card__body) {
+    padding: 12px;
+  }
+  .filter-input--search,
+  .filter-input--role,
+  .filter-input--enabled {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+  .pagination {
+    justify-content: center;
+  }
 }
 
 /* ============================================================

@@ -1,16 +1,33 @@
 <template>
-  <div class="app-shell">
-    <AppHeader />
+  <div class="app-shell" :class="{ 'is-mobile': isMobile }">
+    <AppHeader
+      :show-menu-button="auth.isAuthenticated && isMobile"
+      :show-right-panel-button="auth.isAuthenticated && isMobile"
+      :right-panel-badge="rightPanelBadgeCount"
+      @toggle-sidebar="toggleSidebar"
+      @toggle-right-panel="toggleRightPanel"
+    />
 
     <div class="app-body">
+      <!-- Sidebar — desktop'da inline, mobile'da slide-in drawer -->
       <AppSidebar
-        :collapsed="sidebarCollapsed"
+        :collapsed="!isMobile && sidebarCollapsed"
+        :mobile-open="isMobile && sidebarOpen"
+        :is-mobile="isMobile"
         @toggle="sidebarCollapsed = !sidebarCollapsed"
+        @navigate="closeMobileDrawers"
       />
 
-      <!-- Sidebar va main orasida — chap chiziqda joylashgan toggle "tab" -->
+      <!-- Mobile sidebar backdrop -->
+      <div
+        v-if="isMobile && sidebarOpen"
+        class="mobile-backdrop"
+        @click="sidebarOpen = false"
+      />
+
+      <!-- Sidebar va main orasida — chap chiziqda joylashgan toggle "tab" (faqat desktop) -->
       <button
-        v-if="auth.isAuthenticated"
+        v-if="auth.isAuthenticated && !isMobile"
         class="sidebar-edge-toggle"
         :class="{ 'is-collapsed': sidebarCollapsed }"
         type="button"
@@ -29,13 +46,28 @@
         <slot />
       </main>
 
-      <RightPanel v-if="auth.isAuthenticated" />
+      <!-- Right panel — desktop'da inline, mobile'da slide-in drawer -->
+      <RightPanel
+        v-if="auth.isAuthenticated"
+        :is-mobile="isMobile"
+        :mobile-open="isMobile && rightPanelOpen"
+        @close="rightPanelOpen = false"
+        @badge-count="rightPanelBadgeCount = $event"
+      />
+
+      <!-- Mobile right-panel backdrop -->
+      <div
+        v-if="isMobile && rightPanelOpen"
+        class="mobile-backdrop"
+        @click="rightPanelOpen = false"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
@@ -53,10 +85,55 @@ const notifications = useNotificationsStore()
 const chat = useChatStore()
 const lookup = useLookupStore()
 const webpush = useWebPushStore()
+const route = useRoute()
+
+const MOBILE_BREAKPOINT = 768
 
 const sidebarCollapsed = ref(false)
+const sidebarOpen = ref(false)
+const rightPanelOpen = ref(false)
+const rightPanelBadgeCount = ref(0)
+const isMobile = ref(
+  typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT,
+)
 
 useAppWebSocket()
+
+function updateViewport() {
+  const w = window.innerWidth
+  const wasMobile = isMobile.value
+  isMobile.value = w < MOBILE_BREAKPOINT
+  // Desktop'ga o'tilganda mobile drawerlarni yopamiz
+  if (wasMobile && !isMobile.value) {
+    sidebarOpen.value = false
+    rightPanelOpen.value = false
+  }
+}
+
+function toggleSidebar() {
+  if (isMobile.value) sidebarOpen.value = !sidebarOpen.value
+  else sidebarCollapsed.value = !sidebarCollapsed.value
+}
+
+function toggleRightPanel() {
+  rightPanelOpen.value = !rightPanelOpen.value
+}
+
+function closeMobileDrawers() {
+  if (isMobile.value) {
+    sidebarOpen.value = false
+    rightPanelOpen.value = false
+  }
+}
+
+// Yo'nalish o'zgarganda mobile drawerlarni yopamiz
+watch(() => route.fullPath, closeMobileDrawers)
+
+// Drawer ochiq turganda body scroll'ni bloklaymiz
+watch([sidebarOpen, rightPanelOpen, isMobile], () => {
+  const lock = isMobile.value && (sidebarOpen.value || rightPanelOpen.value)
+  document.body.style.overflow = lock ? 'hidden' : ''
+})
 
 async function bootstrap() {
   if (!auth.isAuthenticated) return
@@ -68,7 +145,16 @@ async function bootstrap() {
   ])
 }
 
-onMounted(bootstrap)
+onMounted(() => {
+  updateViewport()
+  window.addEventListener('resize', updateViewport)
+  bootstrap()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewport)
+  document.body.style.overflow = ''
+})
 
 watch(
   () => auth.isAuthenticated,
@@ -85,6 +171,7 @@ watch(
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; // dynamic viewport — mobile browser address-bar uchun
   background: $color-bg;
 }
 
@@ -98,8 +185,10 @@ watch(
 .app-main {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px 24px 24px;
   background: $color-bg-soft;
+  min-width: 0; // flex child overflow oldini olish
 }
 
 /* Sidebar va main orasidagi floating toggle — chiroyli ovalsimon "tab" */
@@ -148,4 +237,27 @@ watch(
   }
 }
 
+/* Mobile drawer backdrop */
+.mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 90;
+  animation: fade-in 0.2s ease;
+  backdrop-filter: blur(2px);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
+   Mobile (< 768px)
+   ============================================================ */
+@include mobile {
+  .app-main {
+    padding: 12px 12px 80px; // bottom padding for safe-area / floating buttons
+  }
+}
 </style>

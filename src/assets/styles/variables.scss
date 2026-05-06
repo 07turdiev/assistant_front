@@ -56,5 +56,28 @@ $font-family-product: 'Google Sans Display', 'Google Sans', system-ui, sans-seri
 
 // Layout
 $header-height: 64px;
+$header-height-mobile: 56px;
 $sidebar-width: 256px;
 $sidebar-width-collapsed: 72px;
+$right-panel-width: 320px;
+
+// ============================================================
+// Responsive breakpoints
+// ============================================================
+$bp-xs: 480px;     // small phones
+$bp-sm: 640px;     // large phones
+$bp-md: 768px;     // tablets (portrait) — mobile breakpoint
+$bp-lg: 1024px;    // tablets (landscape) / small laptops
+$bp-xl: 1280px;    // desktops
+$bp-2xl: 1536px;   // large desktops
+
+// Convenience media query mixins
+@mixin mobile {
+  @media (max-width: #{$bp-md - 1px}) { @content; }
+}
+@mixin tablet {
+  @media (max-width: #{$bp-lg - 1px}) { @content; }
+}
+@mixin desktop {
+  @media (min-width: $bp-lg) { @content; }
+}

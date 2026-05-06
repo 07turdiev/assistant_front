@@ -14,8 +14,11 @@
 </script>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/variables.scss' as *;
+
 .auth-layout {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,6 +47,27 @@
       margin: 0;
       font-size: 14px;
       color: #5a6c7d;
+    }
+  }
+}
+
+@include mobile {
+  .auth-layout {
+    padding: 12px;
+    align-items: flex-start;
+    padding-top: 32px;
+
+    &__panel {
+      padding: 28px 20px;
+      border-radius: 14px;
+    }
+
+    &__brand {
+      margin-bottom: 24px;
+
+      h1 {
+        font-size: 20px;
+      }
     }
   }
 }

@@ -39,6 +39,30 @@ body,
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+// Mobil qurilmalarda 16px input — iOS auto-zoom oldini olish uchun
+@media (max-width: #{$bp-md - 1px}) {
+  input,
+  textarea,
+  select,
+  .el-input__inner,
+  .el-textarea__inner {
+    font-size: 16px !important;
+  }
+}
+
+// Mobile uchun thinner scrollbarlar
+@media (max-width: #{$bp-md - 1px}) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 1px solid transparent;
+  }
 }
 
 a {
@@ -125,4 +149,65 @@ button {
 
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+// ============================================================
+// Mobile responsive overrides — Element Plus va umumiy yordamchilar
+// ============================================================
+@media (max-width: #{$bp-md - 1px}) {
+  // Dialog'lar mobile'da deyarli butun ekran kengligini egallaydi
+  .el-overlay-dialog .el-dialog {
+    width: calc(100vw - 24px) !important;
+    max-width: 520px;
+    margin: 12px auto !important;
+  }
+
+  // Drawer va dialog ichida horizontal scroll oldini olish
+  .el-dialog__body,
+  .el-drawer__body {
+    word-break: break-word;
+    overflow-x: hidden;
+  }
+
+  // Pagination oddiyroq layout
+  .el-pagination {
+    flex-wrap: wrap;
+    justify-content: center !important;
+
+    .el-pagination__total,
+    .el-pagination__sizes,
+    .el-pagination__jump {
+      display: none !important;
+    }
+  }
+
+  // Element Plus jadvallari mobile'da gorizontal scroll
+  .el-table {
+    font-size: 13px;
+  }
+
+  // ElMessageBox kichikroq
+  .el-message-box {
+    width: calc(100vw - 32px) !important;
+    max-width: 420px;
+  }
+
+  // Notify dropdownni 100% ekran kengligida
+  .notify-dropdown {
+    width: calc(100vw - 24px) !important;
+    max-width: 360px;
+  }
+}
+
+// Yordamchi sinflar
+.mobile-only {
+  display: none !important;
+}
+.desktop-only {
+  display: initial;
+}
+
+@media (max-width: #{$bp-md - 1px}) {
+  .mobile-only { display: initial !important; }
+  .desktop-only { display: none !important; }
 }

@@ -3,7 +3,7 @@
     <h1>{{ $t('dashboard.welcome', { name: fullName }) }}</h1>
 
     <el-row :gutter="16" class="dashboard__stats">
-      <el-col :span="6">
+      <el-col :xs="12" :sm="12" :md="6" :lg="6">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.tasks') }}</span>
@@ -11,7 +11,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="12" :sm="12" :md="6" :lg="6">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.requests') }}</span>
@@ -19,7 +19,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="12" :sm="12" :md="6" :lg="6">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.unreadChat') }}</span>
@@ -27,7 +27,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :xs="12" :sm="12" :md="6" :lg="6">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.notifications') }}</span>
@@ -74,6 +74,8 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/variables.scss' as *;
+
 .dashboard {
   h1 {
     margin: 0 0 24px;
@@ -83,6 +85,7 @@ onMounted(async () => {
 
   &__stats {
     margin-bottom: 24px;
+    row-gap: 12px;
   }
 
   &__placeholder {
@@ -103,6 +106,23 @@ onMounted(async () => {
     font-size: 28px;
     font-weight: 600;
     color: #1f2d3d;
+  }
+}
+
+@include mobile {
+  .dashboard {
+    h1 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    &__stats {
+      margin-bottom: 16px;
+    }
+  }
+
+  .stat__value {
+    font-size: 22px;
   }
 }
 </style>

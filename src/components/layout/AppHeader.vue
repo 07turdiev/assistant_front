@@ -1,5 +1,16 @@
 <template>
   <header class="gc-header">
+    <!-- Mobile hamburger -->
+    <button
+      v-if="showMenuButton"
+      class="icon-btn icon-btn--menu"
+      type="button"
+      aria-label="Menu"
+      @click="$emit('toggle-sidebar')"
+    >
+      <el-icon size="22"><Menu /></el-icon>
+    </button>
+
     <!-- Chap: brand -->
     <div class="gc-header__brand">
       <router-link to="/" class="brand">
@@ -63,9 +74,9 @@
         </template>
       </el-dropdown>
 
-      <LangSwitch />
+      <LangSwitch class="lang-switch" />
 
-      <button class="icon-btn" @click="goProfile" aria-label="Profile">
+      <button class="icon-btn icon-btn--settings" @click="goProfile" aria-label="Profile">
         <el-icon size="22"><Setting /></el-icon>
       </button>
 
@@ -92,6 +103,23 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+
+      <!-- Mobile right-panel toggle -->
+      <button
+        v-if="showRightPanelButton"
+        class="icon-btn icon-btn--right-panel"
+        type="button"
+        aria-label="Open chat panel"
+        @click="$emit('toggle-right-panel')"
+      >
+        <el-badge
+          :value="rightPanelBadge"
+          :hidden="rightPanelBadge === 0"
+          :max="99"
+        >
+          <el-icon size="22"><ChatLineRound /></el-icon>
+        </el-badge>
+      </button>
     </div>
   </header>
 </template>
@@ -100,13 +128,25 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Bell, User, Edit, Setting, SwitchButton } from '@element-plus/icons-vue'
+import { Bell, ChatLineRound, Edit, Menu, Setting, SwitchButton, User } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatTime } from '@/utils/date'
 import LangSwitch from '@/components/common/LangSwitch.vue'
 
-defineEmits<{ 'toggle-sidebar': [] }>()
+withDefaults(
+  defineProps<{
+    showMenuButton?: boolean
+    showRightPanelButton?: boolean
+    rightPanelBadge?: number
+  }>(),
+  { showMenuButton: false, showRightPanelButton: false, rightPanelBadge: 0 },
+)
+
+defineEmits<{
+  'toggle-sidebar': []
+  'toggle-right-panel': []
+}>()
 
 const auth = useAuthStore()
 const notifications = useNotificationsStore()
@@ -166,6 +206,7 @@ onMounted(async () => {
   flex-shrink: 0;
   z-index: 10;
   position: relative;
+  gap: 4px;
 
   &__brand {
     display: flex;
@@ -247,6 +288,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   transition: background-color 0.12s ease, color 0.12s ease;
+  flex-shrink: 0;
 
   &:hover {
     background: $color-bg-hover;
@@ -271,6 +313,7 @@ onMounted(async () => {
   justify-content: center;
   transition: box-shadow 0.15s ease;
   margin-left: 4px;
+  flex-shrink: 0;
 
   &:hover {
     box-shadow: 0 0 0 4px $color-bg-hover;
@@ -287,17 +330,17 @@ onMounted(async () => {
   flex-direction: column;
   border-radius: $radius-md !important;
   overflow: hidden;
+}
 
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid $color-border-soft;
-    font-weight: 500;
-    color: $color-text;
-    font-size: 14px;
-  }
+:deep(.notify-dropdown__header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid $color-border-soft;
+  font-weight: 500;
+  color: $color-text;
+  font-size: 14px;
 }
 
 .notify-list {
@@ -354,9 +397,67 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 768px) {
+/* ============================================================
+   Tablet (< 1024px)
+   ============================================================ */
+@media (max-width: 1023px) {
   .gc-header__center { display: none; }
   .gc-header__brand { min-width: 0; }
-  .brand__name { display: none; }
+}
+
+/* ============================================================
+   Mobile (< 768px)
+   ============================================================ */
+@include mobile {
+  .gc-header {
+    height: $header-height-mobile;
+    padding: 0 8px;
+  }
+
+  .brand {
+    padding: 2px 4px;
+    gap: 6px;
+
+    &__icon {
+      width: 28px;
+      height: 28px;
+    }
+
+    &__name {
+      font-size: 16px;
+      letter-spacing: 0.02em;
+      // Juda kichik ekranlarda yashiramiz
+      @media (max-width: #{$bp-xs}) {
+        display: none;
+      }
+    }
+  }
+
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+
+    // Settings (gear) tugmasini mobile'da yashiramiz — profil dropdown'da bor
+    &--settings {
+      display: none;
+    }
+  }
+
+  .profile-chip {
+    margin-left: 0;
+    width: 38px;
+    height: 38px;
+  }
+
+  .lang-switch {
+    // Til switcherini juda kichik ekranlarda yashiramiz
+    @media (max-width: #{$bp-xs}) {
+      display: none;
+    }
+  }
+
+  .gc-header__actions {
+    gap: 0;
+  }
 }
 </style>

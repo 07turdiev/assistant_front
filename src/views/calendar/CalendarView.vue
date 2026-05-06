@@ -1011,12 +1011,73 @@ $shadow-event-hover: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 @media (max-width: 720px) {
-  .cal-toolbar__left { width: 100%; }
-  .cal-toolbar__center { width: 100%; }
+  .cal-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .cal-toolbar__left {
+    width: 100%;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .cal-toolbar__center {
+    width: 100%;
+
+    :deep(.el-segmented) {
+      width: 100%;
+    }
+  }
+  .cal-toolbar__right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .cal-toolbar .cal-title {
+    font-size: 15px;
+    flex: 1 1 auto;
+  }
+  .cal-toolbar .today-btn {
+    min-width: auto;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .stats-strip {
+    padding: 8px 10px;
+    gap: 6px;
+  }
   .stats-strip .stat__label { display: none; }
+  .stat {
+    padding: 4px 10px;
+  }
+
+  .cal-card {
+    padding: 8px;
+    min-height: 380px;
+    border-radius: 8px;
+  }
 
   :deep(.fc-daygrid-day-frame) { min-height: 64px; }
+  :deep(.fc-daygrid-day-number) {
+    font-size: 12px;
+    padding: 4px 6px 2px;
+  }
   :deep(.ev-pill) { padding: 2px 6px; font-size: 11px; }
   :deep(.ev-pill .ev-time) { display: none; }
+  :deep(.fc-col-header-cell-cushion) {
+    font-size: 10px;
+    padding: 6px 2px;
+  }
+  :deep(.fc-timegrid-slot) { height: 32px; }
+  :deep(.fc-timegrid-slot-label-cushion) { font-size: 10px; padding: 0 4px; }
+
+  /* Multi-month yil view kichikroq */
+  :deep(.fc-multimonth-month) { padding: 8px 8px 10px; }
+  :deep(.fc-multimonth-title) { font-size: 14px; padding: 4px 8px; }
+  :deep(.fc-multimonth-daygrid-table) { font-size: 11px; }
+  :deep(.fc-multimonth-daygrid-table td) { height: 28px; }
+}
+
+@media (max-width: 480px) {
+  .cal-toolbar .cal-title { font-size: 14px; }
+  :deep(.fc-daygrid-day-frame) { min-height: 52px; }
 }
 </style>

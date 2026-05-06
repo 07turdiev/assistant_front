@@ -1,5 +1,12 @@
 <template>
-  <aside class="gc-sidebar" :class="{ 'gc-sidebar--collapsed': collapsed }">
+  <aside
+    class="gc-sidebar"
+    :class="{
+      'gc-sidebar--collapsed': collapsed,
+      'gc-sidebar--mobile': isMobile,
+      'gc-sidebar--mobile-open': isMobile && mobileOpen,
+    }"
+  >
     <!-- Create button — accordion-style (pastga ochiladi, navigatsiyani suradi) -->
     <div v-if="canCreate" class="create-wrap">
       <button
@@ -75,6 +82,7 @@
         class="nav-item"
         :class="{ 'nav-item--active': isActive(item.path) }"
         :title="collapsed ? $t(item.label) : ''"
+        @click="emit('navigate')"
       >
         <el-icon class="nav-item__icon"><component :is="item.icon" /></el-icon>
         <span v-if="!collapsed" class="nav-item__label">{{ $t(item.label) }}</span>
@@ -94,6 +102,7 @@
           class="nav-item"
           :class="{ 'nav-item--active': isActive(item.path) }"
           :title="collapsed ? $t(item.label) : ''"
+          @click="emit('navigate')"
         >
           <el-icon class="nav-item__icon"><component :is="item.icon" /></el-icon>
           <span v-if="!collapsed" class="nav-item__label">{{ $t(item.label) }}</span>
@@ -143,8 +152,15 @@ import { useAuthStore } from '@/stores/auth'
 import { reportsApi } from '@/api/reports'
 import { showApiError } from '@/utils/api-error'
 
-const props = defineProps<{ collapsed: boolean }>()
-const emit = defineEmits<{ toggle: [] }>()
+const props = withDefaults(
+  defineProps<{
+    collapsed: boolean
+    isMobile?: boolean
+    mobileOpen?: boolean
+  }>(),
+  { isMobile: false, mobileOpen: false },
+)
+const emit = defineEmits<{ toggle: []; navigate: [] }>()
 
 function onCollapsedCreateClick() {
   // Sidebar yopiq bo'lsa avval ochamiz, keyin accordion ham ochiladi
@@ -251,14 +267,45 @@ async function onCreateSubmit() {
   flex-direction: column;
   padding: 8px;
   gap: 4px;
-  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 
   &--collapsed {
     width: $sidebar-width-collapsed;
     padding: 8px 4px;
     align-items: center;
+  }
+
+  /* ============================================================
+     Mobile drawer mode — fixed slide-in from left
+     ============================================================ */
+  &--mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;
+    width: min(82vw, 300px);
+    padding: 12px 8px;
+    z-index: 100;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+    align-items: stretch;
+
+    &.gc-sidebar--mobile-open {
+      transform: translateX(0);
+    }
+
+    /* Mobile drawer'da collapsed state'ni o'chiramiz — har doim to'liq ko'rinishda */
+    &.gc-sidebar--collapsed {
+      width: min(82vw, 300px);
+      padding: 12px 8px;
+      align-items: stretch;
+    }
   }
 }
 

@@ -1,5 +1,19 @@
 <template>
-  <aside class="right-panel">
+  <aside
+    class="right-panel"
+    :class="{
+      'right-panel--mobile': isMobile,
+      'right-panel--mobile-open': isMobile && mobileOpen,
+    }"
+  >
+    <!-- Mobile header with close button -->
+    <div v-if="isMobile" class="mobile-header">
+      <span class="mobile-header__title">{{ activeTabLabel }}</span>
+      <button class="mobile-header__close" type="button" @click="$emit('close')" aria-label="Close">
+        <el-icon size="22"><Close /></el-icon>
+      </button>
+    </div>
+
     <!-- Tabs -->
     <div class="tabs">
       <button
@@ -197,7 +211,7 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Promotion } from '@element-plus/icons-vue'
+import { ArrowLeft, Close, Promotion } from '@element-plus/icons-vue'
 import { usersApi } from '@/api/users'
 import { chatApi } from '@/api/chat'
 import { reportsApi } from '@/api/reports'
@@ -213,6 +227,19 @@ import type { ChatMessage } from '@/types/chat'
 import ReportDetailPanel from './ReportDetailPanel.vue'
 
 type TabKey = 'chat' | 'task' | 'request'
+
+withDefaults(
+  defineProps<{
+    isMobile?: boolean
+    mobileOpen?: boolean
+  }>(),
+  { isMobile: false, mobileOpen: false },
+)
+
+const emit = defineEmits<{
+  close: []
+  'badge-count': [value: number]
+}>()
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -275,6 +302,14 @@ const tabs = computed(() => [
     count: requestsAll.value.filter((r) => !r.reply).length,
   },
 ])
+
+const activeTabLabel = computed(
+  () => tabs.value.find((tb) => tb.key === activeTab.value)?.label || '',
+)
+
+const totalBadge = computed(() => tabs.value.reduce((sum, tb) => sum + tb.count, 0))
+
+watch(totalBadge, (val) => emit('badge-count', val), { immediate: true })
 
 function formatUser(u: User | null | undefined): string {
   return u ? fullName(u) : '—'
@@ -499,6 +534,8 @@ onMounted(refreshAll)
 </script>
 
 <style lang="scss" scoped>
+@use '@/assets/styles/variables.scss' as *;
+
 .right-panel {
   width: 320px;
   background: #fff;
@@ -507,6 +544,60 @@ onMounted(refreshAll)
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ============================================================
+     Mobile drawer mode — fixed slide-in from right
+     ============================================================ */
+  &--mobile {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;
+    width: min(92vw, 360px);
+    z-index: 100;
+    transform: translateX(100%);
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
+    border-left: none;
+  }
+
+  &--mobile-open {
+    transform: translateX(0);
+  }
+}
+
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid #ebeef5;
+  flex-shrink: 0;
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2d3d;
+  }
+
+  &__close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #5a6c7d;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+
+    &:hover { background: #f1f3f4; }
+    &:active { background: #e8eaed; }
+  }
 }
 
 .tabs {
@@ -671,9 +762,37 @@ onMounted(refreshAll)
   gap: 6px;
   padding: 10px 12px;
   border-top: 1px solid #ebeef5;
+  flex-shrink: 0;
 
   > .el-textarea {
     flex: 1;
+  }
+}
+
+/* ============================================================
+   Mobile tuning
+   ============================================================ */
+@include mobile {
+  .right-panel:not(.right-panel--mobile) {
+    display: none;
+  }
+
+  .tabs {
+    padding: 10px;
+    gap: 4px;
+  }
+
+  .tab {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .row {
+    padding: 12px 14px;
+  }
+
+  .bubble {
+    max-width: 88%;
   }
 }
 </style>
