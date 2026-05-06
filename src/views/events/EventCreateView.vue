@@ -18,6 +18,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import EventForm from '@/components/event/EventForm.vue'
 import { eventsApi } from '@/api/events'
+import { showApiError } from '@/utils/api-error'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -62,8 +63,7 @@ async function onSubmit(payload: SubmitPayload) {
     ElMessage.success(t('common.success'))
     router.push({ name: 'events.detail', params: { id: data.id } })
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     submitting.value = false
   }

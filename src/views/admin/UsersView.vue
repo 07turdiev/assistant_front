@@ -152,6 +152,7 @@ import { CaretBottom, Check, Edit, Delete, Key, Loading } from '@element-plus/ic
 import { adminUsersApi } from '@/api/admin'
 import { useLookupStore } from '@/stores/lookup'
 import type { User } from '@/types/user'
+import { extractApiError, showApiError } from '@/utils/api-error'
 
 type UserStatus = 'AT_WORK' | 'ON_HOLIDAY' | 'WORK_TRIP' | 'DISMISSED' | 'IN_CHILDHOOD_RAISING'
 
@@ -217,8 +218,7 @@ async function onChangeStatus(row: User, newStatus: UserStatus) {
     row.status = newStatus
     ElMessage.success(t('common.success'))
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     statusUpdatingId.value = null
   }
@@ -247,8 +247,8 @@ async function reload() {
     const { data } = await adminUsersApi.list(params as never)
     users.value = data.results
     total.value = data.count
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -273,8 +273,7 @@ async function onToggleEnabled(row: User) {
     await adminUsersApi.patch(row.id, { enabled: !row.enabled })
     row.enabled = !row.enabled
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     togglingId.value = null
   }
@@ -291,8 +290,8 @@ async function onResetPassword(row: User) {
     } else {
       ElMessage.success(t('common.success'))
     }
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 
@@ -305,16 +304,12 @@ async function onDelete(row: User) {
     ElMessage.success(t('common.success'))
     await reload()
   } catch (e: unknown) {
-    const err = e as { response?: { status?: number; data?: { message?: string } } }
-    const msg = err.response?.data?.message
-    if (msg) {
-      ElMessageBox.alert(msg, t('common.error'), {
-        type: 'warning',
-        confirmButtonText: t('common.confirm'),
-      })
-    } else {
-      ElMessage.error(t('common.error'))
-    }
+    const msg = extractApiError(e, t('common.error'))
+    ElMessageBox.alert(msg.replace(/\n/g, '<br>'), t('common.error'), {
+      type: 'warning',
+      confirmButtonText: t('common.confirm'),
+      dangerouslyUseHTMLString: msg.includes('\n'),
+    })
   }
 }
 

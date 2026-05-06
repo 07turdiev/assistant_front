@@ -119,6 +119,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { adminRegionsApi, type Region, type District } from '@/api/admin'
+import { showApiError } from '@/utils/api-error'
 
 const { t } = useI18n()
 
@@ -147,6 +148,8 @@ async function loadRegions() {
   try {
     const { data } = await adminRegionsApi.list()
     regions.value = data
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loadingRegions.value = false
   }
@@ -157,6 +160,8 @@ async function loadDistricts(regionId: number) {
   try {
     const { data } = await adminRegionsApi.districts(regionId)
     districts.value = data
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loadingDistricts.value = false
   }
@@ -191,8 +196,8 @@ async function onSaveRegion() {
     ElMessage.success(t('common.success'))
     regionDialog.visible = false
     await loadRegions()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     regionDialog.saving = false
   }
@@ -208,8 +213,8 @@ async function onDeleteRegion(row: Region) {
       districts.value = []
     }
     await loadRegions()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 
@@ -238,8 +243,8 @@ async function onSaveDistrict() {
     ElMessage.success(t('common.success'))
     districtDialog.visible = false
     await loadDistricts(selectedRegion.value.id)
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     districtDialog.saving = false
   }
@@ -251,8 +256,8 @@ async function onDeleteDistrict(row: District) {
     await adminRegionsApi.deleteDistrict(row.id)
     ElMessage.success(t('common.success'))
     if (selectedRegion.value) await loadDistricts(selectedRegion.value.id)
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 

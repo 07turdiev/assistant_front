@@ -121,6 +121,7 @@ import {
   type District,
   type OrganisationPayload,
 } from '@/api/admin'
+import { showApiError } from '@/utils/api-error'
 
 const { t } = useI18n()
 
@@ -161,8 +162,8 @@ async function loadAll() {
     const [orgs, dist] = await Promise.all([adminOrganisationsApi.list(), adminRegionsApi.districts()])
     items.value = orgs.data.results || []
     districts.value = dist.data
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -201,8 +202,8 @@ async function onSave() {
     ElMessage.success(t('common.success'))
     dialogVisible.value = false
     await loadAll()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     saving.value = false
   }
@@ -214,8 +215,8 @@ async function onDelete(row: Organisation) {
     await adminOrganisationsApi.delete(row.id)
     ElMessage.success(t('common.success'))
     await loadAll()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 

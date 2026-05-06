@@ -178,6 +178,7 @@ import { eventDraftsApi } from '@/api/drafts'
 import { infoApi, usersApi } from '@/api'
 import type { EventDraft, DraftStatus } from '@/types/draft'
 import type { User } from '@/types/user'
+import { showApiError } from '@/utils/api-error'
 
 const route = useRoute()
 const router = useRouter()
@@ -235,8 +236,8 @@ async function loadDraft() {
     draft.value = data
     fillForm(data)
     seedUserOptions(data)
-  } catch {
-    ElMessage.error('Qoralamani yuklashda xato')
+  } catch (e: unknown) {
+    showApiError(e, 'Qoralamani yuklashda xato')
   } finally {
     loading.value = false
   }
@@ -293,8 +294,8 @@ async function onSave() {
     draft.value = data
     fillForm(data)
     ElMessage.success('Saqlandi')
-  } catch (e: any) {
-    ElMessage.error(e?.response?.data?.error || 'Saqlashda xato')
+  } catch (e: unknown) {
+    showApiError(e, 'Saqlashda xato')
   } finally {
     saving.value = false
   }
@@ -309,8 +310,8 @@ async function onPublish() {
     const { data } = await eventDraftsApi.publish(draft.value.id)
     ElMessage.success('Tadbir muvaffaqiyatli joylandi')
     router.push({ name: 'events.detail', params: { id: data.event.id } })
-  } catch (e: any) {
-    ElMessage.error(e?.response?.data?.error || 'Joylashda xato')
+  } catch (e: unknown) {
+    showApiError(e, 'Joylashda xato')
   } finally {
     publishing.value = false
   }
@@ -322,8 +323,8 @@ async function onReject() {
     const { data } = await eventDraftsApi.reject(draft.value.id, 'Foydalanuvchi rad etdi')
     draft.value = data
     ElMessage.info('Qoralama rad etildi')
-  } catch {
-    ElMessage.error('Rad etishda xato')
+  } catch (e: unknown) {
+    showApiError(e, 'Rad etishda xato')
   }
 }
 

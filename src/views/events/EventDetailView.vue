@@ -122,6 +122,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
 import { Edit, Delete, ArrowLeft } from '@element-plus/icons-vue'
 import { eventsApi } from '@/api/events'
+import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
 import { formatDate } from '@/utils/date'
@@ -171,8 +172,8 @@ async function load() {
     const id = route.params.id as string
     const { data } = await eventsApi.retrieve(id)
     event.value = data
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -185,8 +186,8 @@ async function onDelete() {
     await eventsApi.delete(event.value.id)
     ElMessage.success(t('common.success'))
     router.push({ name: 'calendar' })
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 
@@ -213,8 +214,7 @@ async function onUploadProtocols() {
     protocolFiles.value = []
     await load()
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     uploadingProtocols.value = false
   }

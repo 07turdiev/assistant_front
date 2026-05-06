@@ -206,6 +206,7 @@ import { useChatStore } from '@/stores/chat'
 import { useLookupStore } from '@/stores/lookup'
 import { fullName } from '@/utils/format'
 import { formatTime } from '@/utils/date'
+import { showApiError } from '@/utils/api-error'
 import type { User } from '@/types/user'
 import type { Report } from '@/types/report'
 import type { ChatMessage } from '@/types/chat'
@@ -335,8 +336,8 @@ async function openChatThread(u: User) {
     await nextTick()
     if (threadRef.value) threadRef.value.scrollTop = threadRef.value.scrollHeight
     await chat.fetchUnreadCount()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     threadLoading.value = false
   }
@@ -363,8 +364,7 @@ async function onSendMessage() {
     await nextTick()
     if (threadRef.value) threadRef.value.scrollTop = threadRef.value.scrollHeight
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     sending.value = false
   }
@@ -416,8 +416,7 @@ async function onCreateReport() {
     if (activeTab.value === 'task') await loadTasks()
     else await loadRequests()
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     creating.value = false
   }

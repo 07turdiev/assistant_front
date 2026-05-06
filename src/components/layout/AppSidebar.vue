@@ -141,6 +141,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { reportsApi } from '@/api/reports'
+import { showApiError } from '@/utils/api-error'
 
 const props = defineProps<{ collapsed: boolean }>()
 const emit = defineEmits<{ toggle: [] }>()
@@ -228,8 +229,7 @@ async function onCreateSubmit() {
     createForm.description = ''
     createDialogOpen.value = false
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     creating.value = false
   }

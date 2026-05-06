@@ -82,6 +82,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
 import { fullName } from '@/utils/format'
 import { formatDateTime } from '@/utils/date'
+import { showApiError } from '@/utils/api-error'
 import type { Report } from '@/types/report'
 import type { User } from '@/types/user'
 import type { Choice } from '@/api/info'
@@ -163,8 +164,7 @@ async function onSubmit() {
     emit('replied')
     emit('back')
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     submitting.value = false
   }

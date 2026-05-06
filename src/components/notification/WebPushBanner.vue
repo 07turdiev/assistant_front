@@ -35,6 +35,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Bell, InfoFilled } from '@element-plus/icons-vue'
 import { useWebPushStore } from '@/stores/webpush'
 import { useI18n } from 'vue-i18n'
+import { showApiError } from '@/utils/api-error'
 
 const webpush = useWebPushStore()
 const { t } = useI18n()
@@ -58,9 +59,9 @@ async function enable() {
       // Foydalanuvchi brauzer modal'idan rad etdi — ogohlantirish ko'rsatamiz
       showInstructions()
     }
-  } catch (e) {
+  } catch (e: unknown) {
     console.error(e)
-    ElMessage.error(t('webpush.subscribeError'))
+    showApiError(e, t('webpush.subscribeError'))
   } finally {
     enabling.value = false
   }

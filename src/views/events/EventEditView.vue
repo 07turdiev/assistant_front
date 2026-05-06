@@ -26,6 +26,7 @@ import { useI18n } from 'vue-i18n'
 import EventForm from '@/components/event/EventForm.vue'
 import { eventsApi } from '@/api/events'
 import type { Event, Visitor } from '@/types/event'
+import { showApiError } from '@/utils/api-error'
 
 const route = useRoute()
 const router = useRouter()
@@ -63,8 +64,8 @@ async function load() {
     const id = route.params.id as string
     const { data } = await eventsApi.retrieve(id)
     event.value = data
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -83,8 +84,7 @@ async function onSubmit(payload: SubmitPayload) {
     ElMessage.success(t('common.success'))
     router.push({ name: 'events.detail', params: { id: data.id } })
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     submitting.value = false
   }

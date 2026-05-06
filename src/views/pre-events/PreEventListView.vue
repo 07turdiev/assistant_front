@@ -90,6 +90,7 @@ import { Edit, Delete } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { preEventsApi, type PreEvent, type PreEventPayload } from '@/api/preEvents'
 import { formatDate, formatDateTime } from '@/utils/date'
+import { showApiError } from '@/utils/api-error'
 
 const { t } = useI18n()
 
@@ -120,8 +121,8 @@ async function load() {
   try {
     const { data } = await preEventsApi.list({ page: 1, page_size: 100 })
     items.value = data.results
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -159,8 +160,7 @@ async function onSave() {
     dialogVisible.value = false
     await load()
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     saving.value = false
   }
@@ -172,8 +172,8 @@ async function onDelete(row: PreEvent) {
     await preEventsApi.delete(row.id)
     ElMessage.success(t('common.success'))
     await load()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 

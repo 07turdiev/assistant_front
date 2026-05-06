@@ -36,6 +36,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { showApiError } from '@/utils/api-error'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -60,8 +61,7 @@ async function onSubmit() {
     const redirect = (route.query.redirect as string) || '/dashboard'
     router.push(redirect)
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('auth.loginFailed'))
+    showApiError(e, t('auth.loginFailed'))
   }
 }
 </script>

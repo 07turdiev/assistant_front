@@ -101,6 +101,7 @@ import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput, EventCont
 
 import { eventsApi } from '@/api/events'
 import { reportsApi } from '@/api/reports'
+import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
 import { formatDate } from '@/utils/date'
 import type { Event } from '@/types/event'
@@ -221,8 +222,7 @@ async function onCreateTask() {
     taskForm.description = ''
     taskDialogVisible.value = false
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     creatingTask.value = false
   }
@@ -420,8 +420,8 @@ async function loadEvents(startDate: string, endDate: string) {
   try {
     const { data } = await eventsApi.byPeriod({ start_date: startDate, end_date: endDate })
     events.value = data
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }

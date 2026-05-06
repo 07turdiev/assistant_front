@@ -49,6 +49,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { reportsApi } from '@/api/reports'
 import { useLookupStore } from '@/stores/lookup'
+import { showApiError } from '@/utils/api-error'
 
 const props = defineProps<{
   modelValue: boolean
@@ -106,8 +107,7 @@ async function onSubmit() {
     emit('replied')
     emit('update:modelValue', false)
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     submitting.value = false
   }

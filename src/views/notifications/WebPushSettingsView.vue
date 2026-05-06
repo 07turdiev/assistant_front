@@ -68,6 +68,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useWebPushStore } from '@/stores/webpush'
 import { webpushApi } from '@/api/webpush'
+import { showApiError } from '@/utils/api-error'
 
 const webpush = useWebPushStore()
 const { t } = useI18n()
@@ -101,8 +102,8 @@ async function onSubscribe() {
     await webpush.subscribe()
     await webpush.fetchSubscriptions()
     ElMessage.success(t('webpush.subscribed'))
-  } catch (_e) {
-    ElMessage.error(t('webpush.subscribeError'))
+  } catch (e: unknown) {
+    showApiError(e, t('webpush.subscribeError'))
   } finally {
     busy.value = false
   }
@@ -122,8 +123,8 @@ async function onTest() {
   try {
     await webpushApi.test()
     ElMessage.success(t('webpush.testSent'))
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 

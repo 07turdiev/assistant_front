@@ -109,6 +109,7 @@ import {
   type DirectionPayload,
   type Organisation,
 } from '@/api/admin'
+import { showApiError } from '@/utils/api-error'
 
 const { t, locale } = useI18n()
 
@@ -177,8 +178,7 @@ async function loadAll() {
       form.organisation_id = organisations.value[0].id
     }
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -208,8 +208,7 @@ async function onSave() {
     resetForm()
     await loadAll()
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     saving.value = false
   }
@@ -223,8 +222,7 @@ async function onDelete(row: Direction) {
     if (editing.value?.id === row.id) cancelEdit()
     await loadAll()
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   }
 }
 

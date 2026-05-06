@@ -23,6 +23,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import UserForm from '@/components/admin/UserForm.vue'
 import { adminUsersApi, type AdminUserCreatePayload, type AdminUserUpdatePayload } from '@/api/admin'
+import { showApiError } from '@/utils/api-error'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -35,23 +36,7 @@ async function onSubmit(payload: AdminUserCreatePayload | AdminUserUpdatePayload
     ElMessage.success(t('common.success'))
     router.push({ name: 'admin.users' })
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string; errors?: Record<string, string[] | string> } } }
-    const data = err.response?.data
-    if (data?.errors && typeof data.errors === 'object') {
-      const lines = Object.entries(data.errors).map(([field, msgs]) => {
-        const text = Array.isArray(msgs) ? msgs.join(', ') : String(msgs)
-        return `${field}: ${text}`
-      })
-      ElMessage({
-        type: 'error',
-        message: lines.join('\n'),
-        duration: 6000,
-        showClose: true,
-        dangerouslyUseHTMLString: false,
-      })
-    } else {
-      ElMessage.error(data?.message || t('common.error'))
-    }
+    showApiError(e, t('common.error'))
   } finally {
     submitting.value = false
   }

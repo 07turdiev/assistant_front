@@ -72,6 +72,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft, Edit } from '@element-plus/icons-vue'
 import { adminUsersApi } from '@/api/admin'
 import { usersApi } from '@/api/users'
+import { showApiError } from '@/utils/api-error'
 import { fullName } from '@/utils/format'
 import type { User } from '@/types/user'
 
@@ -142,8 +143,7 @@ async function loadUser() {
     const { data: list } = await adminUsersApi.list({ page_size: 200 })
     subordinates.value = list.results.filter((u) => u.chief_id === data.id)
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }

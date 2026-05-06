@@ -70,6 +70,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { eventDraftsApi, reportDraftsApi } from '@/api/drafts'
 import type { EventDraft, ReportDraft, DraftStatus } from '@/types/draft'
+import { showApiError } from '@/utils/api-error'
 
 const router = useRouter()
 const activeKind = ref<'event' | 'report'>('event')
@@ -90,8 +91,8 @@ async function loadDrafts() {
       drafts.value = data.results
       reportCount.value = data.count
     }
-  } catch (e) {
-    ElMessage.error('Qoralamalarni yuklashda xato')
+  } catch (e: unknown) {
+    showApiError(e, 'Qoralamalarni yuklashda xato')
   } finally {
     loading.value = false
   }

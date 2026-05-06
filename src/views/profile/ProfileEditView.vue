@@ -105,6 +105,7 @@ import { ElMessage, type FormInstance, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
+import { showApiError } from '@/utils/api-error'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -165,8 +166,7 @@ async function onSubmit() {
     ElMessage.success(t('common.success'))
     router.push({ name: 'profile' })
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     submitting.value = false
   }
@@ -181,8 +181,7 @@ async function onChangePassword() {
     passwordForm.old_password = ''
     passwordForm.new_password = ''
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     changingPassword.value = false
   }

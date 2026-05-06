@@ -129,6 +129,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
 import { formatDateTime } from '@/utils/date'
 import { fullName } from '@/utils/format'
+import { showApiError } from '@/utils/api-error'
 import type { Report } from '@/types/report'
 import ReplyDialog from './ReplyDialog.vue'
 
@@ -210,8 +211,8 @@ async function reload() {
     inactiveItems.value = i.data.results
     totalInactive.value = i.data.count
     activeCount.value = c.data.count
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   } finally {
     loading.value = false
   }
@@ -241,8 +242,8 @@ async function onDelete(r: Report) {
     await reportsApi.delete(r.id)
     ElMessage.success(t('common.success'))
     await reload()
-  } catch (_e) {
-    ElMessage.error(t('common.error'))
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
   }
 }
 
@@ -256,8 +257,7 @@ async function onCreate() {
     createDialogVisible.value = false
     await reload()
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { message?: string } } }
-    ElMessage.error(err.response?.data?.message || t('common.error'))
+    showApiError(e, t('common.error'))
   } finally {
     creating.value = false
   }
