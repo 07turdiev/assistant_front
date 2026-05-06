@@ -13,6 +13,17 @@
       </div>
     </template>
 
+    <el-result
+      v-if="notFound"
+      icon="warning"
+      title="Qoralama topilmadi yoki ruxsat yo'q"
+      sub-title="Bu qoralama o'chirilgan, muddati o'tgan, yoki sizga tayinlanmagan bo'lishi mumkin. Telegram'dagi havola boshqa xodimga yo'naltirilgan bo'lishi ham mumkin."
+    >
+      <template #extra>
+        <el-button type="primary" @click="$router.push({ name: 'drafts.list' })">Mening qoralamalarim</el-button>
+      </template>
+    </el-result>
+
     <div v-if="draft && draft.raw_transcript" class="transcript">
       <div class="transcript-label">🎤 Asl ovozli matn:</div>
       <div class="transcript-text">«{{ draft.raw_transcript }}»</div>
@@ -99,6 +110,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import type { AxiosError } from 'axios'
 import { reportDraftsApi } from '@/api/drafts'
 import { usersApi } from '@/api'
 import type { ReportDraft, DraftStatus } from '@/types/draft'
@@ -112,6 +124,7 @@ const draft = ref<ReportDraft | null>(null)
 const loading = ref(false)
 const saving = ref(false)
 const publishing = ref(false)
+const notFound = ref(false)
 const userOptions = ref<User[]>([])
 const userSearchLoading = ref(false)
 
@@ -147,13 +160,19 @@ const creatorName = computed(() => {
 
 async function loadDraft() {
   loading.value = true
+  notFound.value = false
   try {
     const { data } = await reportDraftsApi.retrieve(route.params.id as string)
     draft.value = data
     fillForm(data)
     seedUserOptions(data)
   } catch (e: unknown) {
-    showApiError(e, 'Qoralamani yuklashda xato')
+    const status = (e as AxiosError)?.response?.status
+    if (status === 404 || status === 403) {
+      notFound.value = true
+    } else {
+      showApiError(e, 'Qoralamani yuklashda xato')
+    }
   } finally {
     loading.value = false
   }
