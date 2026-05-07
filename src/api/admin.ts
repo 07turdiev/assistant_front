@@ -1,3 +1,4 @@
+import type { AxiosRequestConfig } from 'axios'
 import apiClient from './client'
 import type { User, Role } from '@/types/user'
 
@@ -112,8 +113,8 @@ export const adminUsersApi = {
   patch(id: string, payload: Partial<AdminUserUpdatePayload>) {
     return apiClient.patch<User>(`/users/${id}/`, payload)
   },
-  delete(id: string) {
-    return apiClient.delete(`/users/${id}/`)
+  delete(id: string, config?: AxiosRequestConfig) {
+    return apiClient.delete(`/users/${id}/`, config)
   },
   changeStatus(id: string, status: string) {
     return apiClient.patch(`/users/${id}/status/`, { status })

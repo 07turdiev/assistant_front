@@ -94,16 +94,20 @@ export function extractApiError(err: unknown, options: ExtractOptions | string =
 }
 
 export function showApiError(err: unknown, options: ExtractOptions | string = {}): void {
+  // Global axios interceptor allaqachon ko'rsatgan bo'lsa — takrorlamaymiz
+  if (err && typeof err === 'object' && (err as { __handledGlobally?: boolean }).__handledGlobally) {
+    return
+  }
   const msg = extractApiError(err, options)
   if (msg.includes('\n')) {
+    // Multi-line: ; bilan birlashtiramiz (HTML ishlatmaymiz — XSS oldini olish uchun)
     ElMessage({
       type: 'error',
-      message: msg.replace(/\n/g, '<br>'),
-      dangerouslyUseHTMLString: true,
+      message: msg.replace(/\n+/g, ' · '),
       duration: 6000,
       showClose: true,
     })
   } else {
-    ElMessage.error(msg)
+    ElMessage.error({ message: msg, showClose: true })
   }
 }

@@ -300,15 +300,15 @@ async function onDelete(row: User) {
     type: 'warning',
   })
   try {
-    await adminUsersApi.delete(row.id)
+    await adminUsersApi.delete(row.id, { silent: true })
     ElMessage.success(t('common.success'))
     await reload()
   } catch (e: unknown) {
     const msg = extractApiError(e, t('common.error'))
-    ElMessageBox.alert(msg.replace(/\n/g, '<br>'), t('common.error'), {
+    // ElMessageBox.alert — `silent: true` orqali global toast'ni o'chirib, modal ko'rinishida tushuntiramiz
+    ElMessageBox.alert(msg.replace(/\n+/g, ' · '), t('common.error'), {
       type: 'warning',
       confirmButtonText: t('common.confirm'),
-      dangerouslyUseHTMLString: msg.includes('\n'),
     })
   }
 }
