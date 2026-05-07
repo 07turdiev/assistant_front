@@ -4,13 +4,27 @@
       <div class="header">
         <span class="title">Qoralamalar</span>
         <el-radio-group v-model="activeKind" size="default" @change="loadDrafts">
-          <el-radio-button label="event">📅 Tadbirlar ({{ eventCount }})</el-radio-button>
-          <el-radio-button label="report">📋 Topshiriqlar ({{ reportCount }})</el-radio-button>
+          <el-radio-button label="event">
+            <el-icon class="kind-icon"><Calendar /></el-icon>
+            Tadbirlar ({{ eventCount }})
+          </el-radio-button>
+          <el-radio-button label="report">
+            <el-icon class="kind-icon"><Document /></el-icon>
+            Topshiriqlar ({{ reportCount }})
+          </el-radio-button>
         </el-radio-group>
       </div>
     </template>
 
-    <el-empty v-if="!drafts.length" description="Qoralama yo'q. Telegram botda 🎤 tugmasi orqali yarating." />
+    <el-empty v-if="!drafts.length">
+      <template #description>
+        <span class="empty-hint">
+          Qoralama yo'q. Telegram botda
+          <el-icon class="empty-hint__icon"><Microphone /></el-icon>
+          tugmasi orqali yarating.
+        </span>
+      </template>
+    </el-empty>
 
     <el-table v-else :data="drafts" stripe @row-click="onRowClick">
       <el-table-column label="Sarlavha" prop="title" min-width="240">
@@ -65,9 +79,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { Calendar, Document, Microphone } from '@element-plus/icons-vue'
 import { eventDraftsApi, reportDraftsApi } from '@/api/drafts'
 import type { EventDraft, ReportDraft, DraftStatus } from '@/types/draft'
 import { showApiError } from '@/utils/api-error'
@@ -155,6 +169,21 @@ onMounted(() => {
 .title {
   font-size: 18px;
   font-weight: 600;
+}
+.kind-icon {
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+.empty-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.empty-hint__icon {
+  font-size: 16px;
+  color: var(--el-color-primary);
 }
 :deep(.el-table__row) {
   cursor: pointer;

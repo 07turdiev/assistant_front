@@ -85,7 +85,10 @@
     <div v-if="existingFiles.length > 0" class="existing-files">
       <p class="muted">{{ $t('event.existingFiles') }}</p>
       <div v-for="f in existingFiles" :key="f.id" class="existing-file">
-        <a :href="f.url" target="_blank">📎 {{ f.file_name }}</a>
+        <a :href="f.url" target="_blank" class="file-link">
+          <el-icon class="file-link__icon"><Paperclip /></el-icon>
+          {{ f.file_name }}
+        </a>
         <el-button size="small" type="danger" link @click="markFileForDeletion(f.id)">×</el-button>
       </div>
     </div>
@@ -214,7 +217,7 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Check, DocumentAdd, Lock, Search, User as UserIcon } from '@element-plus/icons-vue'
+import { Check, DocumentAdd, Lock, Paperclip, Search, User as UserIcon } from '@element-plus/icons-vue'
 import { useLookupStore } from '@/stores/lookup'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
@@ -572,6 +575,16 @@ onMounted(async () => {
       text-decoration: none;
     }
   }
+}
+
+.file-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.file-link__icon {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
 }
 
 .participants-tags {

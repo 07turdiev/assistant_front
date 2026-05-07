@@ -3,7 +3,7 @@
     <template #header>
       <div class="header">
         <div>
-          <h2 style="margin: 0">📅 Tadbir qoralamasi</h2>
+          <h2 class="page-title"><el-icon class="page-title__icon"><Calendar /></el-icon> Tadbir qoralamasi</h2>
           <div v-if="draft" style="font-size: 13px; color: var(--el-text-color-secondary); margin-top: 4px">
             <el-tag :type="statusType" size="small">{{ statusLabel }}</el-tag>
             <span style="margin-left: 8px">Yaratuvchi: {{ creatorName }}</span>
@@ -25,7 +25,10 @@
     </el-result>
 
     <div v-if="draft && draft.raw_transcript" class="transcript">
-      <div class="transcript-label">🎤 Asl ovozli matn:</div>
+      <div class="transcript-label">
+        <el-icon class="transcript-label__icon"><Microphone /></el-icon>
+        Asl ovozli matn:
+      </div>
       <div class="transcript-text">«{{ draft.raw_transcript }}»</div>
       <audio v-if="draft.voice_file_url" :src="draft.voice_file_url" controls style="margin-top: 8px; width: 100%" />
     </div>
@@ -146,27 +149,34 @@
           />
         </el-select>
         <div v-if="draft.unresolved_participant_names.length" class="unresolved">
-          ⚠️ AI quyidagi ismlarni topa olmadi: {{ draft.unresolved_participant_names.join(', ') }}
+          <el-icon class="unresolved__icon"><WarningFilled /></el-icon>
+          AI quyidagi ismlarni topa olmadi: {{ draft.unresolved_participant_names.join(', ') }}
         </div>
       </el-form-item>
 
       <el-row :gutter="16">
         <el-col :span="8">
           <el-form-item>
-            <el-checkbox v-model="form.is_important">🔴 Muhim</el-checkbox>
+            <el-checkbox v-model="form.is_important">
+              <el-icon class="cb-icon cb-icon--danger"><CircleFilled /></el-icon>
+              Muhim
+            </el-checkbox>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item>
-            <el-checkbox v-model="form.is_private">🔒 Yopiq</el-checkbox>
+            <el-checkbox v-model="form.is_private">
+              <el-icon class="cb-icon"><Lock /></el-icon>
+              Yopiq
+            </el-checkbox>
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
 
     <div v-if="canEdit" class="actions">
-      <el-button @click="onSave" :loading="saving">💾 Saqlash</el-button>
-      <el-button type="success" @click="onPublish" :loading="publishing">✅ Joylash</el-button>
+      <el-button :icon="FolderChecked" @click="onSave" :loading="saving">Saqlash</el-button>
+      <el-button :icon="Check" type="success" @click="onPublish" :loading="publishing">Joylash</el-button>
       <el-popconfirm
         title="Qoralamani rad etishni xohlaysizmi?"
         confirm-button-text="Rad etish"
@@ -174,7 +184,7 @@
         @confirm="onReject"
       >
         <template #reference>
-          <el-button type="danger">🛑 Rad etish</el-button>
+          <el-button :icon="CircleClose" type="danger">Rad etish</el-button>
         </template>
       </el-popconfirm>
     </div>
@@ -185,6 +195,16 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import {
+  Calendar,
+  Check,
+  CircleClose,
+  CircleFilled,
+  FolderChecked,
+  Lock,
+  Microphone,
+  WarningFilled,
+} from '@element-plus/icons-vue'
 import type { AxiosError } from 'axios'
 import { eventDraftsApi } from '@/api/drafts'
 import { infoApi, usersApi } from '@/api'
@@ -370,6 +390,34 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
   font-weight: 500;
   margin-bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.transcript-label__icon {
+  color: var(--el-color-primary);
+}
+.page-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-title__icon {
+  color: var(--el-color-primary);
+  font-size: 22px;
+}
+.cb-icon {
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+.cb-icon--danger {
+  color: var(--el-color-danger);
+}
+.unresolved__icon {
+  margin-right: 4px;
+  vertical-align: -2px;
+  color: var(--el-color-warning);
 }
 .transcript-text {
   font-style: italic;

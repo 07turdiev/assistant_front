@@ -76,7 +76,8 @@
         <el-divider content-position="left">{{ $t('event.files') }} ({{ event.files.length }})</el-divider>
         <div class="files-list">
           <a v-for="f in event.files" :key="f.id" :href="f.url" target="_blank" class="file-link">
-            📎 {{ f.file_name }}
+            <el-icon class="file-link__icon"><Paperclip /></el-icon>
+            {{ f.file_name }}
             <span class="muted">({{ formatSize(f.size) }})</span>
           </a>
         </div>
@@ -86,7 +87,8 @@
         <el-divider content-position="left">{{ $t('event.protocols') }} ({{ event.protocols.length }})</el-divider>
         <div class="files-list">
           <a v-for="f in event.protocols" :key="f.id" :href="f.url" target="_blank" class="file-link">
-            📋 {{ f.file_name }}
+            <el-icon class="file-link__icon"><Document /></el-icon>
+            {{ f.file_name }}
             <span class="muted">({{ formatSize(f.size) }})</span>
           </a>
         </div>
@@ -120,7 +122,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
-import { Edit, Delete, ArrowLeft } from '@element-plus/icons-vue'
+import { ArrowLeft, Delete, Document, Edit, Paperclip } from '@element-plus/icons-vue'
 import { eventsApi } from '@/api/events'
 import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
@@ -268,9 +270,17 @@ onMounted(async () => {
     padding: 6px 10px;
     background: #f5f7fa;
     border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 
     &:hover {
       background: #e4e7ed;
+    }
+
+    &__icon {
+      font-size: 14px;
+      color: #909399;
     }
 
     .muted {

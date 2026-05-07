@@ -353,6 +353,13 @@ const calendarOptions = computed<CalendarOptions>(() => {
   } as CalendarOptions
 })
 
+// Element Plus "Lock" ikonining inline SVG'si — FullCalendar eventContent string HTML
+// qaytaradi, shuning uchun Vue komponenti emas, raw SVG ishlatamiz.
+const LOCK_SVG = '<svg class="ev-icon" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">'
+  + '<path d="M224 448a32 32 0 00-32 32v384a32 32 0 0032 32h576a32 32 0 0032-32V480a32 32 0 00-32-32H224zm0-64h576a96 96 0 0196 96v384a96 96 0 01-96 96H224a96 96 0 01-96-96V480a96 96 0 0196-96z"/>'
+  + '<path d="M512 544a32 32 0 0132 32v192a32 32 0 11-64 0V576a32 32 0 0132-32zM384 320a128 128 0 11256 0v96a32 32 0 11-64 0v-96a64 64 0 10-128 0v96a32 32 0 11-64 0v-96z"/>'
+  + '</svg>'
+
 function renderEventContent(arg: EventContentArg) {
   const time = arg.event.extendedProps.start_time as string | undefined
   const isImportant = arg.event.extendedProps.is_important as boolean
@@ -367,13 +374,13 @@ function renderEventContent(arg: EventContentArg) {
         ${isImportant ? '<span class="ev-flag-important"></span>' : ''}
         ${timeStr ? `<span class="ev-time">${timeStr}</span>` : ''}
         <span class="ev-title">${escapeHtml(arg.event.title)}</span>
-        ${isPrivate ? '<span class="ev-lock">🔒</span>' : ''}
+        ${isPrivate ? `<span class="ev-lock">${LOCK_SVG}</span>` : ''}
       </div>`
     : `
       <div class="ev-block">
         <div class="ev-block__time">${timeStr}${isImportant ? ' <span class="ev-flag-important"></span>' : ''}</div>
         <div class="ev-block__title">${escapeHtml(arg.event.title)}</div>
-        ${isPrivate ? '<div class="ev-block__meta">🔒</div>' : ''}
+        ${isPrivate ? `<div class="ev-block__meta">${LOCK_SVG}</div>` : ''}
       </div>`
   return { html }
 }
@@ -786,9 +793,20 @@ $shadow-event-hover: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 :deep(.ev-pill .ev-lock) {
-  font-size: 10px;
+  display: inline-flex;
   opacity: 0.85;
   flex-shrink: 0;
+}
+
+:deep(.ev-icon) {
+  width: 11px;
+  height: 11px;
+  display: block;
+}
+
+:deep(.ev-block__meta .ev-icon) {
+  width: 13px;
+  height: 13px;
 }
 
 :deep(.ev-pill .ev-flag-important) {
