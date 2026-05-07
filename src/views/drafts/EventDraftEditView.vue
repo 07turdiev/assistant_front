@@ -158,7 +158,7 @@
         <el-col :span="8">
           <el-form-item>
             <el-checkbox v-model="form.is_important">
-              <el-icon class="cb-icon cb-icon--danger"><CircleFilled /></el-icon>
+              <el-icon class="cb-icon cb-icon--danger"><StarFilled /></el-icon>
               Muhim
             </el-checkbox>
           </el-form-item>
@@ -199,10 +199,10 @@ import {
   Calendar,
   Check,
   CircleClose,
-  CircleFilled,
   FolderChecked,
   Lock,
   Microphone,
+  StarFilled,
   WarningFilled,
 } from '@element-plus/icons-vue'
 import type { AxiosError } from 'axios'
