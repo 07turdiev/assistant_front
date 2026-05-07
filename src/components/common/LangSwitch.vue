@@ -1,5 +1,5 @@
 <template>
-  <el-dropdown trigger="click" @command="onCommand">
+  <el-dropdown class="lang-dropdown" trigger="click" @command="onCommand">
     <span class="lang-switch">{{ currentLabel }}</span>
     <template #dropdown>
       <el-dropdown-menu>
@@ -41,6 +41,28 @@ function onCommand(value: Locale) {
 </script>
 
 <style lang="scss" scoped>
+/* Element Plus el-dropdown'ning tashqi border/outline'ini bekor qilamiz —
+   faqat ichkaridagi `.lang-switch` border qoladi */
+.lang-dropdown {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  :deep(.el-tooltip__trigger) {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  &:focus,
+  &:focus-visible,
+  &:focus-within {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
 .lang-switch {
   cursor: pointer;
   font-weight: 600;
@@ -49,6 +71,7 @@ function onCommand(value: Locale) {
   border: 1px solid #dcdfe6;
   border-radius: 6px;
   font-size: 13px;
+  outline: none;
 }
 
 :global(.el-dropdown-menu__item.is-active) {
