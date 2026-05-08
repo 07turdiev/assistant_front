@@ -42,15 +42,22 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil((async () => {
+    const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+
+    // Har qanday chat push'da ochiq tab'larga signal beramiz — sayt unread badge'ni
+    // darhol yangilashi uchun. WebSocket ishlamasa ham raqam jonli yangilanadi.
+    if (data.channel === 'chat') {
+      clientList.forEach((c) => c.postMessage({ type: 'chat-push', payload }))
+    }
+
     // skipIfFocused — faqat ayni shu sender'ning chat thread'i ochiq va tab focused bo'lsa
     // OS bildirishnomasini ko'rsatmaymiz. Aks holda har doim ko'rsatamiz.
     if (data.skipIfFocused && data.channel === 'chat' && data.sender_id) {
       const isCurrentChatActive = activeChatSenderId && activeChatSenderId === data.sender_id
       if (isCurrentChatActive) {
-        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-        const focused = clients.find((c) => c.focused)
+        const focused = clientList.find((c) => c.focused)
         if (focused) {
-          clients.forEach((c) => c.postMessage({ type: 'push-skipped', payload }))
+          clientList.forEach((c) => c.postMessage({ type: 'push-skipped', payload }))
           return
         }
       }
@@ -61,19 +68,29 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/'
+  const data = event.notification.data || {}
+  const targetUrl = data.url || '/'
+  const isChat = data.channel === 'chat'
+  const senderId = data.sender_id
 
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) {
-          client.navigate(targetUrl)
-          return client.focus()
-        }
+  event.waitUntil((async () => {
+    const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+
+    if (clientList.length > 0) {
+      // Mavjud ochiq tab bor — sahifani o'zgartirmaymiz, faqat focus + signal yuboramiz.
+      // Chat uchun esa client tomonida o'sha thread ochiladi (router'ga teginmaymiz).
+      const target = clientList.find((c) => c.focused) || clientList[0]
+      if (isChat && senderId) {
+        target.postMessage({ type: 'open-chat', senderId })
+      } else if (targetUrl && targetUrl !== '/') {
+        // Chat'dan boshqa bildirishnomalar uchun — odatdagidek yo'naltiramiz
+        try { target.navigate(targetUrl) } catch (_e) { /* navigate ba'zida block bo'ladi */ }
       }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(targetUrl)
-      }
-    })
-  )
+      return target.focus()
+    }
+    // Hech qaysi tab ochiq emas — yangi oyna ochamiz (chat bo'lsa ?openChat=… orqali)
+    if (self.clients.openWindow) {
+      return self.clients.openWindow(targetUrl)
+    }
+  })())
 })

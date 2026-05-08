@@ -52,6 +52,7 @@
         :is-mobile="isMobile"
         :mobile-open="isMobile && rightPanelOpen"
         @close="rightPanelOpen = false"
+        @open="onRightPanelOpenRequested"
         @badge-count="rightPanelBadgeCount = $event"
       />
 
@@ -117,6 +118,10 @@ function toggleSidebar() {
 
 function toggleRightPanel() {
   rightPanelOpen.value = !rightPanelOpen.value
+}
+
+function onRightPanelOpenRequested() {
+  if (isMobile.value) rightPanelOpen.value = true
 }
 
 function closeMobileDrawers() {

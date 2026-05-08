@@ -238,6 +238,7 @@ withDefaults(
 
 const emit = defineEmits<{
   close: []
+  open: []
   'badge-count': [value: number]
 }>()
 
@@ -518,14 +519,27 @@ watch(
   { immediate: true },
 )
 
-// Service worker'dan "push-skipped" signali — focus'da turganda audio/visual reaksiya joyi
+// Service worker'dan keladigan signal'lar:
+// - "chat-push": har qanday chat push kelganda — badge'ni jonli yangilaymiz
+// - "push-skipped": chat fokus'da bo'lganida OS bildirishnomasi tushib qolgan
+// - "open-chat": foydalanuvchi bildirishnomani bosgan — thread'ni ochamiz (sahifani o'zgartirmasdan)
 if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', async (event) => {
-    if (event.data?.type !== 'push-skipped') return
-    const payload = event.data.payload || {}
-    if (payload.data?.channel === 'chat') {
-      await chat.fetchUnreadCount()
-      await loadChatPartners()
+    const type = event.data?.type
+    if (!type) return
+
+    if (type === 'chat-push' || type === 'push-skipped') {
+      const payload = event.data.payload || {}
+      if (payload.data?.channel === 'chat') {
+        await chat.fetchUnreadCount()
+        if (!selectedPartnerId.value) await loadChatPartners()
+      }
+      return
+    }
+
+    if (type === 'open-chat' && event.data.senderId) {
+      emit('open')
+      await openChatBySenderId(String(event.data.senderId))
     }
   })
 }
