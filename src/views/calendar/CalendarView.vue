@@ -329,9 +329,10 @@ const calendarOptions = computed<CalendarOptions>(() => {
     nowIndicator: true,
     navLinks: true,
     navLinkDayClick: onNavToDay,
-    // Yil view: 1 ustun × 12 qator — har oy butun ekran kengligida (oy view kabi)
-    multiMonthMaxColumns: 1,
-    multiMonthMinWidth: 600,
+    // Yil view: 2 ustun × 6 qator. Tor ekranlarda (multiMonthMinWidth dan kichik
+    // bo'lsa) FullCalendar avtomatik 1 ustunga o'tadi.
+    multiMonthMaxColumns: 2,
+    multiMonthMinWidth: 360,
     slotMinTime: '07:00:00',
     slotMaxTime: '21:00:00',
     slotDuration: '00:30:00',
