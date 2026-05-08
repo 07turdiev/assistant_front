@@ -32,8 +32,8 @@ self.addEventListener('push', (event) => {
   const data = payload.data || {}
   const options = {
     body: payload.body || '',
-    icon: payload.icon || '/icons/icon-192.png',
-    badge: payload.badge || '/icons/badge-72.png',
+    icon: payload.icon || '/favicon.svg',
+    badge: payload.badge || '/favicon.svg',
     tag: payload.tag || 'smart-assistant',
     // renotify: true — bir xil tag bilan keyingi push kelsa ham popup/ovoz chiqsin
     renotify: Boolean(payload.tag),

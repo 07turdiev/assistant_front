@@ -16,8 +16,11 @@ const RECONNECT_DELAY_MS = 3000
 const PING_INTERVAL_MS = 30000
 
 function buildWsUrl(): string {
-  const path = import.meta.env.VITE_WS_URL || '/ws/'
+  let path = import.meta.env.VITE_WS_URL || '/ws/'
   if (path.startsWith('ws://') || path.startsWith('wss://')) return path
+  // Nginx odatda `/ws/` bo'yicha lokatsiya yozadi — slashsiz so'rov SPA fallback'iga
+  // tushib qoladi va WebSocket handshake fail bo'ladi. Shuning uchun trailing slash majbur.
+  if (!path.endsWith('/')) path = path + '/'
   const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
   return `${proto}://${window.location.host}${path}`
 }
