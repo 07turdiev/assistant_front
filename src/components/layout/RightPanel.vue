@@ -544,17 +544,56 @@ watch(() => auth.isAuthenticated, async (val) => {
   if (val) await refreshAll()
 })
 
-watch(() => chat.recentIncoming.length, async () => {
+watch(() => chat.recentIncoming.length, async (_newLen, oldLen) => {
   if (!auth.isAuthenticated) return
+
+  // 1. Yangi WS payload'larni darrov mahalliy thread'ga qo'shamiz (instant feedback)
+  const newPayloads = chat.recentIncoming.slice(oldLen || 0)
+  for (const payload of newPayloads) {
+    // Soft-delete signal — ochiq thread'dagi habarni olib tashlash
+    if (payload.event === 'deleted' && payload.message_id) {
+      const idx = threadMessages.value.findIndex((m) => m.id === payload.message_id)
+      if (idx >= 0) threadMessages.value.splice(idx, 1)
+      continue
+    }
+    // Echo (men yuborgan, server qaytarib jo'natgan) — onSendMessage uni allaqachon qo'shgan
+    if (payload.echo) continue
+    // Yangi kelgan habar — current ochiq thread partneridan bo'lsa darrov ko'rsatamiz
+    if (
+      selectedPartnerId.value
+      && payload.from === selectedPartnerId.value
+      && payload.message_id
+      && !threadMessages.value.find((m) => m.id === payload.message_id)
+    ) {
+      threadMessages.value.push({
+        id: payload.message_id,
+        message: payload.message || '',
+        viewed: false,
+        sender: selectedPartner.value as User,
+        receiver: (auth.user as User),
+        files: [],
+        created_at: payload.created_at || new Date().toISOString(),
+      } as ChatMessage)
+      await nextTick()
+      if (threadRef.value) threadRef.value.scrollTop = threadRef.value.scrollHeight
+    }
+  }
+
+  // 2. Badge'ni va sheriklar ro'yxatini yangilash (asosiy panel uchun)
   await chat.fetchUnreadCount()
-  if (selectedPartnerId.value) {
-    const partnerId = selectedPartnerId.value
-    const { data } = await chatApi.history({ receiver_id: partnerId, page: 1, page_size: 100 })
-    threadMessages.value = [...data.results].reverse()
-    await nextTick()
-    if (threadRef.value) threadRef.value.scrollTop = threadRef.value.scrollHeight
-  } else {
+  if (!selectedPartnerId.value) {
     await loadChatPartners()
+  } else {
+    // Thread ochiq bo'lsa — backend'dan to'liq history sync qilamiz (fayl, viewed flag uchun)
+    // Bu yuqoridagi instant append'dan keyin keladi; duplicate bo'lmaydi chunki ID bo'yicha
+    // replace qilinadi.
+    try {
+      const partnerId = selectedPartnerId.value
+      const { data } = await chatApi.history({ receiver_id: partnerId, page: 1, page_size: 100 })
+      threadMessages.value = [...data.results].reverse()
+      await nextTick()
+      if (threadRef.value) threadRef.value.scrollTop = threadRef.value.scrollHeight
+    } catch (_e) { /* ignore — instant append allaqachon ishlagan */ }
   }
 })
 
