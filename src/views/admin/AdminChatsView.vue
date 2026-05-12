@@ -104,12 +104,12 @@
     <el-card v-else v-loading="conversationLoading" class="conversation">
       <template #header>
         <div class="conv-header">
+          <el-button :icon="ArrowLeft" @click="clearSelection">Orqaga</el-button>
           <div class="conv-header__pair">
             <span class="conv-header__name">{{ formatUser(userAObj) }}</span>
             <el-icon><Right /></el-icon>
             <span class="conv-header__name">{{ formatUser(userBObj) }}</span>
           </div>
-          <el-button :icon="ArrowLeft" @click="clearSelection">Orqaga</el-button>
         </div>
       </template>
 
@@ -429,7 +429,6 @@ onMounted(loadThreads)
 
 .conv-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
@@ -440,6 +439,8 @@ onMounted(loadThreads)
     gap: 8px;
     font-weight: 600;
     font-size: 15px;
+    flex: 1;
+    min-width: 0;
   }
 }
 

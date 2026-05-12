@@ -2,8 +2,8 @@
   <el-card v-loading="loading">
     <template #header>
       <div class="header">
+        <el-button :icon="ArrowLeft" @click="$router.back()">{{ $t('common.back') }}</el-button>
         <span>{{ $t('event.edit') }}</span>
-        <el-button @click="$router.back()">{{ $t('common.back') }}</el-button>
       </div>
     </template>
 
@@ -22,6 +22,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import EventForm from '@/components/event/EventForm.vue'
 import { eventsApi } from '@/api/events'
@@ -96,7 +97,7 @@ onMounted(load)
 <style lang="scss" scoped>
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 </style>

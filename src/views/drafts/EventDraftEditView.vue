@@ -2,14 +2,14 @@
   <el-card v-loading="loading">
     <template #header>
       <div class="header">
-        <div>
+        <el-button :icon="ArrowLeft" @click="$router.push({ name: 'drafts.list' })">Orqaga</el-button>
+        <div class="header__title-block">
           <h2 class="page-title"><el-icon class="page-title__icon"><Calendar /></el-icon> Tadbir qoralamasi</h2>
           <div v-if="draft" style="font-size: 13px; color: var(--el-text-color-secondary); margin-top: 4px">
             <el-tag :type="statusType" size="small">{{ statusLabel }}</el-tag>
             <span style="margin-left: 8px">Yaratuvchi: {{ creatorName }}</span>
           </div>
         </div>
-        <el-button @click="$router.push({ name: 'drafts.list' })">Orqaga</el-button>
       </div>
     </template>
 
@@ -196,6 +196,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
+  ArrowLeft,
   Calendar,
   Check,
   CircleClose,
@@ -376,8 +377,12 @@ onMounted(() => {
 <style scoped>
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 16px;
+}
+.header__title-block {
+  flex: 1;
+  min-width: 0;
 }
 .transcript {
   background: var(--el-fill-color-light);

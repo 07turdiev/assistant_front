@@ -2,8 +2,8 @@
   <el-card v-loading="loading">
     <template #header>
       <div class="header">
+        <el-button :icon="ArrowLeft" @click="$router.back()">{{ $t('common.back') }}</el-button>
         <span>{{ $t('profile.editTitle') }}</span>
-        <el-button @click="$router.back()">{{ $t('common.back') }}</el-button>
       </div>
     </template>
 
@@ -102,6 +102,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type UploadFile } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
@@ -193,8 +194,8 @@ onMounted(loadInitial)
 <style lang="scss" scoped>
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
 .avatar-row {

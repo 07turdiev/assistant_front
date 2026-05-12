@@ -2,8 +2,8 @@
   <el-card>
     <template #header>
       <div class="header">
+        <el-button :icon="ArrowLeft" @click="$router.back()">{{ $t('common.back') }}</el-button>
         <span>{{ $t('admin.createUser') }}</span>
-        <el-button @click="$router.back()">{{ $t('common.back') }}</el-button>
       </div>
     </template>
 
@@ -20,6 +20,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import UserForm from '@/components/admin/UserForm.vue'
 import { adminUsersApi, type AdminUserCreatePayload, type AdminUserUpdatePayload } from '@/api/admin'
@@ -46,7 +47,7 @@ async function onSubmit(payload: AdminUserCreatePayload | AdminUserUpdatePayload
 <style lang="scss" scoped>
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 </style>

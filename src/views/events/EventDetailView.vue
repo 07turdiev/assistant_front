@@ -2,6 +2,11 @@
   <el-card v-loading="loading">
     <template #header>
       <div class="header">
+        <el-tooltip :content="$t('common.back')" placement="top">
+          <el-button circle @click="$router.back()">
+            <el-icon><ArrowLeft /></el-icon>
+          </el-button>
+        </el-tooltip>
         <div class="title">
           <el-tag v-if="event?.is_important" type="danger" size="small">{{ $t('event.important') }}</el-tag>
           <span>{{ event?.title || '' }}</span>
@@ -15,11 +20,6 @@
           <el-tooltip v-if="canEdit" :content="$t('common.delete')" placement="top">
             <el-button type="danger" circle @click="onDelete">
               <el-icon><Delete /></el-icon>
-            </el-button>
-          </el-tooltip>
-          <el-tooltip :content="$t('common.back')" placement="top">
-            <el-button circle @click="$router.back()">
-              <el-icon><ArrowLeft /></el-icon>
             </el-button>
           </el-tooltip>
         </div>
@@ -231,7 +231,6 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
@@ -241,11 +240,14 @@ onMounted(async () => {
     align-items: center;
     gap: 8px;
     font-weight: 600;
+    flex: 1;
+    min-width: 0;
   }
 
   .actions {
     display: flex;
     gap: 8px;
+    margin-left: auto;
   }
 }
 
