@@ -36,11 +36,23 @@
     <!-- ===== CHAT TAB ===== -->
     <template v-if="activeTab === 'chat'">
       <div v-if="!selectedPartnerId" class="panel-body">
+        <div class="search-block">
+          <el-input
+            v-model="searchQuery"
+            :placeholder="$t('common.search')"
+            clearable
+            size="small"
+            :prefix-icon="Search"
+          />
+        </div>
         <div v-if="chatPartners.length === 0" class="empty">
           {{ $t('rightPanel.noPartners') }}
         </div>
+        <div v-else-if="filteredChatPartners.length === 0" class="empty">
+          —
+        </div>
         <div
-          v-for="u in chatPartners"
+          v-for="u in filteredChatPartners"
           :key="u.id"
           class="row"
           @click="openChatThread(u)"
@@ -113,11 +125,23 @@
           <el-tab-pane :label="$t('rightPanel.activeScope')" name="active" />
           <el-tab-pane :label="$t('rightPanel.historyScope')" name="history" />
         </el-tabs>
+        <div class="search-block">
+          <el-input
+            v-model="searchQuery"
+            :placeholder="$t('common.search')"
+            clearable
+            size="small"
+            :prefix-icon="Search"
+          />
+        </div>
         <div v-if="visibleTasks.length === 0" class="empty">
           {{ $t('rightPanel.noTasks') }}
         </div>
+        <div v-else-if="filteredTasks.length === 0" class="empty">
+          —
+        </div>
         <div
-          v-for="r in visibleTasks"
+          v-for="r in filteredTasks"
           :key="r.id"
           class="row"
           @click="openReportDetail(r)"
@@ -157,11 +181,23 @@
           <el-tab-pane :label="$t('rightPanel.activeScope')" name="active" />
           <el-tab-pane :label="$t('rightPanel.historyScope')" name="history" />
         </el-tabs>
+        <div class="search-block">
+          <el-input
+            v-model="searchQuery"
+            :placeholder="$t('common.search')"
+            clearable
+            size="small"
+            :prefix-icon="Search"
+          />
+        </div>
         <div v-if="visibleRequests.length === 0" class="empty">
           {{ $t('rightPanel.noRequests') }}
         </div>
+        <div v-else-if="filteredRequests.length === 0" class="empty">
+          —
+        </div>
         <div
-          v-for="r in visibleRequests"
+          v-for="r in filteredRequests"
           :key="r.id"
           class="row"
           @click="openReportDetail(r)"
@@ -211,7 +247,7 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Close, Promotion } from '@element-plus/icons-vue'
+import { ArrowLeft, Close, Promotion, Search } from '@element-plus/icons-vue'
 import { usersApi } from '@/api/users'
 import { chatApi } from '@/api/chat'
 import { reportsApi } from '@/api/reports'
@@ -249,6 +285,9 @@ const lookup = useLookupStore()
 
 const activeTab = ref<TabKey>('chat')
 
+// Tab'larga umumiy qidiruv. Tab almashilganda reset bo'ladi.
+const searchQuery = ref('')
+
 // Chat
 const chatPartners = ref<User[]>([])
 const selectedPartnerId = ref<string | null>(null)
@@ -277,6 +316,37 @@ const visibleTasks = computed(() => {
 const visibleRequests = computed(() => {
   if (requestScope.value === 'active') return requestsAll.value.filter((r) => !r.reply)
   return requestsAll.value.filter((r) => r.reply)
+})
+
+// Qidiruv natijalari — har tab uchun mahalliy filter (in-memory)
+const filteredChatPartners = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return chatPartners.value
+  return chatPartners.value.filter((u) => {
+    const hay = [
+      u.last_name, u.first_name, u.father_name,
+      u.username, u.position_uz, u.position_ru,
+    ].filter(Boolean).join(' ').toLowerCase()
+    return hay.includes(q)
+  })
+})
+
+function matchReport(r: Report, q: string): boolean {
+  if (!q) return true
+  const senderName = r.sender
+    ? [r.sender.last_name, r.sender.first_name, r.sender.father_name].filter(Boolean).join(' ')
+    : ''
+  const hay = `${senderName} ${r.description || ''}`.toLowerCase()
+  return hay.includes(q)
+}
+
+const filteredTasks = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  return visibleTasks.value.filter((r) => matchReport(r, q))
+})
+const filteredRequests = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  return visibleRequests.value.filter((r) => matchReport(r, q))
 })
 
 // Create dialog
@@ -347,6 +417,7 @@ function onTabChange(key: TabKey) {
   activeTab.value = key
   selectedPartnerId.value = null
   selectedReportId.value = null
+  searchQuery.value = ''
   setActiveChatInSW(null)
 }
 
@@ -669,6 +740,10 @@ onMounted(refreshAll)
   .create-btn {
     width: 100%;
   }
+}
+
+.search-block {
+  padding: 8px 12px;
 }
 
 .report-scope-tabs {
