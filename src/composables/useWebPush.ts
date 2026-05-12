@@ -14,7 +14,5 @@ export function useWebPush() {
     shouldPromptBanner: store.shouldPromptBanner,
     subscribe: store.subscribe,
     unsubscribe: store.unsubscribe,
-    dismissBanner: store.dismissBanner,
-    resetBanner: store.resetBanner,
   }
 }

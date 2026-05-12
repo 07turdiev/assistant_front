@@ -22,7 +22,6 @@
             <el-icon><Bell /></el-icon>
             {{ $t('webpush.enable') }}
           </el-button>
-          <el-button text @click="dismiss">{{ $t('webpush.dismiss') }}</el-button>
         </template>
       </div>
     </template>
@@ -65,10 +64,6 @@ async function enable() {
   } finally {
     enabling.value = false
   }
-}
-
-function dismiss() {
-  webpush.dismissBanner()
 }
 
 function showInstructions() {

@@ -26,21 +26,12 @@ export const useWebPushStore = defineStore('webpush', () => {
   const subscriptions = ref<WebPushSubscription[]>([])
   const isSupported = ref(false)
 
-  // Sessiya davomida 1 marta "Keyinroq" bosilgan bo'lsa banner yashiriladi.
-  // localStorage ishlatmaymiz — har login'da qaytadan ko'rinadi.
-  const dismissed = ref<boolean>(false)
-
   const isBlocked = computed(() => status.value === 'denied')
 
+  // Foydalanuvchi obuna bo'lmaguncha banner har doim ko'rinadi — yopib bo'lmaydi.
   const shouldPromptBanner = computed(() => {
     if (!isSupported.value) return false
-    // Bloklangan bo'lsa — har doim ko'rsatamiz (dismiss qilib bo'lmaydi)
-    if (status.value === 'denied') return true
-    // So'ralmagan / ruxsat bor lekin obuna yo'q — banner ko'rsatamiz
-    if (status.value === 'default' || status.value === 'granted') {
-      return !dismissed.value
-    }
-    return false
+    return status.value !== 'subscribed' && status.value !== 'subscribing'
   })
 
   async function init() {
@@ -50,8 +41,6 @@ export const useWebPushStore = defineStore('webpush', () => {
       status.value = 'unsupported'
       return
     }
-    // Har login'da banner qaytadan ko'rinishi uchun dismissed reset
-    dismissed.value = false
     status.value = Notification.permission as WebPushStatus
     try {
       const reg = await navigator.serviceWorker.ready
@@ -125,27 +114,15 @@ export const useWebPushStore = defineStore('webpush', () => {
     subscriptions.value = data
   }
 
-  function dismissBanner() {
-    // Faqat sessiya — login'da yana qaytadan ko'rinadi
-    dismissed.value = true
-  }
-
-  function resetBanner() {
-    dismissed.value = false
-  }
-
   return {
     status,
     isSupported,
     subscriptions,
-    dismissed,
     isBlocked,
     shouldPromptBanner,
     init,
     subscribe,
     unsubscribe,
     fetchSubscriptions,
-    dismissBanner,
-    resetBanner,
   }
 })
