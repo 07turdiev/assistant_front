@@ -148,16 +148,16 @@ function onAvatarChange(file: UploadFile) {
 
   if (!ACCEPTED_AVATAR_MIME.includes(file.raw.type)) {
     ElMessage.error(
-      `Rasm formati qo'llanmaydi (${file.raw.type || "noma'lum"}). ` +
-      `JPEG, PNG, WebP yoki GIF tanlang. iPhone fotolari uchun "JPEG" formatga ` +
-      `o'tkazing (sozlamalar → Kamera → Formatlar → Eng mos).`
+      t('profileErrors.unsupportedImageFormat', {
+        type: file.raw.type || t('common.unknown', 'noma\'lum'),
+      })
     )
     return
   }
 
   if (file.raw.size > MAX_AVATAR_BYTES) {
     const mb = (file.raw.size / 1024 / 1024).toFixed(1)
-    ElMessage.error(`Rasm hajmi katta (${mb} MB). Maksimum: 5 MB.`)
+    ElMessage.error(t('profileErrors.imageTooLarge', { mb }))
     return
   }
 

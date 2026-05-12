@@ -5,7 +5,7 @@
       <div class="auth-brand__pattern" aria-hidden="true"></div>
 
       <div class="auth-brand__top">
-        <img src="/favicon.svg" alt="Davlat ramzi" class="auth-brand__seal" />
+        <img src="/favicon.svg" :alt="$t('authLayout.seal')" class="auth-brand__seal" />
         <div class="auth-brand__ministry">
           <div class="auth-brand__country">{{ $t('app.ministry1') }}</div>
           <div class="auth-brand__name">{{ $t('app.ministry2') }}</div>
@@ -13,11 +13,11 @@
       </div>
 
       <div class="auth-brand__center">
-        <h1 class="auth-brand__title">Raqamli yordamchi tizimi</h1>
+        <h1 class="auth-brand__title">{{ $t('authLayout.title') }}</h1>
       </div>
 
       <div class="auth-brand__footer">
-        <span class="auth-brand__copyright">© 2026 — Madaniyat vazirligi</span>
+        <span class="auth-brand__copyright">{{ $t('authLayout.copyright') }}</span>
       </div>
     </aside>
 
@@ -30,9 +30,9 @@
       <div class="auth-form-side__center">
         <div class="auth-form-wrap">
           <header class="auth-form-wrap__header">
-            <h2 class="auth-form-wrap__welcome">Xush kelibsiz</h2>
+            <h2 class="auth-form-wrap__welcome">{{ $t('authLayout.welcome') }}</h2>
             <p class="auth-form-wrap__hint">
-              Hisobingizga kirib davom eting
+              {{ $t('authLayout.loginHint') }}
             </p>
           </header>
           <slot />
@@ -40,7 +40,7 @@
       </div>
 
       <footer class="auth-form-side__footer">
-        <span>Texnik yordam: <a href="mailto:info@madaniyhayot.uz">info@madaniyhayot.uz</a></span>
+        <span>{{ $t('authLayout.support') }} <a href="mailto:info@madaniyhayot.uz">info@madaniyhayot.uz</a></span>
       </footer>
     </main>
   </div>

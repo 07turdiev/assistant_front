@@ -5,10 +5,10 @@
         <div class="filters__header">
           <h2 class="filters__title">
             <el-icon class="filters__icon"><ChatLineRound /></el-icon>
-            Yozishmalarni boshqarish
+            {{ $t('adminChats.pageTitle') }}
           </h2>
           <span class="filters__hint">
-            Suhbatni ko'rish uchun ikki foydalanuvchini tanlang
+            {{ $t('adminChats.hint') }}
           </span>
         </div>
       </template>
@@ -16,14 +16,14 @@
       <el-row :gutter="16">
         <el-col :xs="24" :md="12">
           <div class="filter-block">
-            <label class="filter-label">1-foydalanuvchi</label>
+            <label class="filter-label">{{ $t('adminChats.firstUser') }}</label>
             <el-select
               v-model="userA"
               filterable
               remote
               :remote-method="searchUsersA"
               :loading="userASearchLoading"
-              placeholder="Ism, familiya, login bilan qidiring"
+              :placeholder="$t('adminChats.searchByName')"
               clearable
               style="width: 100%"
             >
@@ -38,14 +38,14 @@
         </el-col>
         <el-col :xs="24" :md="12">
           <div class="filter-block">
-            <label class="filter-label">2-foydalanuvchi</label>
+            <label class="filter-label">{{ $t('adminChats.secondUser') }}</label>
             <el-select
               v-model="userB"
               filterable
               remote
               :remote-method="searchUsersB"
               :loading="userBSearchLoading"
-              placeholder="Ism, familiya, login bilan qidiring"
+              :placeholder="$t('adminChats.searchByName')"
               clearable
               style="width: 100%"
             >
@@ -65,10 +65,10 @@
     <el-card v-if="!bothSelected" v-loading="threadsLoading" class="threads">
       <template #header>
         <div class="threads__header">
-          <h3 class="threads__title">So'nggi suhbatlar</h3>
+          <h3 class="threads__title">{{ $t('adminChats.recentChats') }}</h3>
           <el-input
             v-model="threadsSearch"
-            placeholder="Foydalanuvchi nomi bilan filtr"
+            :placeholder="$t('adminChats.filterByUsername')"
             clearable
             style="width: 280px"
             @input="onThreadsSearchInput"
@@ -80,7 +80,7 @@
         </div>
       </template>
       <div v-if="threads.length === 0 && !threadsLoading" class="empty">
-        Hech qanday suhbat topilmadi
+        {{ $t('adminChats.noChats') }}
       </div>
       <div
         v-for="t in threads"
@@ -94,7 +94,7 @@
           <span class="thread-row__name">{{ formatUser(t.user_b) }}</span>
         </div>
         <div class="thread-row__meta">
-          <el-tag size="small" type="info">{{ t.total }} habar</el-tag>
+          <el-tag size="small" type="info">{{ $t('adminChats.messagesCount', { n: t.total }) }}</el-tag>
           <span class="thread-row__time">{{ formatRelative(t.last_message_at) }}</span>
         </div>
       </div>
@@ -104,7 +104,7 @@
     <el-card v-else v-loading="conversationLoading" class="conversation">
       <template #header>
         <div class="conv-header">
-          <el-button :icon="ArrowLeft" @click="clearSelection">Orqaga</el-button>
+          <el-button :icon="ArrowLeft" @click="clearSelection">{{ $t('common.back') }}</el-button>
           <div class="conv-header__pair">
             <span class="conv-header__name">{{ formatUser(userAObj) }}</span>
             <el-icon><Right /></el-icon>
@@ -114,7 +114,7 @@
       </template>
 
       <div v-if="messages.length === 0 && !conversationLoading" class="empty">
-        Bu ikki foydalanuvchi orasida hech qanday habar yo'q
+        {{ $t('adminChats.noMessages') }}
       </div>
 
       <div ref="threadBodyRef" class="thread-body">
@@ -145,7 +145,7 @@
           <div class="bubble__text">{{ m.message }}</div>
           <div v-if="m.is_deleted" class="bubble__deleted-tag">
             <el-icon><Delete /></el-icon>
-            O'chirilgan{{ m.deleted_by ? ` — ${formatUser(m.deleted_by)}` : '' }}
+            {{ $t('adminChats.deletedTag') }}{{ m.deleted_by ? ` — ${formatUser(m.deleted_by)}` : '' }}
             <span v-if="m.deleted_at" class="bubble__deleted-time">
               · {{ formatTime(m.deleted_at) }}
             </span>
@@ -159,6 +159,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   ChatLineRound,
@@ -172,6 +173,8 @@ import { showApiError } from '@/utils/api-error'
 import { formatTime } from '@/utils/date'
 import type { ChatMessage, ChatThreadSummary } from '@/types/chat'
 import type { User } from '@/types/user'
+
+const { t } = useI18n()
 
 const userA = ref<string | null>(null)
 const userB = ref<string | null>(null)
@@ -211,12 +214,12 @@ function formatRelative(iso: string | null): string {
   const d = new Date(iso)
   const diff = Date.now() - d.getTime()
   const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'hozir'
-  if (minutes < 60) return `${minutes} daqiqa oldin`
+  if (minutes < 1) return t('adminChats.time.now')
+  if (minutes < 60) return t('adminChats.time.minutesAgo', { n: minutes })
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} soat oldin`
+  if (hours < 24) return t('adminChats.time.hoursAgo', { n: hours })
   const days = Math.floor(hours / 24)
-  if (days < 7) return `${days} kun oldin`
+  if (days < 7) return t('adminChats.time.daysAgo', { n: days })
   return d.toLocaleDateString()
 }
 
@@ -254,7 +257,7 @@ async function loadThreads() {
     const { data } = await chatApi.adminThreads({ search: threadsSearch.value.trim() })
     threads.value = data
   } catch (e: unknown) {
-    showApiError(e, 'Suhbatlarni yuklashda xato')
+    showApiError(e, t('adminChats.loadError'))
   } finally {
     threadsLoading.value = false
   }
@@ -277,7 +280,7 @@ function clearSelection() {
 async function loadConversation() {
   if (!bothSelected.value || !userA.value || !userB.value) return
   if (userA.value === userB.value) {
-    ElMessage.warning('Ikki xil foydalanuvchi tanlang')
+    ElMessage.warning(t('adminChats.selectDifferentUsers'))
     return
   }
   conversationLoading.value = true
@@ -288,16 +291,14 @@ async function loadConversation() {
       page: 1,
       page_size: 200,
     })
-    // API DRF page format yoki array qaytaradi
     const list = Array.isArray(data) ? data : data.results
-    // Eski → yangi tartibda
     messages.value = [...list].reverse()
     await nextTick()
     if (threadBodyRef.value) {
       threadBodyRef.value.scrollTop = threadBodyRef.value.scrollHeight
     }
   } catch (e: unknown) {
-    showApiError(e, 'Suhbatni yuklashda xato')
+    showApiError(e, t('adminChats.conversationLoadError'))
   } finally {
     conversationLoading.value = false
   }
@@ -306,20 +307,23 @@ async function loadConversation() {
 async function onDelete(m: ChatMessage) {
   try {
     await ElMessageBox.confirm(
-      `"${m.message.slice(0, 80)}" habarini o'chirish? Audit izi qoladi.`,
-      'Habarni o\'chirish',
-      { type: 'warning', confirmButtonText: 'O\'chirish', cancelButtonText: 'Bekor' },
+      t('adminChats.deleteConfirmMessage', { preview: m.message.slice(0, 80) }),
+      t('adminChats.deleteConfirmTitle'),
+      {
+        type: 'warning',
+        confirmButtonText: t('adminChats.delete'),
+        cancelButtonText: t('common.cancel'),
+      },
     )
   } catch { return }
 
   try {
     const { data } = await chatApi.delete(m.id)
-    // Mahalliy ro'yxatdagi habarni soft-delete holatiga o'tkazamiz
     const idx = messages.value.findIndex((x) => x.id === m.id)
     if (idx >= 0) messages.value[idx] = data
-    ElMessage.success('Habar o\'chirildi')
+    ElMessage.success(t('adminChats.deleteSuccess'))
   } catch (e: unknown) {
-    showApiError(e, 'Habarni o\'chirishda xato')
+    showApiError(e, t('adminChats.deleteError'))
   }
 }
 

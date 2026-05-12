@@ -2,12 +2,12 @@
   <el-card v-loading="loading">
     <template #header>
       <div class="header">
-        <el-button :icon="ArrowLeft" @click="$router.push({ name: 'drafts.list' })">Orqaga</el-button>
+        <el-button :icon="ArrowLeft" @click="$router.push({ name: 'drafts.list' })">{{ $t('common.back') }}</el-button>
         <div class="header__title-block">
-          <h2 class="page-title"><el-icon class="page-title__icon"><Document /></el-icon> Topshiriq qoralamasi</h2>
+          <h2 class="page-title"><el-icon class="page-title__icon"><Document /></el-icon> {{ $t('drafts.reportDraftTitle') }}</h2>
           <div v-if="draft" style="font-size: 13px; color: var(--el-text-color-secondary); margin-top: 4px">
             <el-tag :type="statusType" size="small">{{ statusLabel }}</el-tag>
-            <span style="margin-left: 8px">Yaratuvchi: {{ creatorName }}</span>
+            <span style="margin-left: 8px">{{ $t('drafts.createdBy') }} {{ creatorName }}</span>
           </div>
         </div>
       </div>
@@ -16,44 +16,44 @@
     <el-result
       v-if="notFound"
       icon="warning"
-      title="Qoralama topilmadi yoki ruxsat yo'q"
-      sub-title="Bu qoralama o'chirilgan, muddati o'tgan, yoki sizga tayinlanmagan bo'lishi mumkin. Telegram'dagi havola boshqa xodimga yo'naltirilgan bo'lishi ham mumkin."
+      :title="$t('drafts.notFound')"
+      :sub-title="$t('drafts.notFoundMessage')"
     >
       <template #extra>
-        <el-button type="primary" @click="$router.push({ name: 'drafts.list' })">Mening qoralamalarim</el-button>
+        <el-button type="primary" @click="$router.push({ name: 'drafts.list' })">{{ $t('drafts.myDrafts') }}</el-button>
       </template>
     </el-result>
 
     <div v-if="draft && draft.raw_transcript" class="transcript">
       <div class="transcript-label">
         <el-icon class="transcript-label__icon"><Microphone /></el-icon>
-        Asl ovozli matn:
+        {{ $t('drafts.originalTranscript') }}
       </div>
       <div class="transcript-text">«{{ draft.raw_transcript }}»</div>
       <audio v-if="draft.voice_file_url" :src="draft.voice_file_url" controls style="margin-top: 8px; width: 100%" />
     </div>
 
     <el-form v-if="draft" :model="form" label-position="top" :disabled="!canEdit">
-      <el-form-item label="Sarlavha" required>
+      <el-form-item :label="$t('event.title')" required>
         <el-input v-model="form.title" maxlength="255" />
       </el-form-item>
 
-      <el-form-item label="Topshiriq matni" required>
+      <el-form-item :label="$t('drafts.reportDescriptionLabel')" required>
         <el-input v-model="form.description" type="textarea" :rows="5" />
       </el-form-item>
 
-      <el-form-item label="Muddat (matn ko'rinishida)">
-        <el-input v-model="form.deadline_text" placeholder="Masalan: 3 kun ichida, juma kuniga..." />
+      <el-form-item :label="$t('drafts.deadlineTextLabel')">
+        <el-input v-model="form.deadline_text" :placeholder="$t('drafts.deadlineHint')" />
       </el-form-item>
 
-      <el-form-item label="Tayinlanadi" required>
+      <el-form-item :label="$t('event.assignedTo')" required>
         <el-select
           v-model="form.assigned_to"
           filterable
           remote
           :remote-method="searchUsers"
           :loading="userSearchLoading"
-          placeholder="Ism bilan qidiring"
+          :placeholder="$t('drafts.searchByName')"
           style="width: 100%"
         >
           <el-option
@@ -65,11 +65,11 @@
         </el-select>
         <div v-if="draft.unresolved_participant_names.length" class="unresolved">
           <el-icon class="unresolved__icon"><WarningFilled /></el-icon>
-          AI quyidagi ismlarni topa olmadi: {{ draft.unresolved_participant_names.join(', ') }}
+          {{ $t('drafts.unresolvedParticipants') }} {{ draft.unresolved_participant_names.join(', ') }}
         </div>
       </el-form-item>
 
-      <el-form-item label="Qo'shimcha javobgar shaxslar (ixtiyoriy)">
+      <el-form-item :label="$t('drafts.additionalParticipants')">
         <el-select
           v-model="form.suggested_participants"
           multiple
@@ -91,22 +91,22 @@
       <el-form-item>
         <el-checkbox v-model="form.is_important">
           <el-icon class="cb-icon cb-icon--danger"><StarFilled /></el-icon>
-          Muhim
+          {{ $t('event.important') }}
         </el-checkbox>
       </el-form-item>
     </el-form>
 
     <div v-if="canEdit" class="actions">
-      <el-button :icon="FolderChecked" @click="onSave" :loading="saving">Saqlash</el-button>
-      <el-button :icon="Check" type="success" @click="onPublish" :loading="publishing">Joylash</el-button>
+      <el-button :icon="FolderChecked" @click="onSave" :loading="saving">{{ $t('common.save') }}</el-button>
+      <el-button :icon="Check" type="success" @click="onPublish" :loading="publishing">{{ $t('drafts.publish') }}</el-button>
       <el-popconfirm
-        title="Qoralamani rad etishni xohlaysizmi?"
-        confirm-button-text="Rad etish"
-        cancel-button-text="Bekor"
+        :title="$t('drafts.confirmReject')"
+        :confirm-button-text="$t('drafts.reject')"
+        :cancel-button-text="$t('common.cancel')"
         @confirm="onReject"
       >
         <template #reference>
-          <el-button :icon="CircleClose" type="danger">Rad etish</el-button>
+          <el-button :icon="CircleClose" type="danger">{{ $t('drafts.reject') }}</el-button>
         </template>
       </el-popconfirm>
     </div>
@@ -117,6 +117,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   Check,
@@ -136,6 +137,7 @@ import { showApiError } from '@/utils/api-error'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const draft = ref<ReportDraft | null>(null)
 const loading = ref(false)
@@ -164,10 +166,10 @@ const statusType = computed(() => ({
 }[draft.value?.status as DraftStatus] || undefined) as 'primary' | 'success' | 'warning' | 'info' | 'danger' | undefined)
 
 const statusLabel = computed(() => ({
-  PENDING_REVIEW: 'Tahrir kutilmoqda',
-  PUBLISHED: 'Joylangan',
-  REJECTED: 'Rad etilgan',
-  EXPIRED: "Muddati o'tgan",
+  PENDING_REVIEW: t('drafts.statusPendingReview'),
+  PUBLISHED: t('drafts.statusPublished'),
+  REJECTED: t('drafts.statusRejected'),
+  EXPIRED: t('drafts.statusExpired'),
 }[draft.value?.status as DraftStatus] || ''))
 
 const creatorName = computed(() => {
@@ -188,7 +190,7 @@ async function loadDraft() {
     if (status === 404 || status === 403) {
       notFound.value = true
     } else {
-      showApiError(e, 'Qoralamani yuklashda xato')
+      showApiError(e, t('drafts.loadError'))
     }
   } finally {
     loading.value = false
@@ -230,9 +232,9 @@ async function onSave() {
     const { data } = await reportDraftsApi.update(draft.value.id, { ...form })
     draft.value = data
     fillForm(data)
-    ElMessage.success('Saqlandi')
+    ElMessage.success(t('drafts.saved'))
   } catch (e: unknown) {
-    showApiError(e, 'Saqlashda xato')
+    showApiError(e, t('drafts.saveError'))
   } finally {
     saving.value = false
   }
@@ -244,10 +246,10 @@ async function onPublish() {
   publishing.value = true
   try {
     await reportDraftsApi.publish(draft.value.id)
-    ElMessage.success('Topshiriq muvaffaqiyatli joylandi')
+    ElMessage.success(t('drafts.reportPublished'))
     router.push({ name: 'drafts.list' })
   } catch (e: unknown) {
-    showApiError(e, 'Joylashda xato')
+    showApiError(e, t('drafts.publishError'))
   } finally {
     publishing.value = false
   }
@@ -256,11 +258,11 @@ async function onPublish() {
 async function onReject() {
   if (!draft.value) return
   try {
-    const { data } = await reportDraftsApi.reject(draft.value.id, 'Foydalanuvchi rad etdi')
+    const { data } = await reportDraftsApi.reject(draft.value.id, t('drafts.userRejected'))
     draft.value = data
-    ElMessage.info('Qoralama rad etildi')
+    ElMessage.info(t('drafts.rejected'))
   } catch (e: unknown) {
-    showApiError(e, 'Rad etishda xato')
+    showApiError(e, t('drafts.rejectError'))
   }
 }
 

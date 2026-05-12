@@ -2,15 +2,15 @@
   <el-card v-loading="loading">
     <template #header>
       <div class="header">
-        <span class="title">Qoralamalar</span>
+        <span class="title">{{ $t('drafts.listTitle') }}</span>
         <el-radio-group v-model="activeKind" size="default" @change="loadDrafts">
           <el-radio-button label="event">
             <el-icon class="kind-icon"><Calendar /></el-icon>
-            Tadbirlar ({{ eventCount }})
+            {{ $t('drafts.events') }} ({{ eventCount }})
           </el-radio-button>
           <el-radio-button label="report">
             <el-icon class="kind-icon"><Document /></el-icon>
-            Topshiriqlar ({{ reportCount }})
+            {{ $t('drafts.reports') }} ({{ reportCount }})
           </el-radio-button>
         </el-radio-group>
       </div>
@@ -19,20 +19,18 @@
     <el-empty v-if="!drafts.length">
       <template #description>
         <span class="empty-hint">
-          Qoralama yo'q. Telegram botda
-          <el-icon class="empty-hint__icon"><Microphone /></el-icon>
-          tugmasi orqali yarating.
+          {{ $t('drafts.empty') }}
         </span>
       </template>
     </el-empty>
 
     <el-table v-else :data="drafts" stripe @row-click="onRowClick">
-      <el-table-column label="Sarlavha" prop="title" min-width="240">
+      <el-table-column :label="$t('drafts.title')" prop="title" min-width="240">
         <template #default="{ row }">
           <div>
             <strong>{{ row.title }}</strong>
-            <el-tag v-if="row.is_important" type="danger" size="small" style="margin-left: 8px">Muhim</el-tag>
-            <el-tag v-if="row.is_private" type="warning" size="small" style="margin-left: 4px">Yopiq</el-tag>
+            <el-tag v-if="row.is_important" type="danger" size="small" style="margin-left: 8px">{{ $t('event.important') }}</el-tag>
+            <el-tag v-if="row.is_private" type="warning" size="small" style="margin-left: 4px">{{ $t('event.private') }}</el-tag>
           </div>
           <div style="color: var(--el-text-color-secondary); font-size: 12px; margin-top: 4px">
             {{ row.raw_transcript?.slice(0, 100) }}{{ row.raw_transcript && row.raw_transcript.length > 100 ? '…' : '' }}
@@ -40,7 +38,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column v-if="activeKind === 'event'" label="Sana / Vaqt" width="160">
+      <el-table-column v-if="activeKind === 'event'" :label="$t('drafts.dateTime')" width="160">
         <template #default="{ row }">
           <div v-if="row.date">{{ row.date }}</div>
           <div v-if="row.start_time" style="color: var(--el-text-color-secondary)">
@@ -49,27 +47,27 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="Yaratuvchi" width="180">
+      <el-table-column :label="$t('drafts.creator')" width="180">
         <template #default="{ row }">
           <span v-if="row.created_by">{{ row.created_by.last_name }} {{ row.created_by.first_name }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="Tayinlangan" width="180">
+      <el-table-column :label="$t('event.assignedTo')" width="180">
         <template #default="{ row }">
           <span v-if="row.assigned_to">{{ row.assigned_to.last_name }} {{ row.assigned_to.first_name }}</span>
           <el-tag v-else-if="row.target_direction_name" size="small">{{ row.target_direction_name }}</el-tag>
-          <span v-else style="color: var(--el-text-color-placeholder)">— tanlanmagan</span>
+          <span v-else style="color: var(--el-text-color-placeholder)">{{ $t('drafts.notAssigned') }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="Holat" width="140">
+      <el-table-column :label="$t('drafts.status')" width="140">
         <template #default="{ row }">
           <el-tag :type="statusType(row.status)">{{ statusLabel(row.status) }}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column label="Yaratilgan" width="160">
+      <el-table-column :label="$t('drafts.created')" width="160">
         <template #default="{ row }">
           {{ formatDate(row.created_at) }}
         </template>
@@ -81,12 +79,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Calendar, Document, Microphone } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
+import { Calendar, Document } from '@element-plus/icons-vue'
 import { eventDraftsApi, reportDraftsApi } from '@/api/drafts'
 import type { EventDraft, ReportDraft, DraftStatus } from '@/types/draft'
 import { showApiError } from '@/utils/api-error'
 
 const router = useRouter()
+const { t } = useI18n()
 const activeKind = ref<'event' | 'report'>('event')
 const drafts = ref<(EventDraft | ReportDraft)[]>([])
 const loading = ref(false)
@@ -106,7 +106,7 @@ async function loadDrafts() {
       reportCount.value = data.count
     }
   } catch (e: unknown) {
-    showApiError(e, 'Qoralamalarni yuklashda xato')
+    showApiError(e, t('drafts.loadError'))
   } finally {
     loading.value = false
   }
@@ -142,10 +142,10 @@ function statusType(s: DraftStatus): 'primary' | 'success' | 'warning' | 'info' 
 
 function statusLabel(s: DraftStatus): string {
   return {
-    PENDING_REVIEW: 'Tahrir kutilmoqda',
-    PUBLISHED: 'Joylangan',
-    REJECTED: 'Rad etilgan',
-    EXPIRED: "Muddati o'tgan",
+    PENDING_REVIEW: t('drafts.statusPendingReview'),
+    PUBLISHED: t('drafts.statusPublished'),
+    REJECTED: t('drafts.statusRejected'),
+    EXPIRED: t('drafts.statusExpired'),
   }[s] || s
 }
 
