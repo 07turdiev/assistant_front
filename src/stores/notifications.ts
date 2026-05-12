@@ -24,10 +24,18 @@ export const useNotificationsStore = defineStore('notifications', () => {
   }
 
   async function markRead(ids: string[]) {
-    if (ids.length === 0) return
-    await notificationsApi.markRead(ids)
+    // WebSocket orqali kelgan vaqtinchalik bildirishnomalar (`ws-...` / `report-...`)
+    // backend DB'da yo'q — UUID validation 400 beradi. Faqat real UUID'larni jo'natamiz.
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const realIds = ids.filter((id) => uuidRe.test(id))
+
+    // Mahalliy state — har qanday id (real + vaqtinchalik) seen=true
     items.value = items.value.map((n) => (ids.includes(n.id) ? { ...n, seen: true } : n))
     unreadCount.value = Math.max(0, unreadCount.value - ids.length)
+
+    if (realIds.length > 0) {
+      await notificationsApi.markRead(realIds)
+    }
   }
 
   async function remove(id: string) {
