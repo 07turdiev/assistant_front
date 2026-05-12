@@ -152,6 +152,12 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/admin/RegionsView.vue'),
     meta: { requiresAuth: true, roles: ['SUPER_ADMIN', 'ADMIN'], titleKey: 'admin.regions' },
   },
+  {
+    path: '/admin/chats',
+    name: 'admin.chats',
+    component: () => import('@/views/admin/AdminChatsView.vue'),
+    meta: { requiresAuth: true, roles: ['SUPER_ADMIN'], titleKey: 'admin.chats' },
+  },
 
   {
     path: '/:pathMatch(.*)*',

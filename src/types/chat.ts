@@ -9,4 +9,14 @@ export interface ChatMessage {
   receiver: User
   files: Attachment[]
   created_at: string
+  is_deleted?: boolean
+  deleted_at?: string | null
+  deleted_by?: User | null
+}
+
+export interface ChatThreadSummary {
+  user_a: User
+  user_b: User
+  last_message_at: string | null
+  total: number
 }

@@ -140,6 +140,7 @@ import { ElMessage } from 'element-plus'
 import {
   ArrowDown,
   Calendar,
+  ChatDotRound,
   ChatLineRound,
   Document,
   HomeFilled,
@@ -186,14 +187,21 @@ const navItems = [
 ]
 
 const canSeeAdmin = computed(() => auth.hasRole('SUPER_ADMIN', 'ADMIN'))
+const isSuperAdmin = computed(() => auth.hasRole('SUPER_ADMIN'))
 
-const adminItems = [
-  { name: 'admin.dashboard', path: '/admin', label: 'admin.dashboard', icon: Setting },
-  { name: 'admin.users', path: '/admin/users', label: 'admin.users', icon: User },
-  { name: 'admin.directions', path: '/admin/directions', label: 'admin.directions', icon: OfficeBuilding },
-  { name: 'admin.organisations', path: '/admin/organisations', label: 'admin.organisations', icon: OfficeBuilding },
-  { name: 'admin.regions', path: '/admin/regions', label: 'admin.regions', icon: OfficeBuilding },
-]
+const adminItems = computed(() => {
+  const items = [
+    { name: 'admin.dashboard', path: '/admin', label: 'admin.dashboard', icon: Setting },
+    { name: 'admin.users', path: '/admin/users', label: 'admin.users', icon: User },
+    { name: 'admin.directions', path: '/admin/directions', label: 'admin.directions', icon: OfficeBuilding },
+    { name: 'admin.organisations', path: '/admin/organisations', label: 'admin.organisations', icon: OfficeBuilding },
+    { name: 'admin.regions', path: '/admin/regions', label: 'admin.regions', icon: OfficeBuilding },
+  ]
+  if (isSuperAdmin.value) {
+    items.push({ name: 'admin.chats', path: '/admin/chats', label: 'admin.chats', icon: ChatDotRound })
+  }
+  return items
+})
 
 function isActive(path: string): boolean {
   if (path === '/admin') return route.path === '/admin'
