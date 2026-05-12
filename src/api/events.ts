@@ -18,22 +18,18 @@ export const eventsApi = {
     return apiClient.get<Event>(`/events/${id}/`)
   },
   create(payload: FormData) {
-    return apiClient.post<Event>('/events/', payload, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    // FormData uchun Content-Type'ni qo'lda o'rnatmaymiz — browser boundary bilan
+    // avtomatik qo'yadi (aks holda fayllar parse bo'lmaydi).
+    return apiClient.post<Event>('/events/', payload)
   },
   update(id: string, payload: FormData) {
-    return apiClient.put<Event>(`/events/${id}/`, payload, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    return apiClient.put<Event>(`/events/${id}/`, payload)
   },
   delete(id: string) {
     return apiClient.delete(`/events/${id}/`)
   },
   uploadProtocols(id: string, files: FormData) {
-    return apiClient.patch(`/events/${id}/protocols/`, files, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    return apiClient.patch(`/events/${id}/protocols/`, files)
   },
   deleteProtocol(eventId: string, protocolId: string) {
     return apiClient.delete(`/events/${eventId}/protocols/${protocolId}/`)

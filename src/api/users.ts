@@ -6,10 +6,10 @@ export const usersApi = {
     return apiClient.get<UserMe>('/users/me/')
   },
   updateMe(data: FormData | Partial<UserMe>) {
-    const isForm = data instanceof FormData
-    return apiClient.put<UserMe>('/users/me/', data, {
-      headers: isForm ? { 'Content-Type': 'multipart/form-data' } : undefined,
-    })
+    // Diqqat: FormData uchun Content-Type'ni qo'lda o'rnatmaymiz — aks holda
+    // boundary qo'shilmay qoladi va backend faylni (avatar) parse qila olmaydi.
+    // Axios/browser uni avtomatik to'g'ri boundary bilan qo'yadi.
+    return apiClient.put<UserMe>('/users/me/', data)
   },
   changePassword(payload: { old_password: string; new_password: string }) {
     return apiClient.patch('/users/me/password/', payload)

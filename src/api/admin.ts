@@ -105,10 +105,9 @@ export const adminUsersApi = {
     return apiClient.post<User>('/users/', payload)
   },
   update(id: string, payload: AdminUserUpdatePayload | FormData) {
-    const isForm = payload instanceof FormData
-    return apiClient.put<User>(`/users/${id}/`, payload, {
-      headers: isForm ? { 'Content-Type': 'multipart/form-data' } : undefined,
-    })
+    // FormData uchun Content-Type'ni qo'lda o'rnatmaymiz — browser boundary bilan
+    // avtomatik qo'yadi (aks holda fayllar parse bo'lmaydi).
+    return apiClient.put<User>(`/users/${id}/`, payload)
   },
   patch(id: string, payload: Partial<AdminUserUpdatePayload>) {
     return apiClient.patch<User>(`/users/${id}/`, payload)

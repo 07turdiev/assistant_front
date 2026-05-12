@@ -138,11 +138,31 @@ const initials = computed(() => {
   return `${auth.user.last_name?.[0] || ''}${auth.user.first_name?.[0] || ''}`.toUpperCase()
 })
 
+// Backend Pillow JPEG/PNG/GIF/WebP'ni qabul qiladi. HEIC (iPhone fotolari) yoki
+// AVIF — qo'llanmaydi. Bu format'lar 200 OK qaytaradi, lekin fayl saqlanmaydi.
+const ACCEPTED_AVATAR_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024  // 5 MB
+
 function onAvatarChange(file: UploadFile) {
-  if (file.raw) {
-    avatarFile.value = file.raw
-    avatarPreview.value = URL.createObjectURL(file.raw)
+  if (!file.raw) return
+
+  if (!ACCEPTED_AVATAR_MIME.includes(file.raw.type)) {
+    ElMessage.error(
+      `Rasm formati qo'llanmaydi (${file.raw.type || "noma'lum"}). ` +
+      `JPEG, PNG, WebP yoki GIF tanlang. iPhone fotolari uchun "JPEG" formatga ` +
+      `o'tkazing (sozlamalar → Kamera → Formatlar → Eng mos).`
+    )
+    return
   }
+
+  if (file.raw.size > MAX_AVATAR_BYTES) {
+    const mb = (file.raw.size / 1024 / 1024).toFixed(1)
+    ElMessage.error(`Rasm hajmi katta (${mb} MB). Maksimum: 5 MB.`)
+    return
+  }
+
+  avatarFile.value = file.raw
+  avatarPreview.value = URL.createObjectURL(file.raw)
 }
 
 function loadInitial() {

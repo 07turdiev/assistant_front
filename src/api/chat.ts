@@ -10,9 +10,9 @@ export interface ChatPage {
 
 export const chatApi = {
   send(payload: FormData) {
-    return apiClient.post<ChatMessage>('/chat/', payload, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    // FormData uchun Content-Type'ni qo'lda o'rnatmaymiz — browser boundary bilan
+    // avtomatik qo'yadi (aks holda fayllar parse bo'lmaydi).
+    return apiClient.post<ChatMessage>('/chat/', payload)
   },
   history(params: { receiver_id: string; page?: number; page_size?: number }) {
     return apiClient.get<ChatPage>('/chat/', { params })
