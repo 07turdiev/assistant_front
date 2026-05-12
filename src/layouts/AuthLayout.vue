@@ -14,9 +14,6 @@
 
       <div class="auth-brand__center">
         <h1 class="auth-brand__title">Raqamli yordamchi tizimi</h1>
-        <p class="auth-brand__quote">
-          «Madaniyat — millatning ko'zgusi, kelajakning poydevori»
-        </p>
       </div>
 
       <div class="auth-brand__footer">
@@ -56,12 +53,13 @@ import LangSwitch from '@/components/common/LangSwitch.vue'
 <style lang="scss" scoped>
 @use '@/assets/styles/variables.scss' as *;
 
-// Davlat tashkiloti uchun rasmiy palette
-$navy-900: #0a1e3f;
-$navy-800: #102a4e;
-$navy-700: #163566;
+// Davlat tashkiloti uchun rasmiy palette — sofistikatsiyalangan charcoal/teal
+$bg-900: #0b1418;
+$bg-800: #122026;
+$bg-700: #1a2f37;
+$accent: #1f6f74;       // ko'k-yashil aksent (madaniy meros, sokin)
 $gold: #c9a961;
-$gold-soft: rgba(201, 169, 97, 0.18);
+$gold-soft: rgba(201, 169, 97, 0.16);
 
 .auth-shell {
   min-height: 100vh;
@@ -83,8 +81,9 @@ $gold-soft: rgba(201, 169, 97, 0.18);
   padding: 48px 56px;
   color: #fff;
   background:
-    radial-gradient(circle at 80% 10%, rgba(201, 169, 97, 0.10) 0%, transparent 50%),
-    linear-gradient(160deg, $navy-700 0%, $navy-800 50%, $navy-900 100%);
+    radial-gradient(ellipse at 20% 0%, rgba(31, 111, 116, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(201, 169, 97, 0.10) 0%, transparent 45%),
+    linear-gradient(155deg, $bg-700 0%, $bg-800 45%, $bg-900 100%);
   overflow: hidden;
   isolation: isolate;
 
@@ -116,13 +115,9 @@ $gold-soft: rgba(201, 169, 97, 0.18);
   }
 
   &__seal {
-    width: 56px;
-    height: 56px;
-    filter: drop-shadow(0 4px 12px rgba(201, 169, 97, 0.35));
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(201, 169, 97, 0.40);
-    border-radius: 12px;
-    padding: 6px;
+    width: 64px;
+    height: 64px;
+    filter: drop-shadow(0 4px 16px rgba(201, 169, 97, 0.30));
   }
 
   &__ministry {
@@ -242,7 +237,7 @@ $gold-soft: rgba(201, 169, 97, 0.18);
     margin: 0 0 8px;
     font-size: 26px;
     font-weight: 700;
-    color: $navy-900;
+    color: $bg-900;
     letter-spacing: -0.01em;
   }
 
