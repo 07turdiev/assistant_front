@@ -43,31 +43,6 @@ export const useWebPushStore = defineStore('webpush', () => {
     return false
   })
 
-  /** SW `ready` + sahifani aslida boshqarayotganini ta'minlaydi.
-   *
-   * Birinchi marta o'rnatilganda SW `activated` holatga keladi, lekin sahifani
-   * darhol nazorat qilmaydi (controller hali eski yoki null). Bu paytda
-   * `pushManager.subscribe()` chaqirilsa — "service worker is not the client's
-   * active service worker" xatosi keladi. Shuning uchun kontroller ulashguncha
-   * kutamiz (eng ko'pi 3 sekund — safety timeout).
-   */
-  async function awaitActiveServiceWorker(): Promise<ServiceWorkerRegistration> {
-    const reg = await navigator.serviceWorker.ready
-    if (navigator.serviceWorker.controller) return reg
-    await new Promise<void>((resolve) => {
-      const handler = () => {
-        navigator.serviceWorker.removeEventListener('controllerchange', handler)
-        resolve()
-      }
-      navigator.serviceWorker.addEventListener('controllerchange', handler)
-      setTimeout(() => {
-        navigator.serviceWorker.removeEventListener('controllerchange', handler)
-        resolve()
-      }, 3000)
-    })
-    return reg
-  }
-
   async function init() {
     isSupported.value =
       'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
@@ -79,7 +54,7 @@ export const useWebPushStore = defineStore('webpush', () => {
     dismissed.value = false
     status.value = Notification.permission as WebPushStatus
     try {
-      const reg = await awaitActiveServiceWorker()
+      const reg = await navigator.serviceWorker.ready
       const sub = await reg.pushManager.getSubscription()
       if (sub) {
         status.value = 'subscribed'
@@ -105,7 +80,7 @@ export const useWebPushStore = defineStore('webpush', () => {
     }
 
     const { data } = await webpushApi.vapidPublicKey()
-    const reg = await awaitActiveServiceWorker()
+    const reg = await navigator.serviceWorker.ready
 
     const existing = await reg.pushManager.getSubscription()
     if (existing) await existing.unsubscribe()
@@ -129,7 +104,7 @@ export const useWebPushStore = defineStore('webpush', () => {
   }
 
   async function unsubscribe(): Promise<void> {
-    const reg = await awaitActiveServiceWorker()
+    const reg = await navigator.serviceWorker.ready
     const sub = await reg.pushManager.getSubscription()
     if (sub) {
       await sub.unsubscribe()

@@ -4,11 +4,11 @@
       <div class="header">
         <span class="title">Qoralamalar</span>
         <el-radio-group v-model="activeKind" size="default" @change="loadDrafts">
-          <el-radio-button value="event">
+          <el-radio-button label="event">
             <el-icon class="kind-icon"><Calendar /></el-icon>
             Tadbirlar ({{ eventCount }})
           </el-radio-button>
-          <el-radio-button value="report">
+          <el-radio-button label="report">
             <el-icon class="kind-icon"><Document /></el-icon>
             Topshiriqlar ({{ reportCount }})
           </el-radio-button>
