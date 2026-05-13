@@ -6,7 +6,8 @@
     "ministry2": "Маданият вазирлиги"
   },
   "header": {
-    "markAllRead": "Ҳаммасини ўқилди"
+    "markAllRead": "Ҳаммасини ўқилди",
+    "openTelegramBot": "Telegram бот"
   },
   "common": {
     "actions": "Амаллар",

@@ -6,7 +6,8 @@
     "ministry2": "Министерство культуры"
   },
   "header": {
-    "markAllRead": "Прочитать все"
+    "markAllRead": "Прочитать все",
+    "openTelegramBot": "Telegram-бот"
   },
   "common": {
     "actions": "Действия",

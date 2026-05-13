@@ -6,7 +6,8 @@
     "ministry2": "Madaniyat vazirligi"
   },
   "header": {
-    "markAllRead": "Hammasini o'qildi"
+    "markAllRead": "Hammasini o'qildi",
+    "openTelegramBot": "Telegram bot"
   },
   "common": {
     "actions": "Amallar",

@@ -74,6 +74,20 @@
         </template>
       </el-dropdown>
 
+      <a
+        v-if="telegramBotUrl"
+        :href="telegramBotUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="icon-btn icon-btn--telegram"
+        :aria-label="$t('header.openTelegramBot')"
+        :title="$t('header.openTelegramBot')"
+      >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path fill="currentColor" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.563 8.265-1.86 8.766c-.14.62-.51.77-1.034.479l-2.852-2.103-1.376 1.325c-.152.152-.28.28-.574.28l.205-2.905 5.29-4.78c.23-.205-.05-.32-.357-.115l-6.54 4.119-2.82-.881c-.613-.193-.626-.613.128-.907l11.03-4.252c.51-.19.956.117.79.974z"/>
+        </svg>
+      </a>
+
       <LangSwitch class="lang-switch" />
 
       <button class="icon-btn icon-btn--settings" @click="goProfile" aria-label="Profile">
@@ -152,6 +166,14 @@ const auth = useAuthStore()
 const notifications = useNotificationsStore()
 const router = useRouter()
 const { locale } = useI18n()
+
+// Telegram bot link — .env'dagi VITE_TG_BOT_USERNAME bo'lmasa header'da tugma ko'rinmaydi.
+const telegramBotUrl = computed(() => {
+  const raw = (import.meta.env.VITE_TG_BOT_USERNAME || '').trim()
+  if (!raw) return ''
+  const username = raw.replace(/^@/, '')
+  return `https://t.me/${username}`
+})
 
 const fullNameWithFather = computed(() => {
   if (!auth.user) return ''
@@ -289,6 +311,7 @@ onMounted(async () => {
   justify-content: center;
   transition: background-color 0.12s ease, color 0.12s ease;
   flex-shrink: 0;
+  text-decoration: none;
 
   &:hover {
     background: $color-bg-hover;
@@ -297,6 +320,23 @@ onMounted(async () => {
 
   &:active {
     background: $color-border-soft;
+  }
+
+  /* Telegram brand button — ko'k rangda, e'tiborni jalb qiladi */
+  &--telegram {
+    color: #229ED9;
+
+    svg {
+      display: block;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    &:hover {
+      background: rgba(34, 158, 217, 0.10);
+      color: #1c8bc0;
+
+      svg { transform: scale(1.08); }
+    }
   }
 }
 
