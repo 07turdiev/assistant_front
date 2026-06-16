@@ -193,6 +193,14 @@
     "searchResults": "Topilgan natijalar",
     "selectDirectionFirst": "Avval yo'nalishni tanlang — keyin xodimlar ro'yxati ko'rinadi",
     "noEmployeesInDirection": "Bu yo'nalishda hodimlar topilmadi",
+    "selectDepartments": "Bo'lim/boshqarmalarni tanlang",
+    "selectDepartmentsHint": "Bo'lim yoki boshqarma tanlang",
+    "departmentHeadHint": "Tanlangan bo'limning ma'sul shaxsi (boshlig'i) avtomatik qo'shiladi",
+    "selectMyTeam": "O'z jamoangizdan tanlang",
+    "noTeam": "Sizda quyi xodimlar yo'q",
+    "participantDepartments": "Qatnashuvchi bo'limlar",
+    "forward": "Yo'naltirish",
+    "forwardTitle": "Quyi xodimlarga yo'naltirish",
     "submitBtn": "Topshiriq qo'shish",
     "subordinateTag": "Yordamchi",
     "reminder": {
@@ -212,6 +220,7 @@
     "sphere": "Soha",
     "type": "Turi",
     "speaker": "Ma'ruzachi",
+    "organizer": "Tashkilotchi",
     "direction": "Yo'nalish",
     "participants": "Qatnashchilar",
     "participantsHint": "Qatnashchilarni qidirib tanlang",
@@ -348,7 +357,20 @@
     "confirmDelete": "Yo'nalishni o'chirib tashlamoqchimisiz?",
     "itemsPerPage": "Ko'rsatishlar soni",
     "page": "Sahifa",
-    "of": "dan"
+    "of": "dan",
+    "kind": "Turi",
+    "head": "Boshliq (ma'sul shaxs)",
+    "headHint": "Boshliqni tanlang",
+    "supervisor": "Nazoratchi (o'rinbosar)",
+    "supervisorHint": "Nazoratchini tanlang"
+  },
+  "directionKind": {
+    "boshqarma": "Boshqarma",
+    "bolim": "Bo'lim",
+    "xizmat": "Xizmat",
+    "mutaxassis": "Yakka mutaxassis",
+    "kotibiyat": "Kotibiyat",
+    "boshqa": "Boshqa"
   },
   "authLayout": {
     "title": "Raqamli yordamchi tizimi",

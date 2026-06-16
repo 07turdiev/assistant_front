@@ -113,62 +113,6 @@
       </template>
     </template>
 
-    <!-- ===== TASKS TAB ===== -->
-    <template v-else-if="activeTab === 'task'">
-      <div v-if="!selectedReportId" class="panel-body">
-        <div v-if="canCreateTask" class="create-block">
-          <el-button type="primary" size="small" class="create-btn" @click="taskCreateOpen = true">
-            + {{ $t('rightPanel.newTask') }}
-          </el-button>
-        </div>
-        <el-tabs v-model="taskScope" class="report-scope-tabs">
-          <el-tab-pane :label="$t('rightPanel.activeScope')" name="active" />
-          <el-tab-pane :label="$t('rightPanel.historyScope')" name="history" />
-        </el-tabs>
-        <div class="search-block">
-          <el-input
-            v-model="searchQuery"
-            :placeholder="$t('common.search')"
-            clearable
-            size="small"
-            :prefix-icon="Search"
-          />
-        </div>
-        <div v-if="visibleTasks.length === 0" class="empty">
-          {{ $t('rightPanel.noTasks') }}
-        </div>
-        <div v-else-if="filteredTasks.length === 0" class="empty">
-          —
-        </div>
-        <div
-          v-for="r in filteredTasks"
-          :key="r.id"
-          class="row"
-          @click="openReportDetail(r)"
-        >
-          <el-avatar :size="36" :src="r.sender?.avatar_url || undefined">
-            {{ initialsFor(r.sender) }}
-          </el-avatar>
-          <div class="row__content">
-            <div class="row__name">{{ formatUser(r.sender) }}</div>
-            <div class="row__preview">{{ truncate(r.description) }}</div>
-          </div>
-          <el-tag v-if="r.reply" :color="replyColor(r.reply)" size="small"
-                  :style="{ color:'#fff', backgroundColor: replyColor(r.reply), border:'none' }">
-            {{ replyLabel(r.reply, 'task') }}
-          </el-tag>
-        </div>
-      </div>
-
-      <ReportDetailPanel
-        v-else
-        :report="selectedReport"
-        kind="task"
-        @back="closeReportDetail"
-        @replied="onReportReplied"
-      />
-    </template>
-
     <!-- ===== ANNOUNCEMENTS TAB (umumiy e'lonlar) ===== -->
     <template v-else>
       <div v-if="!selectedReportId" class="panel-body">
@@ -211,26 +155,9 @@
       <ReportDetailPanel
         v-else
         :report="selectedReport"
-        kind="announcement"
         @back="closeReportDetail"
-        @replied="onReportReplied"
       />
     </template>
-
-    <!-- Yangi topshiriq dialogi -->
-    <el-dialog v-model="taskCreateOpen" :title="$t('reports.taskTitle')" width="480px">
-      <el-form :model="createForm" label-position="top">
-        <el-form-item :label="$t('reports.description')" required>
-          <el-input v-model="createForm.description" type="textarea" :rows="4" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="taskCreateOpen = false">{{ $t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="creating" @click="onCreateReport">
-          {{ $t('common.save') }}
-        </el-button>
-      </template>
-    </el-dialog>
 
     <!-- Umumiy e'lon dialogi (chap va o'ng paneldagi tugmalar uchun yagona) -->
     <AnnouncementDialog v-model="announcementDialogOpen" @created="loadAnnouncements" />
@@ -238,10 +165,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
 import { ArrowLeft, Close, Promotion, Search } from '@element-plus/icons-vue'
 import { usersApi } from '@/api/users'
 import { chatApi } from '@/api/chat'
@@ -258,7 +184,7 @@ import type { ChatMessage } from '@/types/chat'
 import ReportDetailPanel from './ReportDetailPanel.vue'
 import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
 
-type TabKey = 'chat' | 'task' | 'announcement'
+type TabKey = 'chat' | 'announcement'
 
 withDefaults(
   defineProps<{
@@ -294,20 +220,12 @@ const draft = ref('')
 const sending = ref(false)
 const threadRef = ref<HTMLElement | null>(null)
 
-// Tasks / Announcements
-const tasksAll = ref<Report[]>([])
+// Announcements
 const announcementsAll = ref<Report[]>([])
-const taskScope = ref<'active' | 'history'>('active')
 const selectedReportId = ref<string | null>(null)
-const selectedReport = computed<Report | null>(() => {
-  const all = [...tasksAll.value, ...announcementsAll.value]
-  return all.find((r) => r.id === selectedReportId.value) || null
-})
-
-const visibleTasks = computed(() => {
-  if (taskScope.value === 'active') return tasksAll.value.filter((r) => !r.reply)
-  return tasksAll.value.filter((r) => r.reply)
-})
+const selectedReport = computed<Report | null>(
+  () => announcementsAll.value.find((r) => r.id === selectedReportId.value) || null,
+)
 
 // Qidiruv natijalari — har tab uchun mahalliy filter (in-memory)
 const filteredChatPartners = computed(() => {
@@ -331,31 +249,17 @@ function matchReport(r: Report, q: string): boolean {
   return hay.includes(q)
 }
 
-const filteredTasks = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
-  return visibleTasks.value.filter((r) => matchReport(r, q))
-})
 const filteredAnnouncements = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   return announcementsAll.value.filter((r) => matchReport(r, q))
 })
 
-// Create dialog
-const canCreateTask = computed(() => auth.hasRole('PREMIER_MINISTER', 'HEAD'))
 // Umumiy e'lonni har qanday foydalanuvchi bera oladi
 const canCreateAnnouncement = computed(() => auth.isAuthenticated)
-const taskCreateOpen = ref(false)            // topshiriq dialogi
 const announcementDialogOpen = ref(false)    // e'lon dialogi (umumiy komponent)
-const creating = ref(false)
-const createForm = reactive({ description: '' })
 
 const tabs = computed(() => [
   { key: 'chat' as TabKey, label: t('rightPanel.chat'), count: chat.unreadCount },
-  {
-    key: 'task' as TabKey,
-    label: t('rightPanel.task'),
-    count: tasksAll.value.filter((r) => !r.reply).length,
-  },
   {
     key: 'announcement' as TabKey,
     label: t('rightPanel.announcement'),
@@ -383,16 +287,6 @@ function initialsFor(u: User | null | undefined): string {
 function truncate(text: string, max = 50): string {
   if (!text) return ''
   return text.length > max ? text.slice(0, max) + '…' : text
-}
-
-function replyLabel(value: string, kind: 'task' | 'request'): string {
-  const list = kind === 'task' ? lookup.taskReplies : lookup.requestReplies
-  return list.find((c) => c.value === value)?.label || value
-}
-
-function replyColor(value: string): string {
-  const list = [...lookup.taskReplies, ...lookup.requestReplies]
-  return list.find((c) => c.value === value)?.color || '#909399'
 }
 
 function setActiveChatInSW(partnerId: string | null) {
@@ -466,17 +360,7 @@ async function onSendMessage() {
   }
 }
 
-// Reports
-async function loadTasks() {
-  try {
-    const [a, h] = await Promise.all([
-      reportsApi.tasksActive(),
-      reportsApi.tasksInactive({ page: 1, page_size: 100 }),
-    ])
-    tasksAll.value = [...a.data, ...h.data.results]
-  } catch (_e) { /* ignore */ }
-}
-
+// E'lonlar
 async function loadAnnouncements() {
   try {
     const { data } = await reportsApi.announcements({ page: 1, page_size: 100 })
@@ -492,35 +376,11 @@ function closeReportDetail() {
   selectedReportId.value = null
 }
 
-async function onReportReplied() {
-  // Faqat topshiriqlarga javob beriladi (e'longa javob yo'q)
-  if (activeTab.value === 'task') await loadTasks()
-}
-
-async function onCreateReport() {
-  const desc = createForm.description.trim()
-  if (!desc) return
-  creating.value = true
-  try {
-    // Bu dialog endi faqat topshiriq uchun (e'lon AnnouncementDialog orqali)
-    await reportsApi.create({ description: desc, kind: 'TASK' })
-    ElMessage.success(t('common.success'))
-    createForm.description = ''
-    taskCreateOpen.value = false
-    await loadTasks()
-  } catch (e: unknown) {
-    showApiError(e, t('common.error'))
-  } finally {
-    creating.value = false
-  }
-}
-
 async function refreshAll() {
   if (!auth.isAuthenticated) return
   await Promise.all([
     lookup.loadAll(),
     loadChatPartners(),
-    loadTasks(),
     loadAnnouncements(),
     chat.fetchUnreadCount(),
   ])

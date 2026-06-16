@@ -15,7 +15,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('directionsPage.parent')" required>
+            <el-form-item :label="$t('directionsPage.parent')">
               <el-select v-model="form.parent_id" :placeholder="$t('directionsPage.parentHint')" filterable clearable style="width: 100%">
                 <el-option
                   v-for="d in items"
@@ -25,7 +25,30 @@
                   :disabled="editing?.id === d.id"
                 />
               </el-select>
-              <p v-if="showErrors && !form.parent_id" class="error-text">{{ $t('common.required') }}</p>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="24">
+          <el-col :span="8">
+            <el-form-item :label="$t('directionsPage.kind')">
+              <el-select v-model="form.kind" style="width: 100%">
+                <el-option v-for="k in kindOptions" :key="k.value" :value="k.value" :label="k.label" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item :label="$t('directionsPage.head')">
+              <el-select v-model="form.head_id" filterable clearable :placeholder="$t('directionsPage.headHint')" style="width: 100%">
+                <el-option v-for="u in users" :key="u.id" :value="u.id" :label="userName(u)" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item :label="$t('directionsPage.supervisor')">
+              <el-select v-model="form.supervisor_id" filterable clearable :placeholder="$t('directionsPage.supervisorHint')" style="width: 100%">
+                <el-option v-for="u in users" :key="u.id" :value="u.id" :label="userName(u)" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -55,6 +78,12 @@
         <el-table-column :label="$t('directionsPage.parent')">
           <template #default="{ row }">
             <span v-if="parentName(row.parent_id)">{{ parentName(row.parent_id) }}</span>
+            <span v-else class="muted">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('directionsPage.head')">
+          <template #default="{ row }">
+            <span v-if="row.head">{{ userName(row.head) }}</span>
             <span v-else class="muted">—</span>
           </template>
         </el-table-column>
@@ -106,25 +135,47 @@ import {
   adminDirectionsApi,
   adminOrganisationsApi,
   type Direction,
+  type DirectionHead,
   type DirectionPayload,
   type Organisation,
 } from '@/api/admin'
+import { usersApi } from '@/api/users'
+import type { User } from '@/types/user'
 import { showApiError } from '@/utils/api-error'
 
 const { t, locale } = useI18n()
 
 const items = ref<Direction[]>([])
 const organisations = ref<Organisation[]>([])
+const users = ref<User[]>([])
 const loading = ref(false)
 const saving = ref(false)
 const editing = ref<Direction | null>(null)
 const showErrors = ref(false)
+
+// Tashkiliy birlik turlari (backend DirectionKind bilan mos)
+const kindOptions = computed(() => [
+  { value: 'BOSHQARMA', label: t('directionKind.boshqarma') },
+  { value: 'BOLIM', label: t('directionKind.bolim') },
+  { value: 'XIZMAT', label: t('directionKind.xizmat') },
+  { value: 'MUTAXASSIS', label: t('directionKind.mutaxassis') },
+  { value: 'KOTIBIYAT', label: t('directionKind.kotibiyat') },
+  { value: 'BOSHQA', label: t('directionKind.boshqa') },
+])
+
+function userName(u: User | DirectionHead): string {
+  const parts = [u.last_name, u.first_name].filter(Boolean).join(' ').trim()
+  return parts || u.username || '—'
+}
 
 const form = reactive<DirectionPayload>({
   name_uz: '',
   name_ru: '',
   organisation_id: '',
   parent_id: null,
+  kind: 'BOLIM',
+  head_id: null,
+  supervisor_id: null,
 })
 
 const page = ref(1)
@@ -147,6 +198,9 @@ function resetForm() {
   form.name_ru = ''
   form.organisation_id = organisations.value[0]?.id || ''
   form.parent_id = null
+  form.kind = 'BOLIM'
+  form.head_id = null
+  form.supervisor_id = null
   showErrors.value = false
 }
 
@@ -161,6 +215,9 @@ function openEdit(row: Direction) {
   form.name_ru = row.name_ru || row.name_uz
   form.organisation_id = row.organisation_id
   form.parent_id = row.parent_id
+  form.kind = row.kind || 'BOLIM'
+  form.head_id = row.head?.id || null
+  form.supervisor_id = row.supervisor?.id || null
   showErrors.value = false
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -168,12 +225,14 @@ function openEdit(row: Direction) {
 async function loadAll() {
   loading.value = true
   try {
-    const [dirs, orgs] = await Promise.all([
+    const [dirs, orgs, us] = await Promise.all([
       adminDirectionsApi.list({ page_size: 200 }),
       adminOrganisationsApi.list({ page_size: 200 }),
+      usersApi.list({ page_size: 300 }),
     ])
     items.value = dirs.data.results || []
     organisations.value = orgs.data.results || []
+    users.value = us.data.results || []
     if (organisations.value.length > 0 && !form.organisation_id) {
       form.organisation_id = organisations.value[0].id
     }
@@ -186,7 +245,7 @@ async function loadAll() {
 
 async function onSave() {
   showErrors.value = true
-  if (!form.name_uz || !form.parent_id) return
+  if (!form.name_uz) return
   if (!form.organisation_id && organisations.value.length > 0) {
     form.organisation_id = organisations.value[0].id
   }
@@ -197,6 +256,9 @@ async function onSave() {
       name_ru: form.name_ru || form.name_uz,
       organisation_id: form.organisation_id,
       parent_id: form.parent_id,
+      kind: form.kind,
+      head_id: form.head_id || null,
+      supervisor_id: form.supervisor_id || null,
     }
     if (editing.value) {
       await adminDirectionsApi.update(editing.value.id, payload)

@@ -8,18 +8,14 @@ interface PageResp<T> {
   results: T[]
 }
 
+// Reports moduli endi faqat umumiy e'lonlar uchun (Topshiriq olib tashlandi)
 export const reportsApi = {
   create(payload: {
     description: string
-    kind?: 'TASK' | 'ANNOUNCEMENT'
     // E'lon auditoriyasi — bo'sh/berilmasa HAMMAGA, aks holda shu bo'limlarga
     target_direction_ids?: string[]
   }) {
-    // Backend bir nechta Report qaytarishi mumkin (Premier → har yordamchi uchun alohida)
     return apiClient.post<Report[]>('/reports/', payload)
-  },
-  reply(payload: { report_id: string; reply?: string; notify_time?: number }) {
-    return apiClient.post('/reports/reply/', payload)
   },
   retrieve(id: string) {
     return apiClient.get<Report>(`/reports/${id}/`)
@@ -31,16 +27,7 @@ export const reportsApi = {
     return apiClient.delete(`/reports/${id}/`)
   },
 
-  tasksActive() {
-    return apiClient.get<Report[]>('/reports/tasks/active/')
-  },
-  tasksInactive(params?: { page?: number; page_size?: number; search?: string }) {
-    return apiClient.get<PageResp<Report>>('/reports/tasks/inactive/', { params })
-  },
-  tasksCount() {
-    return apiClient.get<{ count: number }>('/reports/tasks/count/')
-  },
-  // Umumiy e'lonlar — hammaga ko'rinadi
+  // Umumiy e'lonlar — auditoriya bo'yicha ko'rinadi
   announcements(params?: { page?: number; page_size?: number; search?: string }) {
     return apiClient.get<PageResp<Report>>('/reports/announcements/', { params })
   },

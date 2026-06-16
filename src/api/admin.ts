@@ -39,12 +39,22 @@ export interface UserListParams {
   ordering?: string
 }
 
+export interface DirectionHead {
+  id: string
+  first_name?: string
+  last_name?: string
+  username?: string
+}
+
 export interface Direction {
   id: string
   name_uz: string
   name_ru: string
   organisation_id: string
   parent_id: string | null
+  kind?: string
+  head?: DirectionHead | null
+  supervisor?: DirectionHead | null
   children?: Direction[]
 }
 
@@ -53,6 +63,9 @@ export interface DirectionPayload {
   name_ru: string
   organisation_id: string
   parent_id?: string | null
+  kind?: string
+  head_id?: string | null
+  supervisor_id?: string | null
 }
 
 export interface Organisation {

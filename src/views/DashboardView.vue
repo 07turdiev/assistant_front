@@ -3,15 +3,7 @@
     <h1>{{ $t('dashboard.welcome', { name: fullName }) }}</h1>
 
     <el-row :gutter="16" class="dashboard__stats">
-      <el-col :xs="12" :sm="12" :md="6" :lg="6">
-        <el-card>
-          <div class="stat">
-            <span class="stat__label">{{ $t('dashboard.tasks') }}</span>
-            <span class="stat__value">{{ taskCount }}</span>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="12" :sm="12" :md="6" :lg="6">
+      <el-col :xs="12" :sm="12" :md="8" :lg="8">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.announcements') }}</span>
@@ -19,7 +11,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="12" :sm="12" :md="6" :lg="6">
+      <el-col :xs="12" :sm="12" :md="8" :lg="8">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.unreadChat') }}</span>
@@ -27,7 +19,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :xs="12" :sm="12" :md="6" :lg="6">
+      <el-col :xs="12" :sm="12" :md="8" :lg="8">
         <el-card>
           <div class="stat">
             <span class="stat__label">{{ $t('dashboard.notifications') }}</span>
@@ -54,7 +46,6 @@ const auth = useAuthStore()
 const chat = useChatStore()
 const notifications = useNotificationsStore()
 
-const taskCount = ref(0)
 const announcementCount = ref(0)
 
 const fullName = computed(() => {
@@ -64,8 +55,7 @@ const fullName = computed(() => {
 
 onMounted(async () => {
   try {
-    const [t, r] = await Promise.all([reportsApi.tasksCount(), reportsApi.announcementsCount()])
-    taskCount.value = t.data.count
+    const r = await reportsApi.announcementsCount()
     announcementCount.value = r.data.count
   } catch (_e) {
     // silently — backend tayyor bo'lmasa ham dashboard ochilsin

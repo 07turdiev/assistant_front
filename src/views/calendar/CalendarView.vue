@@ -197,10 +197,10 @@ const { t, locale } = useI18n()
 const auth = useAuthStore()
 
 const canCreateEvent = computed(() =>
-  auth.hasRole('PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT')
+  auth.hasRole('VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ', 'YORDAMCHI')
 )
 const canCreateTask = computed(() =>
-  auth.hasRole('PREMIER_MINISTER', 'HEAD', 'ASSISTANT', 'ASSISTANT_PREMIER')
+  auth.hasRole('VAZIR', 'BOSHLIQ', 'YORDAMCHI', 'YORDAMCHI')
 )
 
 const taskDialogVisible = ref(false)
@@ -208,8 +208,8 @@ const creatingTask = ref(false)
 const taskForm = reactive({ description: '' })
 
 const taskDialogTitle = computed(() => {
-  if (auth.hasRole('PREMIER_MINISTER', 'HEAD')) return t('reports.taskTitle')
-  if (auth.hasRole('ASSISTANT', 'ASSISTANT_PREMIER')) return t('reports.requestTitle')
+  if (auth.hasRole('VAZIR', 'BOSHLIQ')) return t('reports.taskTitle')
+  if (auth.hasRole('YORDAMCHI', 'YORDAMCHI')) return t('reports.requestTitle')
   return t('reports.create')
 })
 

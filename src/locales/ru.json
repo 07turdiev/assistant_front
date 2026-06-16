@@ -192,6 +192,14 @@
     "searchResults": "Результаты поиска",
     "selectDirectionFirst": "Сначала выберите направление — затем появится список сотрудников",
     "noEmployeesInDirection": "В этом направлении сотрудники не найдены",
+    "selectDepartments": "Выберите отделы/управления",
+    "selectDepartmentsHint": "Выберите отдел или управление",
+    "departmentHeadHint": "Ответственное лицо (руководитель) выбранного отдела добавляется автоматически",
+    "selectMyTeam": "Выберите из своей команды",
+    "noTeam": "У вас нет подчинённых сотрудников",
+    "participantDepartments": "Участвующие отделы",
+    "forward": "Направить",
+    "forwardTitle": "Направить подчинённым",
     "submitBtn": "Добавить поручение",
     "subordinateTag": "Помощник",
     "reminder": {
@@ -212,6 +220,7 @@
     "sphere": "Сфера",
     "type": "Тип",
     "speaker": "Докладчик",
+    "organizer": "Организатор",
     "direction": "Направление",
     "participants": "Участники",
     "participantsHint": "Найдите и выберите участников",
@@ -348,7 +357,20 @@
     "confirmDelete": "Удалить направление?",
     "itemsPerPage": "Записей на странице",
     "page": "Страница",
-    "of": "из"
+    "of": "из",
+    "kind": "Тип",
+    "head": "Руководитель (ответственный)",
+    "headHint": "Выберите руководителя",
+    "supervisor": "Куратор (замминистра)",
+    "supervisorHint": "Выберите куратора"
+  },
+  "directionKind": {
+    "boshqarma": "Управление",
+    "bolim": "Отдел",
+    "xizmat": "Служба",
+    "mutaxassis": "Специалист",
+    "kotibiyat": "Секретариат",
+    "boshqa": "Другое"
   },
   "authLayout": {
     "title": "Система цифрового помощника",

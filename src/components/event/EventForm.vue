@@ -51,7 +51,7 @@
       <el-col :span="8">
         <el-form-item :label="$t('event.executionType')" prop="type" required>
           <el-select v-model="form.type" :placeholder="$t('event.executionType')" style="width: 100%">
-            <el-option v-for="t in lookup.types" :key="t.value" :value="t.value" :label="t.label" />
+            <el-option v-for="ty in lookup.types" :key="ty.value" :value="ty.value" :label="ty.label" />
           </el-select>
         </el-form-item>
       </el-col>
@@ -96,113 +96,65 @@
     <h3 class="section-title">{{ $t('event.executors') }}</h3>
     <el-divider class="title-divider" />
 
-    <el-row :gutter="24">
-      <el-col :span="8">
-        <el-form-item :label="$t('event.search')">
-          <el-input v-model="participantSearch" :placeholder="$t('event.searchHint')" @input="onParticipantSearch" />
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item :label="$t('event.organisation')">
-          <el-select v-model="filterOrganisationId" clearable style="width: 100%" @change="reloadParticipants">
-            <el-option v-for="o in organisations" :key="o.id" :value="o.id" :label="locale !== 'uz' ? o.name_ru : o.name_uz" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-      <el-col :span="8">
-        <el-form-item :label="$t('event.direction')">
-          <el-select v-model="filterDirectionId" clearable style="width: 100%" @change="reloadParticipants">
-            <el-option v-for="d in directions" :key="d.id" :value="d.id" :label="locale !== 'uz' ? d.name_ru : d.name_uz" />
-          </el-select>
-        </el-form-item>
-      </el-col>
-    </el-row>
+    <!-- Yuqori rollar (VAZIR/ORINBOSAR/YORDAMCHI) — bo'lim/boshqarma tanlaydi (odam emas) -->
+    <template v-if="selectsByDepartment">
+      <el-form-item :label="$t('event.selectDepartments')" required>
+        <el-tree-select
+          v-model="form.participant_direction_ids"
+          :data="directionTree"
+          :props="treeProps"
+          node-key="id"
+          multiple
+          check-strictly
+          show-checkbox
+          check-on-click-node
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+          filterable
+          :placeholder="$t('event.selectDepartmentsHint')"
+          style="width: 100%"
+        />
+      </el-form-item>
+      <p class="muted">{{ $t('event.departmentHeadHint') }}</p>
+    </template>
 
-    <el-form-item v-if="form.participant_ids.length > 0">
-      <div class="participants-tags">
-        <el-tag
-          v-for="pid in form.participant_ids"
-          :key="pid"
-          closable
-          type="primary"
-          effect="light"
-          class="selected-tag"
-          @close="removeParticipant(pid)"
-        >
-          <el-avatar :size="18" :src="participantMap[pid]?.avatar_url || undefined" class="tag-avatar">
-            {{ participantMap[pid] ? initials(participantMap[pid]) : '' }}
-          </el-avatar>
-          {{ formatUser(participantMap[pid]) }}
-        </el-tag>
-      </div>
-    </el-form-item>
-
-    <el-form-item v-if="!filterDirectionId">
-      <div class="participants-empty">
-        <el-icon class="participants-empty__icon"><Search /></el-icon>
-        <p class="participants-empty__text">{{ $t('event.selectDirectionFirst') }}</p>
-      </div>
-    </el-form-item>
-
-    <el-form-item v-else-if="participantOptions.length === 0">
-      <div class="participants-empty">
-        <el-icon class="participants-empty__icon"><UserIcon /></el-icon>
-        <p class="participants-empty__text">{{ $t('event.noEmployeesInDirection') }}</p>
-      </div>
-    </el-form-item>
-
-    <el-form-item v-else>
-      <div class="participants-header">
-        <span class="participants-header__label">{{ $t('event.searchResults') }}</span>
-        <el-tag size="small" type="info" effect="plain" round>{{ participantOptions.length }}</el-tag>
-      </div>
-      <div class="participants-list">
-        <div
-          v-for="u in participantOptions"
-          :key="u.id"
-          class="participant-row"
-          :class="{
-            'is-selected': form.participant_ids.includes(u.id),
-            'is-subordinate': u.chief_id && form.participant_ids.includes(u.chief_id),
-            'is-unavailable': !isUserAvailable(u) && !form.participant_ids.includes(u.id),
-          }"
-          :title="!isUserAvailable(u)
-            ? $t('userStatus.unavailableHint', { status: statusLabel(u.status) })
-            : ''"
-          @click="toggleParticipant(u)"
-        >
-          <el-avatar :size="36" :src="u.avatar_url || undefined" class="participant-row__avatar">
-            {{ initials(u) }}
-          </el-avatar>
-          <div class="participant-row__info">
-            <span class="participant-row__name">{{ formatUser(u) }}</span>
-            <span v-if="u.position_uz" class="participant-row__position">{{ u.position_uz }}</span>
-          </div>
-          <el-tag
-            v-if="!isUserAvailable(u)"
-            size="small"
-            type="warning"
-            effect="light"
-            class="participant-row__badge participant-row__status-tag"
+    <!-- BOSHLIQ — o'z jamoasini (quyi xodimlarini) tanlaydi -->
+    <template v-else>
+      <el-form-item :label="$t('event.selectMyTeam')" required>
+        <div v-if="myTeam.length === 0" class="participants-empty">
+          <el-icon class="participants-empty__icon"><UserIcon /></el-icon>
+          <p class="participants-empty__text">{{ $t('event.noTeam') }}</p>
+        </div>
+        <div v-else class="participants-list">
+          <div
+            v-for="u in myTeam"
+            :key="u.id"
+            class="participant-row"
+            :class="{
+              'is-selected': form.participant_ids.includes(u.id),
+              'is-unavailable': !isUserAvailable(u) && !form.participant_ids.includes(u.id),
+            }"
+            @click="toggleParticipant(u)"
           >
-            <el-icon class="status-tag__icon"><Lock /></el-icon>
-            {{ statusLabel(u.status) }}
-          </el-tag>
-          <el-tag
-            v-else-if="u.chief_id && form.participant_ids.includes(u.chief_id)"
-            size="small"
-            type="success"
-            effect="plain"
-            class="participant-row__badge"
-          >
-            {{ $t('event.subordinateTag') }}
-          </el-tag>
-          <div class="participant-row__check">
-            <el-icon v-if="form.participant_ids.includes(u.id)"><Check /></el-icon>
+            <el-avatar :size="36" :src="u.avatar_url || undefined" class="participant-row__avatar">
+              {{ initials(u) }}
+            </el-avatar>
+            <div class="participant-row__info">
+              <span class="participant-row__name">{{ formatUser(u) }}</span>
+              <span v-if="u.position_uz" class="participant-row__position">{{ u.position_uz }}</span>
+            </div>
+            <el-tag v-if="!isUserAvailable(u)" size="small" type="warning" effect="light" class="participant-row__badge participant-row__status-tag">
+              <el-icon class="status-tag__icon"><Lock /></el-icon>
+              {{ statusLabel(u.status) }}
+            </el-tag>
+            <div class="participant-row__check">
+              <el-icon v-if="form.participant_ids.includes(u.id)"><Check /></el-icon>
+            </div>
           </div>
         </div>
-      </div>
-    </el-form-item>
+      </el-form-item>
+    </template>
 
     <div class="actions">
       <el-button type="primary" native-type="submit" :loading="submitting">
@@ -214,14 +166,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Check, DocumentAdd, Lock, Paperclip, Search, User as UserIcon } from '@element-plus/icons-vue'
+import { Check, DocumentAdd, Lock, Paperclip, User as UserIcon } from '@element-plus/icons-vue'
 import { useLookupStore } from '@/stores/lookup'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
-import { adminDirectionsApi, adminOrganisationsApi, type Direction, type Organisation } from '@/api/admin'
+import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { fullName } from '@/utils/format'
 import type { Event, Visitor, Attachment } from '@/types/event'
 import type { User, UserStatus } from '@/types/user'
@@ -240,6 +192,7 @@ interface FormShape {
   speaker_id: string
   direction_id: string
   participant_ids: string[]
+  participant_direction_ids: string[]
   notify_time_list: number[]
   visitors: Visitor[]
 }
@@ -259,6 +212,9 @@ const { t, locale } = useI18n()
 const lookup = useLookupStore()
 const auth = useAuthStore()
 const formRef = ref<FormInstance>()
+
+// Rolga qarab: yuqori rollar bo'lim tanlaydi, BOSHLIQ o'z jamoasini tanlaydi
+const selectsByDepartment = computed(() => !auth.hasRole('BOSHLIQ'))
 
 const reminderOptions = [5, 10, 15, 30, 60, 120, 1440]
 const reminderMinutes = ref<number>(5)
@@ -283,18 +239,20 @@ const form = reactive<FormShape>({
   speaker_id: '',
   direction_id: '',
   participant_ids: [],
+  participant_direction_ids: [],
   notify_time_list: [5],
   visitors: [],
 })
 
-const participantOptions = ref<User[]>([])
-const participantMap = ref<Record<string, User>>({})
-const directions = ref<Direction[]>([])
-const organisations = ref<Organisation[]>([])
+// Bo'lim daraxti (yuqori rollar uchun)
+const directionTree = ref<Direction[]>([])
+const treeProps = computed(() => ({
+  label: locale.value === 'ru' ? 'name_ru' : 'name_uz',
+  children: 'children',
+}))
 
-const participantSearch = ref('')
-const filterOrganisationId = ref<string>('')
-const filterDirectionId = ref<string>('')
+// O'z jamoasi — quyi xodimlar (BOSHLIQ uchun)
+const myTeam = ref<User[]>([])
 
 const newFiles = ref<UploadFile[]>([])
 const existingFiles = ref<Attachment[]>([])
@@ -337,48 +295,6 @@ function statusLabel(status: UserStatus): string {
   }
 }
 
-let participantTimer: number | null = null
-function onParticipantSearch() {
-  if (participantTimer) clearTimeout(participantTimer)
-  participantTimer = window.setTimeout(reloadParticipants, 300)
-}
-
-async function reloadParticipants() {
-  // Yo'nalish tanlanmagan bo'lsa hodimlar ko'rsatilmaydi
-  if (!filterDirectionId.value) {
-    participantOptions.value = []
-    return
-  }
-  try {
-    const params: { search?: string; organisation_id?: string; direction_id?: string } = {
-      direction_id: filterDirectionId.value,
-    }
-    if (participantSearch.value.trim()) params.search = participantSearch.value.trim()
-    if (filterOrganisationId.value) params.organisation_id = filterOrganisationId.value
-    const { data } = await usersApi.participants(params)
-    participantOptions.value = data
-    for (const u of data) participantMap.value[u.id] = u
-  } catch (_e) {
-    participantOptions.value = []
-  }
-}
-
-/** Foydalanuvchi tanlanganda — uning yordamchilarini fetch va ro'yxatga suggestion qilish. */
-async function fetchAndShowSubordinates(userId: string) {
-  try {
-    const { data } = await usersApi.subordinates(userId)
-    if (data.length === 0) return
-    for (const sub of data) {
-      participantMap.value[sub.id] = sub
-      // Subordinatlar suggestion sifatida participantOptions ga qo'shamiz (top'da bo'lsin) —
-      // ta'til/dismissed bo'lganlar ham ko'rinadi, lekin status tag bilan bloklangan
-      if (!participantOptions.value.find((u) => u.id === sub.id)) {
-        participantOptions.value.unshift(sub)
-      }
-    }
-  } catch (_e) { /* ignore */ }
-}
-
 function notifyUnavailable(u: User) {
   ElMessage.warning(
     t('userStatus.unavailableSelect', {
@@ -388,36 +304,17 @@ function notifyUnavailable(u: User) {
   )
 }
 
-async function loadLookups() {
-  const [d, o] = await Promise.all([
-    adminDirectionsApi.list({ page_size: 200 }),
-    adminOrganisationsApi.list({ page_size: 200 }),
-  ])
-  directions.value = d.data.results || []
-  organisations.value = o.data.results || []
-}
-
 function toggleParticipant(u: User) {
-  participantMap.value[u.id] = u
   const i = form.participant_ids.indexOf(u.id)
   if (i >= 0) {
-    // Tanlanganlarni har doim olib tashlash mumkin — bloklamaymiz
     form.participant_ids.splice(i, 1)
     return
   }
-  // Yangi tanlash — status tekshiruvi
   if (!isUserAvailable(u)) {
     notifyUnavailable(u)
     return
   }
   form.participant_ids.push(u.id)
-  // Tanlangan foydalanuvchining yordamchilarini ro'yxatga qo'shamiz (production'dagidek)
-  fetchAndShowSubordinates(u.id)
-}
-
-function removeParticipant(id: string) {
-  const i = form.participant_ids.indexOf(id)
-  if (i >= 0) form.participant_ids.splice(i, 1)
 }
 
 function onFileChange(file: UploadFile) {
@@ -451,33 +348,36 @@ watch(
     form.is_private = e.is_private
     form.speaker_id = e.speaker?.id || ''
     form.participant_ids = e.participants?.map((p) => p.id) || []
+    form.participant_direction_ids = e.participant_directions?.map((d) => d.id) || []
     form.notify_time_list = [...(e.notify_time || [5])]
     form.visitors = (e.visitors || []).map((v) => ({ ...v }))
     existingFiles.value = e.files || []
-
     reminderMinutes.value = form.notify_time_list[0] || 5
-
-    for (const p of e.participants || []) {
-      participantMap.value[p.id] = p
-    }
-    if (e.speaker) participantMap.value[e.speaker.id] = e.speaker
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 async function onSubmit() {
   if (!formRef.value) return
 
-  // Default speaker — joriy foydalanuvchi
+  // Ma'ruzachi/yo'nalish — joriy foydalanuvchidan (backend ham default beradi)
   if (!form.speaker_id && auth.user) form.speaker_id = auth.user.id
   if (!form.direction_id && auth.user?.direction_id) form.direction_id = auth.user.direction_id
   form.notify_time_list = [reminderMinutes.value]
 
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
-  if (form.participant_ids.length === 0) return
 
-  // end_time bo'sh bo'lsa — start_time + 1 soat (backend majburiy bo'lsa)
+  // Auditoriya validatsiyasi — rolga qarab
+  if (selectsByDepartment.value && form.participant_direction_ids.length === 0) {
+    ElMessage.warning(t('event.selectDepartmentsHint'))
+    return
+  }
+  if (!selectsByDepartment.value && form.participant_ids.length === 0) {
+    ElMessage.warning(t('event.selectMyTeam'))
+    return
+  }
+
   const dto = { ...form }
   if (!dto.end_time && dto.start_time) {
     dto.end_time = addOneHour(dto.start_time)
@@ -497,12 +397,18 @@ function addOneHour(time: string): string {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    lookup.loadAll(),
-    loadLookups(),
-  ])
-  // Edit rejimida yo'nalish allaqachon tanlangan bo'lsa avto-yuklash
-  if (filterDirectionId.value) await reloadParticipants()
+  await lookup.loadAll()
+  if (selectsByDepartment.value) {
+    try {
+      const { data } = await adminDirectionsApi.tree()
+      directionTree.value = data
+    } catch (_e) { /* ignore */ }
+  } else if (auth.user) {
+    try {
+      const { data } = await usersApi.subordinates(auth.user.id)
+      myTeam.value = data
+    } catch (_e) { /* ignore */ }
+  }
 })
 </script>
 
@@ -587,41 +493,6 @@ onMounted(async () => {
   color: var(--el-text-color-secondary);
 }
 
-.participants-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-}
-
-.selected-tag {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 4px !important;
-  height: auto !important;
-  border-radius: 999px !important;
-  font-size: 12px;
-}
-
-.tag-avatar {
-  flex-shrink: 0;
-  font-size: 9px;
-}
-
-.participants-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 4px 0 8px;
-
-  &__label {
-    font-size: 13px;
-    font-weight: 500;
-    color: #5a6c7d;
-  }
-}
-
 .participants-empty {
   display: flex;
   flex-direction: column;
@@ -656,7 +527,6 @@ onMounted(async () => {
   border-radius: 10px;
   padding: 4px;
 
-  /* Custom scrollbar */
   &::-webkit-scrollbar { width: 8px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
@@ -758,15 +628,6 @@ onMounted(async () => {
     }
   }
 
-  &.is-subordinate {
-    margin-left: 24px;
-    background: linear-gradient(90deg, rgba(103, 194, 58, 0.05) 0%, transparent 50%);
-    border-left: 3px solid #67c23a;
-    padding-left: 9px;
-    border-radius: 0 8px 8px 0;
-  }
-
-  /* Tanlanishi mumkin bo'lmagan foydalanuvchilar (ta'tilda, ishdan bo'shagan, bola parvarishida) */
   &.is-unavailable {
     background: #fafafa;
     cursor: not-allowed;

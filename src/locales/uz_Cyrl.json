@@ -193,6 +193,14 @@
     "searchResults": "Топилган натижалар",
     "selectDirectionFirst": "Аввал йўналишни танланг — кейин ходимлар рўйхати кўринади",
     "noEmployeesInDirection": "Бу йўналишда ходимлар топилмади",
+    "selectDepartments": "Бўлим/бошқармаларни танланг",
+    "selectDepartmentsHint": "Бўлим ёки бошқарма танланг",
+    "departmentHeadHint": "Танланган бўлимнинг масъул шахси (бошлиғи) автоматик қўшилади",
+    "selectMyTeam": "Ўз жамоангиздан танланг",
+    "noTeam": "Сизда қуйи ходимлар йўқ",
+    "participantDepartments": "Қатнашувчи бўлимлар",
+    "forward": "Йўналтириш",
+    "forwardTitle": "Қуйи ходимларга йўналтириш",
     "submitBtn": "Топшириқ қўшиш",
     "subordinateTag": "Ёрдамчи",
     "reminder": {
@@ -212,6 +220,7 @@
     "sphere": "Соҳа",
     "type": "Тури",
     "speaker": "Маърузачи",
+    "organizer": "Ташкилотчи",
     "direction": "Йўналиш",
     "participants": "Қатнашчилар",
     "participantsHint": "Қатнашчиларни қидириб танланг",
@@ -348,7 +357,20 @@
     "confirmDelete": "Йўналишни ўчириб ташламоқчимисиз?",
     "itemsPerPage": "Кўрсатишлар сони",
     "page": "Саҳифа",
-    "of": "дан"
+    "of": "дан",
+    "kind": "Тури",
+    "head": "Бошлиқ (масъул шахс)",
+    "headHint": "Бошлиқни танланг",
+    "supervisor": "Назоратчи (ўринбосар)",
+    "supervisorHint": "Назоратчини танланг"
+  },
+  "directionKind": {
+    "boshqarma": "Бошқарма",
+    "bolim": "Бўлим",
+    "xizmat": "Хизмат",
+    "mutaxassis": "Якка мутахассис",
+    "kotibiyat": "Котибият",
+    "boshqa": "Бошқа"
   },
   "authLayout": {
     "title": "Рақамли ёрдамчи тизими",

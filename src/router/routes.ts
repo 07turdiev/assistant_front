@@ -40,7 +40,7 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/events/EventCreateView.vue'),
     meta: {
       requiresAuth: true,
-      roles: ['PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT'],
+      roles: ['VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ'],
     },
   },
   {

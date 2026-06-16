@@ -109,7 +109,6 @@ async function onSubmit() {
   try {
     await reportsApi.create({
       description: desc,
-      kind: 'ANNOUNCEMENT',
       target_direction_ids: toAll.value ? [] : selectedDirections.value,
     })
     ElMessage.success(t('common.success'))

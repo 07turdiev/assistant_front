@@ -34,6 +34,13 @@ export const eventsApi = {
   deleteProtocol(eventId: string, protocolId: string) {
     return apiClient.delete(`/events/${eventId}/protocols/${protocolId}/`)
   },
+  // Delegatsiya — boshliq tadbirni o'z quyi xodimlariga yo'naltiradi
+  forward(id: string, subordinate_ids: string[]) {
+    return apiClient.post<{ success: boolean; added: number; message: string }>(
+      `/events/${id}/forward/`,
+      { subordinate_ids },
+    )
+  },
 }
 
 export type { EventPayload }

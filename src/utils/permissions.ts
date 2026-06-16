@@ -1,21 +1,20 @@
 import type { RoleName } from '@/types/user'
 
 const CAN_CREATE_EVENT: RoleName[] = [
-  'PREMIER_MINISTER',
-  'VICE_MINISTER',
-  'ASSISTANT_PREMIER',
-  'HEAD',
-  'ASSISTANT',
+  'VAZIR',
+  'ORINBOSAR',
+  'YORDAMCHI',
+  'BOSHLIQ',
 ]
 
 const CAN_CREATE_REPORT: RoleName[] = [
-  'PREMIER_MINISTER',
-  'ASSISTANT_PREMIER',
-  'HEAD',
-  'ASSISTANT',
+  'VAZIR',
+  'ORINBOSAR',
+  'YORDAMCHI',
+  'BOSHLIQ',
 ]
 
-const CAN_VIEW_VICE_CALENDAR: RoleName[] = ['PREMIER_MINISTER']
+const CAN_VIEW_VICE_CALENDAR: RoleName[] = ['VAZIR']
 
 export function canCreateEvent(role: RoleName | null): boolean {
   return role !== null && CAN_CREATE_EVENT.includes(role)

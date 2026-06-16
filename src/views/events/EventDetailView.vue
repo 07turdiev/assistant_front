@@ -35,6 +35,9 @@
         <el-descriptions-item :label="$t('event.address')">{{ event.address || '—' }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.type')">{{ typeLabel }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.sphere')" :span="2">{{ sphereLabel }}</el-descriptions-item>
+        <el-descriptions-item v-if="event.on_behalf_of" :label="$t('event.organizer')" :span="2">
+          {{ formatUser(event.on_behalf_of) }}
+        </el-descriptions-item>
         <el-descriptions-item :label="$t('event.speaker')" :span="2">
           {{ formatUser(event.speaker) }}
         </el-descriptions-item>
@@ -49,11 +52,27 @@
         </el-descriptions-item>
       </el-descriptions>
 
+      <template v-if="event.participant_directions && event.participant_directions.length > 0">
+        <el-divider content-position="left">{{ $t('event.participantDepartments') }}</el-divider>
+        <div class="users-list">
+          <el-tag v-for="d in event.participant_directions" :key="d.id" type="info" class="user-tag">
+            {{ locale === 'ru' ? d.name_ru : d.name_uz }}<template v-if="d.head"> — {{ formatUser(d.head) }}</template>
+          </el-tag>
+        </div>
+      </template>
+
       <el-divider content-position="left">{{ $t('event.participants') }} ({{ event.participants?.length || 0 }})</el-divider>
       <div class="users-list">
         <el-tag v-for="p in event.participants" :key="p.id" class="user-tag">
           {{ formatUser(p) }}
         </el-tag>
+      </div>
+
+      <!-- Delegatsiya — boshliq o'z xodimlariga yo'naltiradi -->
+      <div v-if="canForward" class="forward-block">
+        <el-button type="success" plain @click="openForward">
+          <el-icon><Share /></el-icon>&nbsp;{{ $t('event.forward') }}
+        </el-button>
       </div>
 
       <template v-if="event.visitors && event.visitors.length > 0">
@@ -115,6 +134,20 @@
       </el-button>
     </template>
   </el-card>
+
+  <!-- Yo'naltirish dialogi -->
+  <el-dialog v-model="forwardOpen" :title="$t('event.forwardTitle')" width="460px">
+    <div v-if="myTeam.length === 0" class="muted">{{ $t('event.noTeam') }}</div>
+    <el-checkbox-group v-else v-model="forwardIds" class="forward-list">
+      <el-checkbox v-for="u in myTeam" :key="u.id" :value="u.id">{{ formatUser(u) }}</el-checkbox>
+    </el-checkbox-group>
+    <template #footer>
+      <el-button @click="forwardOpen = false">{{ $t('common.cancel') }}</el-button>
+      <el-button type="primary" :loading="forwarding" :disabled="forwardIds.length === 0" @click="onForward">
+        {{ $t('event.forward') }}
+      </el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -122,8 +155,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
-import { ArrowLeft, Delete, Document, Edit, Paperclip } from '@element-plus/icons-vue'
+import { ArrowLeft, Delete, Document, Edit, Paperclip, Share } from '@element-plus/icons-vue'
 import { eventsApi } from '@/api/events'
+import { usersApi } from '@/api/users'
 import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
@@ -134,7 +168,7 @@ import type { User } from '@/types/user'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 const lookup = useLookupStore()
 
@@ -143,10 +177,48 @@ const loading = ref(false)
 const protocolFiles = ref<UploadFile[]>([])
 const uploadingProtocols = ref(false)
 
+// Delegatsiya (boshliq → quyi xodimlar)
+const myTeam = ref<User[]>([])
+const forwardOpen = ref(false)
+const forwardIds = ref<string[]>([])
+const forwarding = ref(false)
+
 const canEdit = computed(() => {
   if (!event.value || !auth.user) return false
   return event.value.created_by_id === auth.user.id || auth.hasRole('SUPER_ADMIN')
 })
+
+// Boshliq tadbir qatnashchisi bo'lsa — o'z xodimlariga yo'naltira oladi
+const canForward = computed(() => {
+  if (!event.value || !auth.user || !auth.hasRole('BOSHLIQ')) return false
+  return event.value.participants?.some((p) => p.id === auth.user!.id) ?? false
+})
+
+async function openForward() {
+  forwardIds.value = []
+  if (myTeam.value.length === 0 && auth.user) {
+    try {
+      const { data } = await usersApi.subordinates(auth.user.id)
+      myTeam.value = data
+    } catch (_e) { /* ignore */ }
+  }
+  forwardOpen.value = true
+}
+
+async function onForward() {
+  if (!event.value || forwardIds.value.length === 0) return
+  forwarding.value = true
+  try {
+    await eventsApi.forward(event.value.id, forwardIds.value)
+    ElMessage.success(t('common.success'))
+    forwardOpen.value = false
+    await load()
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
+  } finally {
+    forwarding.value = false
+  }
+}
 
 const typeLabel = computed(() => {
   if (!event.value) return ''
@@ -259,6 +331,16 @@ onMounted(async () => {
 
 .user-tag {
   margin: 2px;
+}
+
+.forward-block {
+  margin-top: 12px;
+}
+
+.forward-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .files-list {

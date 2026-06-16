@@ -15,6 +15,15 @@ export interface Attachment {
   url: string
 }
 
+// Tadbir yo'naltirilgan bo'lim (ma'sul shaxsi bilan)
+export interface EventDirection {
+  id: string
+  name_uz: string
+  name_ru: string
+  kind: string
+  head: User | null
+}
+
 export interface Event {
   id: string
   title: string
@@ -29,8 +38,11 @@ export interface Event {
   is_important: boolean
   is_private: boolean
   conclusion?: string
-  speaker: User
+  speaker: User | null
+  // "Nomidan" — yordamchi yaratsa, asl egasi (vazir/o'rinbosar)
+  on_behalf_of?: User | null
   participants: User[]
+  participant_directions?: EventDirection[]
   visitors: Visitor[]
   files: Attachment[]
   protocols: Attachment[]
@@ -50,8 +62,10 @@ export interface EventPayload {
   sphere: string
   type: string
   notify_time_list?: number[]
-  speaker_id: string
-  participant_ids: string[]
+  speaker_id?: string
+  // Qatnashchilar: bo'limlar (yuqori rollar) yoki odamlar (boshliqlar)
+  participant_ids?: string[]
+  participant_direction_ids?: string[]
   visitors?: Visitor[]
   pre_event_id?: string
   file_ids?: string[]

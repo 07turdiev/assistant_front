@@ -1,12 +1,11 @@
 export type RoleName =
   | 'SUPER_ADMIN'
-  | 'PREMIER_MINISTER'
-  | 'VICE_MINISTER'
-  | 'ASSISTANT_PREMIER'
-  | 'HEAD'
-  | 'ASSISTANT'
   | 'ADMIN'
-  | 'EMPLOYEE'
+  | 'VAZIR'
+  | 'ORINBOSAR'
+  | 'YORDAMCHI'
+  | 'BOSHLIQ'
+  | 'XODIM'
 
 export type UserStatus =
   | 'AT_WORK'

@@ -48,17 +48,6 @@
             <span class="create-menu__label">{{ $t('event.create') }}</span>
           </button>
           <button
-            v-if="canCreateTask"
-            class="create-menu__item"
-            type="button"
-            @click="handleCreate('task')"
-          >
-            <span class="create-menu__icon create-menu__icon--task">
-              <el-icon><Document /></el-icon>
-            </span>
-            <span class="create-menu__label">{{ $t('reports.taskTitle') }}</span>
-          </button>
-          <button
             v-if="canCreateAnnouncement"
             class="create-menu__item"
             type="button"
@@ -110,36 +99,14 @@
       </template>
     </nav>
 
-    <!-- Tezkor topshiriq dialogi -->
-    <el-dialog v-model="createDialogOpen" :title="$t('reports.taskTitle')" width="520px">
-      <el-form :model="createForm" label-position="top">
-        <el-form-item :label="$t('reports.description')" required>
-          <el-input
-            v-model="createForm.description"
-            type="textarea"
-            :rows="4"
-            :placeholder="$t('reports.descriptionHint')"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="createDialogOpen = false">{{ $t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="creating" @click="onCreateSubmit">
-          {{ $t('common.save') }}
-        </el-button>
-      </template>
-    </el-dialog>
-
     <!-- Umumiy e'lon dialogi (chap va o'ng paneldagi tugmalar uchun yagona) -->
     <AnnouncementDialog v-model="announcementDialogOpen" />
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
 import {
   ArrowDown,
   Bell,
@@ -153,8 +120,6 @@ import {
   User,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
-import { reportsApi } from '@/api/reports'
-import { showApiError } from '@/utils/api-error'
 import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
 
 const props = withDefaults(
@@ -181,7 +146,6 @@ function onCollapsedCreateClick() {
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const { t } = useI18n()
 
 const navItems = [
   { name: 'dashboard', path: '/dashboard', label: 'nav.dashboard', icon: HomeFilled },
@@ -214,46 +178,22 @@ function isActive(path: string): boolean {
 
 // Yaratish ruxsatlari rol bo'yicha (backend permissions bilan moslashgan)
 const canCreateEvent = computed(() =>
-  auth.hasRole('PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT', 'SUPER_ADMIN'),
+  auth.hasRole('VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ', 'SUPER_ADMIN'),
 )
-const canCreateTask = computed(() => auth.hasRole('PREMIER_MINISTER', 'HEAD'))
 // Umumiy e'lonni har qanday foydalanuvchi bera oladi
 const canCreateAnnouncement = computed(() => auth.isAuthenticated)
 
-const canCreate = computed(() =>
-  canCreateEvent.value || canCreateTask.value || canCreateAnnouncement.value,
-)
+const canCreate = computed(() => canCreateEvent.value || canCreateAnnouncement.value)
 
 const createOpen = ref(false)
-const createDialogOpen = ref(false)        // topshiriq dialogi
 const announcementDialogOpen = ref(false)  // e'lon dialogi (umumiy komponent)
-const creating = ref(false)
-const createForm = reactive({ description: '' })
 
-function handleCreate(kind: 'event' | 'task' | 'announcement') {
+function handleCreate(kind: 'event' | 'announcement') {
   createOpen.value = false
   if (kind === 'event') {
     router.push({ name: 'events.create' })
-  } else if (kind === 'task') {
-    createForm.description = ''
-    createDialogOpen.value = true
   } else if (kind === 'announcement') {
     announcementDialogOpen.value = true
-  }
-}
-
-async function onCreateSubmit() {
-  if (!createForm.description.trim()) return
-  creating.value = true
-  try {
-    await reportsApi.create({ description: createForm.description.trim(), kind: 'TASK' })
-    ElMessage.success(t('common.success'))
-    createForm.description = ''
-    createDialogOpen.value = false
-  } catch (e: unknown) {
-    showApiError(e, t('common.error'))
-  } finally {
-    creating.value = false
   }
 }
 </script>
