@@ -23,6 +23,9 @@ export interface Report {
   seen: boolean
   sender: User
   receiver?: User | null
+  // Joriy foydalanuvchi e'lonni tahrirlash/o'chirish huquqiga egami (backend hisoblaydi):
+  // muallif-rahbar, uning yordamchisi, asl yaratuvchi yoki superuser.
+  can_manage?: boolean
   created_at: string
   updated_at: string
 }

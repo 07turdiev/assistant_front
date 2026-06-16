@@ -59,7 +59,6 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft, Delete } from '@element-plus/icons-vue'
 import { reportsApi } from '@/api/reports'
-import { useAuthStore } from '@/stores/auth'
 import { showApiError } from '@/utils/api-error'
 import { fullName } from '@/utils/format'
 import { formatDateTime } from '@/utils/date'
@@ -69,16 +68,13 @@ import type { User } from '@/types/user'
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
-const auth = useAuthStore()
 
 const report = ref<Report | null>(null)
 const loading = ref(false)
 
-// Faqat yuboruvchi yoki super admin o'chira oladi
-const canManage = computed(() => {
-  if (!report.value || !auth.user) return false
-  return report.value.sender?.id === auth.user.id || auth.hasRole('SUPER_ADMIN')
-})
+// Tahrirlash/o'chirish huquqini backend hisoblaydi (muallif-rahbar, uning yordamchisi,
+// asl yaratuvchi yoki superuser) — delegatsiya hisobga olinadi.
+const canManage = computed(() => report.value?.can_manage ?? false)
 
 const senderPosition = computed(() => {
   const s = report.value?.sender
