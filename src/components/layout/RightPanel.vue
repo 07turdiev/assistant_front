@@ -171,6 +171,7 @@ import { reportsApi } from '@/api/reports'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useLookupStore } from '@/stores/lookup'
+import { useRealtimeStore } from '@/stores/realtime'
 import { fullName } from '@/utils/format'
 import { formatTime } from '@/utils/date'
 import { showApiError } from '@/utils/api-error'
@@ -200,6 +201,7 @@ const { t } = useI18n()
 const auth = useAuthStore()
 const chat = useChatStore()
 const lookup = useLookupStore()
+const realtime = useRealtimeStore()
 
 const activeTab = ref<TabKey>('chat')
 
@@ -379,6 +381,11 @@ async function refreshAll() {
 
 watch(() => auth.isAuthenticated, async (val) => {
   if (val) await refreshAll()
+})
+
+// Realtime — yangi e'lon kelganda taxtani jonli yangilash
+watch(() => realtime.announcementsBump, () => {
+  if (auth.isAuthenticated) loadAnnouncements()
 })
 
 watch(() => chat.recentIncoming.length, async (_newLen, oldLen) => {

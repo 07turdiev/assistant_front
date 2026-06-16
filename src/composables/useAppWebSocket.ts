@@ -2,6 +2,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useChatStore } from '@/stores/chat'
+import { useRealtimeStore } from '@/stores/realtime'
 
 interface BasePayload {
   channel: 'chat' | 'notify' | 'report' | 'presence' | 'pong'
@@ -29,6 +30,7 @@ export function useAppWebSocket() {
   const auth = useAuthStore()
   const notificationsStore = useNotificationsStore()
   const chatStore = useChatStore()
+  const realtimeStore = useRealtimeStore()
 
   const isConnected = ref(false)
 
@@ -45,6 +47,12 @@ export function useAppWebSocket() {
           seen: false,
           created_at: new Date().toISOString(),
         } as never)
+        // Realtime: tegishli ko'rinishni jonli yangilash
+        if (payload.type === 'ANNOUNCEMENT') {
+          realtimeStore.bumpAnnouncements()
+        } else if (payload.event_id) {
+          realtimeStore.bumpEvents()
+        }
         break
       case 'chat':
         chatStore.pushIncoming(payload as never)

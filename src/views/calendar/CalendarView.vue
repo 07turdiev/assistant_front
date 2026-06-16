@@ -103,6 +103,7 @@ import { eventsApi } from '@/api/events'
 import { reportsApi } from '@/api/reports'
 import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
+import { useRealtimeStore } from '@/stores/realtime'
 import { formatDate } from '@/utils/date'
 import type { Event } from '@/types/event'
 
@@ -195,6 +196,10 @@ function uzFormat(date: Date, opts?: { month?: 'long' | 'short'; weekday?: 'long
 const router = useRouter()
 const { t, locale } = useI18n()
 const auth = useAuthStore()
+const realtime = useRealtimeStore()
+
+// Joriy ko'rinish diapazoni (realtime qayta yuklash uchun saqlanadi)
+const lastRange = ref<{ start: string; end: string } | null>(null)
 
 const canCreateEvent = computed(() =>
   auth.hasRole('VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ', 'YORDAMCHI')
@@ -420,8 +425,14 @@ async function onDatesSet(arg: DatesSetArg) {
   currentTitle.value = arg.view.title
   const start = formatDate(arg.start, 'YYYY-MM-DD')
   const end = formatDate(arg.end, 'YYYY-MM-DD')
+  lastRange.value = { start, end }
   await loadEvents(start, end)
 }
+
+// Realtime — yangi/o'zgargan/o'chirilgan tadbir kelganda kalendarni jonli yangilash
+watch(() => realtime.eventsBump, () => {
+  if (lastRange.value) loadEvents(lastRange.value.start, lastRange.value.end)
+})
 
 async function loadEvents(startDate: string, endDate: string) {
   loading.value = true
