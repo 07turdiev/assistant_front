@@ -115,7 +115,7 @@
 
     <!-- ===== ANNOUNCEMENTS TAB (umumiy e'lonlar) ===== -->
     <template v-else>
-      <div v-if="!selectedReportId" class="panel-body">
+      <div class="panel-body">
         <div v-if="canCreateAnnouncement" class="create-block">
           <el-button type="primary" size="small" class="create-btn" @click="announcementDialogOpen = true">
             + {{ $t('rightPanel.newAnnouncement') }}
@@ -151,16 +151,12 @@
           </div>
         </div>
       </div>
-
-      <ReportDetailPanel
-        v-else
-        :report="selectedReport"
-        @back="closeReportDetail"
-      />
     </template>
 
     <!-- Umumiy e'lon dialogi (chap va o'ng paneldagi tugmalar uchun yagona) -->
     <AnnouncementDialog v-model="announcementDialogOpen" @created="loadAnnouncements" />
+    <!-- E'lon ustiga bosilganda ochiladigan oyna -->
+    <AnnouncementDetailDialog v-model="detailOpen" :report="detailReport" />
   </aside>
 </template>
 
@@ -181,8 +177,8 @@ import { showApiError } from '@/utils/api-error'
 import type { User } from '@/types/user'
 import type { Report } from '@/types/report'
 import type { ChatMessage } from '@/types/chat'
-import ReportDetailPanel from './ReportDetailPanel.vue'
 import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
+import AnnouncementDetailDialog from '@/components/report/AnnouncementDetailDialog.vue'
 
 type TabKey = 'chat' | 'announcement'
 
@@ -222,10 +218,9 @@ const threadRef = ref<HTMLElement | null>(null)
 
 // Announcements
 const announcementsAll = ref<Report[]>([])
-const selectedReportId = ref<string | null>(null)
-const selectedReport = computed<Report | null>(
-  () => announcementsAll.value.find((r) => r.id === selectedReportId.value) || null,
-)
+// E'lon ustiga bosilganda ochiladigan oyna
+const detailOpen = ref(false)
+const detailReport = ref<Report | null>(null)
 
 // Qidiruv natijalari — har tab uchun mahalliy filter (in-memory)
 const filteredChatPartners = computed(() => {
@@ -299,7 +294,6 @@ function setActiveChatInSW(partnerId: string | null) {
 function onTabChange(key: TabKey) {
   activeTab.value = key
   selectedPartnerId.value = null
-  selectedReportId.value = null
   searchQuery.value = ''
   setActiveChatInSW(null)
 }
@@ -369,11 +363,8 @@ async function loadAnnouncements() {
 }
 
 function openReportDetail(r: Report) {
-  selectedReportId.value = r.id
-}
-
-function closeReportDetail() {
-  selectedReportId.value = null
+  detailReport.value = r
+  detailOpen.value = true
 }
 
 async function refreshAll() {
