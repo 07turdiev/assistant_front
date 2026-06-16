@@ -67,7 +67,6 @@ export interface EventPayload {
   participant_ids?: string[]
   participant_direction_ids?: string[]
   visitors?: Visitor[]
-  pre_event_id?: string
   file_ids?: string[]
   deleted_file_ids?: string[]
 }

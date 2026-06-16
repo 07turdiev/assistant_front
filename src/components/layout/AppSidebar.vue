@@ -150,7 +150,6 @@ const auth = useAuthStore()
 const navItems = [
   { name: 'dashboard', path: '/dashboard', label: 'nav.dashboard', icon: HomeFilled },
   { name: 'calendar', path: '/calendar', label: 'nav.calendar', icon: Calendar },
-  { name: 'preEvents.list', path: '/pre-events', label: 'nav.preEvents', icon: Document },
   { name: 'drafts.list', path: '/drafts', label: 'nav.drafts', icon: Document },
 ]
 

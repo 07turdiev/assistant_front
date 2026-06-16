@@ -75,12 +75,6 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
 
-  {
-    path: '/pre-events',
-    name: 'preEvents.list',
-    component: () => import('@/views/pre-events/PreEventListView.vue'),
-    meta: { requiresAuth: true },
-  },
   // Chat / Topshiriq / So'rov / Bildirishnoma — alohida sahifa sifatida ochilmaydi.
   // Hammasi RightPanel ichida ko'rinadi (production'dagidek).
   // Web Push sozlamalari faqat admin/foydalanuvchi sozlash uchun saqlanadi:
