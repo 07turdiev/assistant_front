@@ -110,8 +110,8 @@
       </template>
     </nav>
 
-    <!-- Tezkor topshiriq/so'rov dialogi -->
-    <el-dialog v-model="createDialogOpen" :title="createDialogTitle" width="520px">
+    <!-- Tezkor topshiriq dialogi -->
+    <el-dialog v-model="createDialogOpen" :title="$t('reports.taskTitle')" width="520px">
       <el-form :model="createForm" label-position="top">
         <el-form-item :label="$t('reports.description')" required>
           <el-input
@@ -129,6 +129,9 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- Umumiy e'lon dialogi (chap va o'ng paneldagi tugmalar uchun yagona) -->
+    <AnnouncementDialog v-model="announcementDialogOpen" />
   </aside>
 </template>
 
@@ -152,6 +155,7 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { reportsApi } from '@/api/reports'
 import { showApiError } from '@/utils/api-error'
+import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -221,27 +225,20 @@ const canCreate = computed(() =>
 )
 
 const createOpen = ref(false)
-const createDialogOpen = ref(false)
-const createDialogKind = ref<'task' | 'announcement'>('task')
+const createDialogOpen = ref(false)        // topshiriq dialogi
+const announcementDialogOpen = ref(false)  // e'lon dialogi (umumiy komponent)
 const creating = ref(false)
 const createForm = reactive({ description: '' })
-
-const createDialogTitle = computed(() =>
-  createDialogKind.value === 'announcement' ? t('reports.announcementTitle') : t('reports.taskTitle'),
-)
 
 function handleCreate(kind: 'event' | 'task' | 'announcement') {
   createOpen.value = false
   if (kind === 'event') {
     router.push({ name: 'events.create' })
   } else if (kind === 'task') {
-    createDialogKind.value = 'task'
     createForm.description = ''
     createDialogOpen.value = true
   } else if (kind === 'announcement') {
-    createDialogKind.value = 'announcement'
-    createForm.description = ''
-    createDialogOpen.value = true
+    announcementDialogOpen.value = true
   }
 }
 
@@ -249,8 +246,7 @@ async function onCreateSubmit() {
   if (!createForm.description.trim()) return
   creating.value = true
   try {
-    const kind = createDialogKind.value === 'announcement' ? 'ANNOUNCEMENT' : 'TASK'
-    await reportsApi.create({ description: createForm.description.trim(), kind })
+    await reportsApi.create({ description: createForm.description.trim(), kind: 'TASK' })
     ElMessage.success(t('common.success'))
     createForm.description = ''
     createDialogOpen.value = false

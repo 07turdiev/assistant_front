@@ -9,7 +9,12 @@ interface PageResp<T> {
 }
 
 export const reportsApi = {
-  create(payload: { description: string; kind?: 'TASK' | 'ANNOUNCEMENT' }) {
+  create(payload: {
+    description: string
+    kind?: 'TASK' | 'ANNOUNCEMENT'
+    // E'lon auditoriyasi — bo'sh/berilmasa HAMMAGA, aks holda shu bo'limlarga
+    target_direction_ids?: string[]
+  }) {
     // Backend bir nechta Report qaytarishi mumkin (Premier → har yordamchi uchun alohida)
     return apiClient.post<Report[]>('/reports/', payload)
   },

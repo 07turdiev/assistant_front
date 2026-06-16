@@ -173,7 +173,7 @@
     <template v-else>
       <div v-if="!selectedReportId" class="panel-body">
         <div v-if="canCreateAnnouncement" class="create-block">
-          <el-button type="primary" size="small" class="create-btn" @click="taskCreateOpen = true">
+          <el-button type="primary" size="small" class="create-btn" @click="announcementDialogOpen = true">
             + {{ $t('rightPanel.newAnnouncement') }}
           </el-button>
         </div>
@@ -217,8 +217,8 @@
       />
     </template>
 
-    <!-- Yangi topshiriq/sorov dialogi -->
-    <el-dialog v-model="taskCreateOpen" :title="createDialogTitle" width="480px">
+    <!-- Yangi topshiriq dialogi -->
+    <el-dialog v-model="taskCreateOpen" :title="$t('reports.taskTitle')" width="480px">
       <el-form :model="createForm" label-position="top">
         <el-form-item :label="$t('reports.description')" required>
           <el-input v-model="createForm.description" type="textarea" :rows="4" />
@@ -231,6 +231,9 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- Umumiy e'lon dialogi (chap va o'ng paneldagi tugmalar uchun yagona) -->
+    <AnnouncementDialog v-model="announcementDialogOpen" @created="loadAnnouncements" />
   </aside>
 </template>
 
@@ -253,6 +256,7 @@ import type { User } from '@/types/user'
 import type { Report } from '@/types/report'
 import type { ChatMessage } from '@/types/chat'
 import ReportDetailPanel from './ReportDetailPanel.vue'
+import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
 
 type TabKey = 'chat' | 'task' | 'announcement'
 
@@ -340,13 +344,10 @@ const filteredAnnouncements = computed(() => {
 const canCreateTask = computed(() => auth.hasRole('PREMIER_MINISTER', 'HEAD'))
 // Umumiy e'lonni har qanday foydalanuvchi bera oladi
 const canCreateAnnouncement = computed(() => auth.isAuthenticated)
-const taskCreateOpen = ref(false)
+const taskCreateOpen = ref(false)            // topshiriq dialogi
+const announcementDialogOpen = ref(false)    // e'lon dialogi (umumiy komponent)
 const creating = ref(false)
 const createForm = reactive({ description: '' })
-const createDialogTitle = computed(() => {
-  if (activeTab.value === 'task') return t('reports.taskTitle')
-  return t('reports.announcementTitle')
-})
 
 const tabs = computed(() => [
   { key: 'chat' as TabKey, label: t('rightPanel.chat'), count: chat.unreadCount },
@@ -501,13 +502,12 @@ async function onCreateReport() {
   if (!desc) return
   creating.value = true
   try {
-    const kind: 'TASK' | 'ANNOUNCEMENT' = activeTab.value === 'task' ? 'TASK' : 'ANNOUNCEMENT'
-    await reportsApi.create({ description: desc, kind })
+    // Bu dialog endi faqat topshiriq uchun (e'lon AnnouncementDialog orqali)
+    await reportsApi.create({ description: desc, kind: 'TASK' })
     ElMessage.success(t('common.success'))
     createForm.description = ''
     taskCreateOpen.value = false
-    if (activeTab.value === 'task') await loadTasks()
-    else await loadAnnouncements()
+    await loadTasks()
   } catch (e: unknown) {
     showApiError(e, t('common.error'))
   } finally {

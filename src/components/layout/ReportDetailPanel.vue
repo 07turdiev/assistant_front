@@ -16,6 +16,22 @@
     <div class="body">
       <p class="description">{{ report.description }}</p>
 
+      <!-- E'lon auditoriyasi: Hammaga yoki tanlangan bo'limlar -->
+      <div v-if="kind === 'announcement'" class="reply-tag">
+        <span class="muted">{{ $t('reports.audienceTo') }}:</span>
+        <template v-if="report.target_directions && report.target_directions.length">
+          <el-tag
+            v-for="d in report.target_directions"
+            :key="d.id"
+            size="small"
+            type="info"
+          >
+            {{ locale === 'ru' ? d.name_ru : d.name_uz }}
+          </el-tag>
+        </template>
+        <el-tag v-else size="small" type="success">{{ $t('reports.audienceAll') }}</el-tag>
+      </div>
+
       <div v-if="report.reply" class="reply-tag">
         <span class="muted">{{ $t('reports.reply') }}:</span>
         <el-tag :color="replyMetaColor"
@@ -97,7 +113,7 @@ const emit = defineEmits<{
   replied: []
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuthStore()
 const lookup = useLookupStore()
 
