@@ -6,6 +6,7 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
+import { reloadForNewDeploy } from '@/utils/chunk-reload'
 import './assets/styles/main.scss'
 
 import dayjs from 'dayjs'
@@ -27,6 +28,11 @@ app.use(i18n)
 app.use(ElementPlus)
 
 app.mount('#app')
+
+// Vite preload (modulepreload) xato bersa — yangi build chiqqan; bir marta qayta yuklaymiz.
+window.addEventListener('vite:preloadError', () => {
+  reloadForNewDeploy()
+})
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

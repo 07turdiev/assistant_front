@@ -1,10 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from './routes'
 import { useAuthStore } from '@/stores/auth'
+import { isDynamicImportError, reloadForNewDeploy } from '@/utils/chunk-reload'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+// Yangi deploy → eski lazy-chunk yo'qolgan → import xatosi. Bir marta qayta yuklab,
+// foydalanuvchini bosgan sahifasiga olib o'tamiz (aks holda tugma "ishlamaydi").
+router.onError((error, to) => {
+  if (isDynamicImportError(error)) {
+    reloadForNewDeploy(to?.fullPath)
+  }
 })
 
 router.beforeEach(async (to) => {
