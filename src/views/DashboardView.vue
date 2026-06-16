@@ -510,6 +510,7 @@ onMounted(() => {
     font-size: 26px;
     font-weight: 600;
     line-height: 1.2;
+    color: #fff; // global `h1 { color }` qoidasini bekor qilamiz (aks holda to'q chiqadi)
   }
 
   &__position {
