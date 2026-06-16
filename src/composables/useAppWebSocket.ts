@@ -1,4 +1,5 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ElNotification } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useChatStore } from '@/stores/chat'
@@ -37,6 +38,7 @@ export function useAppWebSocket() {
   function handleMessage(payload: BasePayload) {
     switch (payload.channel) {
       case 'notify':
+        // Optimistik: badge va ro'yxat darrov yangilanadi (realtime his-tuyg'u uchun).
         notificationsStore.pushIncoming({
           id: `ws-${Date.now()}`,
           user_id: auth.user?.id || '',
@@ -47,6 +49,9 @@ export function useAppWebSocket() {
           seen: false,
           created_at: new Date().toISOString(),
         } as never)
+        // ...so'ng badge'ni backend haqiqatiga moslaymiz (optimistik +1 ikki-karra
+        // sanalmasligi va fantom qolmasligi uchun authoritative count).
+        notificationsStore.fetchUnreadCount().catch(() => undefined)
         // Realtime: tegishli ko'rinishni jonli yangilash
         if (payload.type === 'ANNOUNCEMENT') {
           realtimeStore.bumpAnnouncements()
@@ -58,15 +63,15 @@ export function useAppWebSocket() {
         chatStore.pushIncoming(payload as never)
         break
       case 'report':
-        notificationsStore.pushIncoming({
-          id: `report-${Date.now()}`,
-          user_id: auth.user?.id || '',
-          title: (payload.message as string) || 'Hisobot',
-          notification_type: 'NEW',
-          is_important: false,
-          seen: false,
-          created_at: new Date().toISOString(),
-        } as never)
+        // Hisobot eslatmasi — DB bildirishnomasi EMAS (faqat real-time eslatma).
+        // Badge'ni soxta oshirmaymiz (aks holda «1» qoladi-yu ro'yxat bo'sh bo'ladi);
+        // o'rniga foydalanuvchiga toast ko'rsatamiz.
+        ElNotification({
+          title: 'Eslatma',
+          message: (payload.message as string) || 'Hisobot eslatmasi',
+          type: 'warning',
+          duration: 6000,
+        })
         break
       default:
         break

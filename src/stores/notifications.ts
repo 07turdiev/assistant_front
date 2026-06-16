@@ -18,6 +18,13 @@ export const useNotificationsStore = defineStore('notifications', () => {
     return data
   }
 
+  // Badge + ro'yxatni bitta authoritative manbadan (backend) sinxron yangilaydi.
+  // Fantom hisob (persistent bo'lmagan `report` WS yoki ulanish uzilishidan)
+  // shu yerda backend haqiqatiga qaytib tuzatiladi.
+  async function refresh() {
+    await Promise.allSettled([fetchUnreadCount(), fetchList(1)])
+  }
+
   function pushIncoming(notification: AppNotification) {
     items.value.unshift(notification)
     unreadCount.value += 1
@@ -27,7 +34,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
     if (ids.length === 0) return
     await notificationsApi.markRead(ids)
     items.value = items.value.map((n) => (ids.includes(n.id) ? { ...n, seen: true } : n))
+    // Optimistik kamaytirish, so'ng backend haqiqatiga moslash —
+    // sahifalangan (PAGE_SIZE=20) ro'yxatda badge drift bermasligi uchun.
     unreadCount.value = Math.max(0, unreadCount.value - ids.length)
+    await fetchUnreadCount().catch(() => undefined)
   }
 
   async function remove(id: string) {
@@ -40,6 +50,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     unreadCount,
     fetchUnreadCount,
     fetchList,
+    refresh,
     pushIncoming,
     markRead,
     remove,

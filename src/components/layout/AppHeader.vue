@@ -28,7 +28,12 @@
 
     <!-- O'ng: bildirishnoma + til + apps + profil -->
     <div class="gc-header__actions">
-      <el-dropdown trigger="click" placement="bottom-end" :hide-on-click="false">
+      <el-dropdown
+        trigger="click"
+        placement="bottom-end"
+        :hide-on-click="false"
+        @visible-change="onNotifyVisible"
+      >
         <button class="icon-btn" aria-label="Notifications">
           <el-badge
             :value="notifications.unreadCount"
@@ -195,8 +200,19 @@ function goProfile() { router.push({ name: 'profile' }) }
 function goProfileEdit() { router.push({ name: 'profile.edit' }) }
 function goWebPushSettings() { router.push({ name: 'notifications.settings' }) }
 
+// Qo'ng'iroqcha ochilganda — badge va ro'yxatni backend haqiqatiga moslaymiz.
+// Bu fantom badge'ni (masalan, persistent bo'lmagan WS hisobidan) o'z-o'zidan tuzatadi.
+function onNotifyVisible(visible: boolean) {
+  if (visible && auth.isAuthenticated) {
+    notifications.refresh().catch(() => undefined)
+  }
+}
+
 async function markAllRead() {
-  const ids = notifications.items.filter((n) => !n.seen).map((n) => n.id)
+  // Faqat haqiqiy (UUID) id'lar — optimistik WS elementlari (`ws-…`) backendga yuborilmaydi.
+  const ids = notifications.items
+    .filter((n) => !n.seen && !n.id.startsWith('ws-') && !n.id.startsWith('report-'))
+    .map((n) => n.id)
   if (ids.length > 0) await notifications.markRead(ids)
 }
 
