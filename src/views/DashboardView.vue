@@ -14,8 +14,8 @@
       <el-col :xs="12" :sm="12" :md="6" :lg="6">
         <el-card>
           <div class="stat">
-            <span class="stat__label">{{ $t('dashboard.requests') }}</span>
-            <span class="stat__value">{{ requestCount }}</span>
+            <span class="stat__label">{{ $t('dashboard.announcements') }}</span>
+            <span class="stat__value">{{ announcementCount }}</span>
           </div>
         </el-card>
       </el-col>
@@ -55,7 +55,7 @@ const chat = useChatStore()
 const notifications = useNotificationsStore()
 
 const taskCount = ref(0)
-const requestCount = ref(0)
+const announcementCount = ref(0)
 
 const fullName = computed(() => {
   if (!auth.user) return ''
@@ -64,9 +64,9 @@ const fullName = computed(() => {
 
 onMounted(async () => {
   try {
-    const [t, r] = await Promise.all([reportsApi.tasksCount(), reportsApi.requestsCount()])
+    const [t, r] = await Promise.all([reportsApi.tasksCount(), reportsApi.announcementsCount()])
     taskCount.value = t.data.count
-    requestCount.value = r.data.count
+    announcementCount.value = r.data.count
   } catch (_e) {
     // silently — backend tayyor bo'lmasa ham dashboard ochilsin
   }

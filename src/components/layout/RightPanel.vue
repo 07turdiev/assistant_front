@@ -169,18 +169,14 @@
       />
     </template>
 
-    <!-- ===== REQUESTS TAB ===== -->
+    <!-- ===== ANNOUNCEMENTS TAB (umumiy e'lonlar) ===== -->
     <template v-else>
       <div v-if="!selectedReportId" class="panel-body">
-        <div v-if="canCreateRequest" class="create-block">
+        <div v-if="canCreateAnnouncement" class="create-block">
           <el-button type="primary" size="small" class="create-btn" @click="taskCreateOpen = true">
-            + {{ $t('rightPanel.newRequest') }}
+            + {{ $t('rightPanel.newAnnouncement') }}
           </el-button>
         </div>
-        <el-tabs v-model="requestScope" class="report-scope-tabs">
-          <el-tab-pane :label="$t('rightPanel.activeScope')" name="active" />
-          <el-tab-pane :label="$t('rightPanel.historyScope')" name="history" />
-        </el-tabs>
         <div class="search-block">
           <el-input
             v-model="searchQuery"
@@ -190,14 +186,14 @@
             :prefix-icon="Search"
           />
         </div>
-        <div v-if="visibleRequests.length === 0" class="empty">
-          {{ $t('rightPanel.noRequests') }}
+        <div v-if="announcementsAll.length === 0" class="empty">
+          {{ $t('rightPanel.noAnnouncements') }}
         </div>
-        <div v-else-if="filteredRequests.length === 0" class="empty">
+        <div v-else-if="filteredAnnouncements.length === 0" class="empty">
           —
         </div>
         <div
-          v-for="r in filteredRequests"
+          v-for="r in filteredAnnouncements"
           :key="r.id"
           class="row"
           @click="openReportDetail(r)"
@@ -209,17 +205,13 @@
             <div class="row__name">{{ formatUser(r.sender) }}</div>
             <div class="row__preview">{{ truncate(r.description) }}</div>
           </div>
-          <el-tag v-if="r.reply" :color="replyColor(r.reply)" size="small"
-                  :style="{ color:'#fff', backgroundColor: replyColor(r.reply), border:'none' }">
-            {{ replyLabel(r.reply, 'request') }}
-          </el-tag>
         </div>
       </div>
 
       <ReportDetailPanel
         v-else
         :report="selectedReport"
-        kind="request"
+        kind="announcement"
         @back="closeReportDetail"
         @replied="onReportReplied"
       />
@@ -262,7 +254,7 @@ import type { Report } from '@/types/report'
 import type { ChatMessage } from '@/types/chat'
 import ReportDetailPanel from './ReportDetailPanel.vue'
 
-type TabKey = 'chat' | 'task' | 'request'
+type TabKey = 'chat' | 'task' | 'announcement'
 
 withDefaults(
   defineProps<{
@@ -298,24 +290,19 @@ const draft = ref('')
 const sending = ref(false)
 const threadRef = ref<HTMLElement | null>(null)
 
-// Tasks / Requests
+// Tasks / Announcements
 const tasksAll = ref<Report[]>([])
-const requestsAll = ref<Report[]>([])
+const announcementsAll = ref<Report[]>([])
 const taskScope = ref<'active' | 'history'>('active')
-const requestScope = ref<'active' | 'history'>('active')
 const selectedReportId = ref<string | null>(null)
 const selectedReport = computed<Report | null>(() => {
-  const all = [...tasksAll.value, ...requestsAll.value]
+  const all = [...tasksAll.value, ...announcementsAll.value]
   return all.find((r) => r.id === selectedReportId.value) || null
 })
 
 const visibleTasks = computed(() => {
   if (taskScope.value === 'active') return tasksAll.value.filter((r) => !r.reply)
   return tasksAll.value.filter((r) => r.reply)
-})
-const visibleRequests = computed(() => {
-  if (requestScope.value === 'active') return requestsAll.value.filter((r) => !r.reply)
-  return requestsAll.value.filter((r) => r.reply)
 })
 
 // Qidiruv natijalari — har tab uchun mahalliy filter (in-memory)
@@ -344,20 +331,21 @@ const filteredTasks = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   return visibleTasks.value.filter((r) => matchReport(r, q))
 })
-const filteredRequests = computed(() => {
+const filteredAnnouncements = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
-  return visibleRequests.value.filter((r) => matchReport(r, q))
+  return announcementsAll.value.filter((r) => matchReport(r, q))
 })
 
 // Create dialog
 const canCreateTask = computed(() => auth.hasRole('PREMIER_MINISTER', 'HEAD'))
-const canCreateRequest = computed(() => auth.hasRole('ASSISTANT', 'ASSISTANT_PREMIER'))
+// Umumiy e'lonni har qanday foydalanuvchi bera oladi
+const canCreateAnnouncement = computed(() => auth.isAuthenticated)
 const taskCreateOpen = ref(false)
 const creating = ref(false)
 const createForm = reactive({ description: '' })
 const createDialogTitle = computed(() => {
   if (activeTab.value === 'task') return t('reports.taskTitle')
-  return t('reports.requestTitle')
+  return t('reports.announcementTitle')
 })
 
 const tabs = computed(() => [
@@ -368,9 +356,9 @@ const tabs = computed(() => [
     count: tasksAll.value.filter((r) => !r.reply).length,
   },
   {
-    key: 'request' as TabKey,
-    label: t('rightPanel.request'),
-    count: requestsAll.value.filter((r) => !r.reply).length,
+    key: 'announcement' as TabKey,
+    label: t('rightPanel.announcement'),
+    count: 0,
   },
 ])
 
@@ -488,13 +476,10 @@ async function loadTasks() {
   } catch (_e) { /* ignore */ }
 }
 
-async function loadRequests() {
+async function loadAnnouncements() {
   try {
-    const [a, h] = await Promise.all([
-      reportsApi.requestsActive(),
-      reportsApi.requestsInactive({ page: 1, page_size: 100 }),
-    ])
-    requestsAll.value = [...a.data, ...h.data.results]
+    const { data } = await reportsApi.announcements({ page: 1, page_size: 100 })
+    announcementsAll.value = data.results
   } catch (_e) { /* ignore */ }
 }
 
@@ -507,8 +492,8 @@ function closeReportDetail() {
 }
 
 async function onReportReplied() {
+  // Faqat topshiriqlarga javob beriladi (e'longa javob yo'q)
   if (activeTab.value === 'task') await loadTasks()
-  else if (activeTab.value === 'request') await loadRequests()
 }
 
 async function onCreateReport() {
@@ -516,12 +501,13 @@ async function onCreateReport() {
   if (!desc) return
   creating.value = true
   try {
-    await reportsApi.create({ description: desc })
+    const kind: 'TASK' | 'ANNOUNCEMENT' = activeTab.value === 'task' ? 'TASK' : 'ANNOUNCEMENT'
+    await reportsApi.create({ description: desc, kind })
     ElMessage.success(t('common.success'))
     createForm.description = ''
     taskCreateOpen.value = false
     if (activeTab.value === 'task') await loadTasks()
-    else await loadRequests()
+    else await loadAnnouncements()
   } catch (e: unknown) {
     showApiError(e, t('common.error'))
   } finally {
@@ -535,7 +521,7 @@ async function refreshAll() {
     lookup.loadAll(),
     loadChatPartners(),
     loadTasks(),
-    loadRequests(),
+    loadAnnouncements(),
     chat.fetchUnreadCount(),
   ])
 }

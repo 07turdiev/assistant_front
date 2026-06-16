@@ -89,7 +89,7 @@ import type { Choice } from '@/api/info'
 
 const props = defineProps<{
   report: Report | null
-  kind: 'task' | 'request'
+  kind: 'task' | 'announcement'
 }>()
 
 const emit = defineEmits<{
@@ -105,12 +105,13 @@ const selectedReply = ref<string | undefined>(undefined)
 const notifyTime = ref<number | undefined>(undefined)
 const submitting = ref(false)
 
+// Faqat topshiriqqa javob beriladi; e'lon javobsiz
 const availableReplies = computed<Choice[]>(() =>
-  props.kind === 'task' ? lookup.taskReplies : lookup.requestReplies
+  props.kind === 'task' ? lookup.taskReplies : []
 )
 
 const canReply = computed(() => {
-  if (!props.report || !auth.user) return false
+  if (props.kind !== 'task' || !props.report || !auth.user) return false
   return props.report.receiver?.id === auth.user.id && !props.report.reply
 })
 

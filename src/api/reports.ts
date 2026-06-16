@@ -9,7 +9,7 @@ interface PageResp<T> {
 }
 
 export const reportsApi = {
-  create(payload: { description: string }) {
+  create(payload: { description: string; kind?: 'TASK' | 'ANNOUNCEMENT' }) {
     // Backend bir nechta Report qaytarishi mumkin (Premier → har yordamchi uchun alohida)
     return apiClient.post<Report[]>('/reports/', payload)
   },
@@ -35,13 +35,11 @@ export const reportsApi = {
   tasksCount() {
     return apiClient.get<{ count: number }>('/reports/tasks/count/')
   },
-  requestsActive() {
-    return apiClient.get<Report[]>('/reports/requests/active/')
+  // Umumiy e'lonlar — hammaga ko'rinadi
+  announcements(params?: { page?: number; page_size?: number; search?: string }) {
+    return apiClient.get<PageResp<Report>>('/reports/announcements/', { params })
   },
-  requestsInactive(params?: { page?: number; page_size?: number; search?: string }) {
-    return apiClient.get<PageResp<Report>>('/reports/requests/inactive/', { params })
-  },
-  requestsCount() {
-    return apiClient.get<{ count: number }>('/reports/requests/count/')
+  announcementsCount() {
+    return apiClient.get<{ count: number }>('/reports/announcements/count/')
   },
 }

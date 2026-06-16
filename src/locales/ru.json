@@ -55,6 +55,7 @@
     "welcome": "Здравствуйте, {name}!",
     "tasks": "Поручения",
     "requests": "Запросы",
+    "announcements": "Объявления",
     "unreadChat": "Непрочитанные сообщения",
     "notifications": "Новые уведомления",
     "todayPlaceholder": "Здесь скоро появятся сегодняшние мероприятия и статистика."
@@ -90,6 +91,7 @@
     "create": "Новый",
     "taskTitle": "Новое поручение",
     "requestTitle": "Новый запрос",
+    "announcementTitle": "Новое объявление",
     "activeTab": "Активные",
     "historyTab": "История",
     "empty": "Нет отчётов",
@@ -164,6 +166,9 @@
     "requestTag": "Запрос",
     "newTask": "Новое поручение",
     "newRequest": "Новый запрос",
+    "announcement": "Объявление",
+    "noAnnouncements": "Нет объявлений",
+    "newAnnouncement": "Новое объявление",
     "activeScope": "Активные",
     "historyScope": "История"
   },

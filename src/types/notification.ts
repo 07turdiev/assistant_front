@@ -1,4 +1,4 @@
-export type NotificationKind = 'NEW' | 'EDITED' | 'DELETED' | 'REMINDED' | 'PRE_EVENT'
+export type NotificationKind = 'NEW' | 'EDITED' | 'DELETED' | 'REMINDED' | 'PRE_EVENT' | 'ANNOUNCEMENT'
 
 export interface AppNotification {
   id: string

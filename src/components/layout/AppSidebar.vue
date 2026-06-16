@@ -59,15 +59,15 @@
             <span class="create-menu__label">{{ $t('reports.taskTitle') }}</span>
           </button>
           <button
-            v-if="canCreateRequest"
+            v-if="canCreateAnnouncement"
             class="create-menu__item"
             type="button"
-            @click="handleCreate('request')"
+            @click="handleCreate('announcement')"
           >
-            <span class="create-menu__icon create-menu__icon--request">
-              <el-icon><ChatLineRound /></el-icon>
+            <span class="create-menu__icon create-menu__icon--announcement">
+              <el-icon><Bell /></el-icon>
             </span>
-            <span class="create-menu__label">{{ $t('reports.requestTitle') }}</span>
+            <span class="create-menu__label">{{ $t('reports.announcementTitle') }}</span>
           </button>
         </div>
       </transition>
@@ -139,9 +139,9 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import {
   ArrowDown,
+  Bell,
   Calendar,
   ChatDotRound,
-  ChatLineRound,
   Document,
   HomeFilled,
   OfficeBuilding,
@@ -213,23 +213,24 @@ const canCreateEvent = computed(() =>
   auth.hasRole('PREMIER_MINISTER', 'VICE_MINISTER', 'ASSISTANT_PREMIER', 'HEAD', 'ASSISTANT', 'SUPER_ADMIN'),
 )
 const canCreateTask = computed(() => auth.hasRole('PREMIER_MINISTER', 'HEAD'))
-const canCreateRequest = computed(() => auth.hasRole('ASSISTANT', 'ASSISTANT_PREMIER'))
+// Umumiy e'lonni har qanday foydalanuvchi bera oladi
+const canCreateAnnouncement = computed(() => auth.isAuthenticated)
 
 const canCreate = computed(() =>
-  canCreateEvent.value || canCreateTask.value || canCreateRequest.value,
+  canCreateEvent.value || canCreateTask.value || canCreateAnnouncement.value,
 )
 
 const createOpen = ref(false)
 const createDialogOpen = ref(false)
-const createDialogKind = ref<'task' | 'request'>('task')
+const createDialogKind = ref<'task' | 'announcement'>('task')
 const creating = ref(false)
 const createForm = reactive({ description: '' })
 
 const createDialogTitle = computed(() =>
-  createDialogKind.value === 'request' ? t('reports.requestTitle') : t('reports.taskTitle'),
+  createDialogKind.value === 'announcement' ? t('reports.announcementTitle') : t('reports.taskTitle'),
 )
 
-function handleCreate(kind: 'event' | 'task' | 'request') {
+function handleCreate(kind: 'event' | 'task' | 'announcement') {
   createOpen.value = false
   if (kind === 'event') {
     router.push({ name: 'events.create' })
@@ -237,8 +238,8 @@ function handleCreate(kind: 'event' | 'task' | 'request') {
     createDialogKind.value = 'task'
     createForm.description = ''
     createDialogOpen.value = true
-  } else if (kind === 'request') {
-    createDialogKind.value = 'request'
+  } else if (kind === 'announcement') {
+    createDialogKind.value = 'announcement'
     createForm.description = ''
     createDialogOpen.value = true
   }
@@ -248,7 +249,8 @@ async function onCreateSubmit() {
   if (!createForm.description.trim()) return
   creating.value = true
   try {
-    await reportsApi.create({ description: createForm.description.trim() })
+    const kind = createDialogKind.value === 'announcement' ? 'ANNOUNCEMENT' : 'TASK'
+    await reportsApi.create({ description: createForm.description.trim(), kind })
     ElMessage.success(t('common.success'))
     createForm.description = ''
     createDialogOpen.value = false
@@ -575,7 +577,7 @@ async function onCreateSubmit() {
     background: linear-gradient(135deg, rgba(217, 48, 37, 0.12) 0%, rgba(217, 48, 37, 0.06) 100%);
     color: #d93025;
   }
-  &--request {
+  &--announcement {
     background: linear-gradient(135deg, rgba(30, 142, 62, 0.12) 0%, rgba(30, 142, 62, 0.06) 100%);
     color: #1e8e3e;
   }

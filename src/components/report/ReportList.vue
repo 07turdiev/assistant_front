@@ -162,15 +162,10 @@ const createDialogVisible = ref(false)
 const creating = ref(false)
 const createForm = reactive({ description: '' })
 
-const apiActive = computed(() =>
-  props.kind === 'task' ? reportsApi.tasksActive : reportsApi.requestsActive
-)
-const apiInactive = computed(() =>
-  props.kind === 'task' ? reportsApi.tasksInactive : reportsApi.requestsInactive
-)
-const apiCount = computed(() =>
-  props.kind === 'task' ? reportsApi.tasksCount : reportsApi.requestsCount
-)
+// "So'rov" oqimi olib tashlandi — bu komponent endi faqat topshiriq (task) bilan ishlaydi.
+const apiActive = computed(() => reportsApi.tasksActive)
+const apiInactive = computed(() => reportsApi.tasksInactive)
+const apiCount = computed(() => reportsApi.tasksCount)
 
 function formatUser(u: Report['sender']): string {
   return fullName(u)

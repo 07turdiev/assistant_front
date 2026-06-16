@@ -55,6 +55,7 @@
     "welcome": "Салом, {name}!",
     "tasks": "Топшириқлар",
     "requests": "Сўровлар",
+    "announcements": "Эълонлар",
     "unreadChat": "Ўқилмаган хабарлар",
     "notifications": "Янги билдиришномалар",
     "todayPlaceholder": "Бугунги тадбирлар ва статистика тез орада бу ерда кўринади."
@@ -90,6 +91,7 @@
     "create": "Янги",
     "taskTitle": "Янги топшириқ юбориш",
     "requestTitle": "Янги сўров юбориш",
+    "announcementTitle": "Янги эълон бериш",
     "activeTab": "Фаол",
     "historyTab": "Тарих",
     "empty": "Ҳисоботлар йўқ",
@@ -164,6 +166,9 @@
     "requestTag": "Сўров",
     "newTask": "Янги топшириқ",
     "newRequest": "Янги сўров",
+    "announcement": "Эълон",
+    "noAnnouncements": "Эълон йўқ",
+    "newAnnouncement": "Янги эълон",
     "activeScope": "Фаол",
     "historyScope": "Тарих"
   },

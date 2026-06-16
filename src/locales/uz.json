@@ -55,6 +55,7 @@
     "welcome": "Salom, {name}!",
     "tasks": "Topshiriqlar",
     "requests": "So'rovlar",
+    "announcements": "E'lonlar",
     "unreadChat": "O'qilmagan xabarlar",
     "notifications": "Yangi bildirishnomalar",
     "todayPlaceholder": "Bugungi tadbirlar va statistika tez orada bu yerda ko'rinadi."
@@ -90,6 +91,7 @@
     "create": "Yangi",
     "taskTitle": "Yangi topshiriq yuborish",
     "requestTitle": "Yangi so'rov yuborish",
+    "announcementTitle": "Yangi e'lon berish",
     "activeTab": "Faol",
     "historyTab": "Tarix",
     "empty": "Hisobotlar yo'q",
@@ -164,6 +166,9 @@
     "requestTag": "So'rov",
     "newTask": "Yangi topshiriq",
     "newRequest": "Yangi so'rov",
+    "announcement": "E'lon",
+    "noAnnouncements": "E'lon yo'q",
+    "newAnnouncement": "Yangi e'lon",
     "activeScope": "Faol",
     "historyScope": "Tarix"
   },
