@@ -36,8 +36,10 @@ function formatFieldMap(obj: Record<string, unknown>, fieldLabels?: Record<strin
     if (key === 'non_field_errors' || key === 'detail' || key === 'message' || key === 'error') {
       lines.push(...msgs)
     } else {
-      const label = fieldLabels?.[key] || key
-      lines.push(`${label}: ${msgs.join(', ')}`)
+      // Xom kalit (masalan "end_time") foydalanuvchiga ko'rsatilmaydi — backend xabarlari
+      // o'zi tushunarli. Faqat inson-o'qiydigan label berilgan bo'lsa prefiks qo'shamiz.
+      const label = fieldLabels?.[key]
+      lines.push(label ? `${label}: ${msgs.join(', ')}` : msgs.join(', '))
     }
   }
   return lines.join('\n')
@@ -51,11 +53,10 @@ function fromBody(body: ErrorBody, fieldLabels?: Record<string, string>): string
 
   const obj = body as Record<string, unknown>
 
-  for (const key of ['detail', 'message', 'error'] as const) {
-    const v = obj[key]
-    if (typeof v === 'string' && v.trim()) return v.trim()
-  }
-
+  // 1) Strukturali field xatolari — eng aniq/foydali. Generic `message`dan OLDIN tekshiramiz:
+  //    backend ko'pincha {message:"Validation error", errors:{field:[...]}} qaytaradi —
+  //    aks holda faqat "Validation error" ko'rinib, asl sabab (masalan "Tugash vaqti...")
+  //    yashirin qolardi.
   const nested = obj.errors
   if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
     const formatted = formatFieldMap(nested as Record<string, unknown>, fieldLabels)
@@ -63,6 +64,13 @@ function fromBody(body: ErrorBody, fieldLabels?: Record<string, string>): string
   }
   if (typeof nested === 'string' && nested.trim()) return nested.trim()
 
+  // 2) Bitta umumiy xabar (DRF {detail}, yoki backend {message}/{error})
+  for (const key of ['detail', 'message', 'error'] as const) {
+    const v = obj[key]
+    if (typeof v === 'string' && v.trim()) return v.trim()
+  }
+
+  // 3) Wrapper'siz field-map (masalan DRF standart {field: [msg]})
   return formatFieldMap(obj, fieldLabels)
 }
 
