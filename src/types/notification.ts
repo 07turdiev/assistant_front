@@ -7,6 +7,7 @@ export interface AppNotification {
   notification_type: NotificationKind
   event_id?: string | null
   pre_event_id?: string | null
+  report_id?: string | null
   date?: string | null
   start_time?: string | null
   end_time?: string | null

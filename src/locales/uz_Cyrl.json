@@ -87,6 +87,11 @@
     "partner": "Суҳбатдош",
     "unread": "Ўқилмаган"
   },
+  "announcement": {
+    "detailTitle": "Эълон",
+    "notFound": "Эълон топилмади",
+    "confirmDelete": "Эълонни ўчиришни тасдиқлайсизми?"
+  },
   "reports": {
     "create": "Янги",
     "taskTitle": "Янги топшириқ юбориш",

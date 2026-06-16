@@ -55,6 +55,13 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/events/EventEditView.vue'),
     meta: { requiresAuth: true },
   },
+  // Umumiy e'lon — alohida sahifa (qo'ng'iroqcha/e'lonlar ro'yxatidan ochiladi)
+  {
+    path: '/announcements/:id',
+    name: 'announcements.detail',
+    component: () => import('@/views/announcements/AnnouncementDetailView.vue'),
+    meta: { requiresAuth: true },
+  },
   // AI Drafts (Telegram orqali ovozdan yaratilgan qoralamalar)
   {
     path: '/drafts',

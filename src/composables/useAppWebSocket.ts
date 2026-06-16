@@ -45,6 +45,7 @@ export function useAppWebSocket() {
           title: (payload.title as string) || 'Bildirishnoma',
           notification_type: (payload.type as never) || 'NEW',
           event_id: (payload.event_id as string) || null,
+          report_id: (payload.report_id as string) || null,
           is_important: Boolean(payload.is_important),
           seen: false,
           created_at: new Date().toISOString(),

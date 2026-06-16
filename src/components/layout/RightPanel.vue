@@ -155,8 +155,6 @@
 
     <!-- Umumiy e'lon dialogi (chap va o'ng paneldagi tugmalar uchun yagona) -->
     <AnnouncementDialog v-model="announcementDialogOpen" @created="loadAnnouncements" />
-    <!-- E'lon ustiga bosilganda ochiladigan oyna -->
-    <AnnouncementDetailDialog v-model="detailOpen" :report="detailReport" />
   </aside>
 </template>
 
@@ -179,7 +177,6 @@ import type { User } from '@/types/user'
 import type { Report } from '@/types/report'
 import type { ChatMessage } from '@/types/chat'
 import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
-import AnnouncementDetailDialog from '@/components/report/AnnouncementDetailDialog.vue'
 
 type TabKey = 'chat' | 'announcement'
 
@@ -220,9 +217,6 @@ const threadRef = ref<HTMLElement | null>(null)
 
 // Announcements
 const announcementsAll = ref<Report[]>([])
-// E'lon ustiga bosilganda ochiladigan oyna
-const detailOpen = ref(false)
-const detailReport = ref<Report | null>(null)
 
 // Qidiruv natijalari — har tab uchun mahalliy filter (in-memory)
 const filteredChatPartners = computed(() => {
@@ -365,8 +359,8 @@ async function loadAnnouncements() {
 }
 
 function openReportDetail(r: Report) {
-  detailReport.value = r
-  detailOpen.value = true
+  // Modal o'rniga — e'lonning o'z sahifasiga o'tamiz
+  router.push({ name: 'announcements.detail', params: { id: r.id } })
 }
 
 async function refreshAll() {

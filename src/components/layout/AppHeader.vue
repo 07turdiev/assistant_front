@@ -29,6 +29,7 @@
     <!-- O'ng: bildirishnoma + til + apps + profil -->
     <div class="gc-header__actions">
       <el-dropdown
+        ref="notifyDropdownRef"
         trigger="click"
         placement="bottom-end"
         :hide-on-click="false"
@@ -65,7 +66,8 @@
                 v-for="n in notifications.items.slice(0, 8)"
                 :key="n.id"
                 class="notify-item"
-                :class="{ 'notify-item--unread': !n.seen }"
+                :class="{ 'notify-item--unread': !n.seen, 'notify-item--clickable': isClickable(n) }"
+                @click="onNotificationClick(n)"
               >
                 <div class="notify-item__title">{{ n.title }}</div>
                 <div class="notify-item__time">{{ formatTime(n.created_at) }}</div>
@@ -144,13 +146,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Bell, ChatLineRound, Edit, Menu, Setting, SwitchButton, User } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatTime } from '@/utils/date'
+import type { AppNotification } from '@/types/notification'
 import LangSwitch from '@/components/common/LangSwitch.vue'
 
 withDefaults(
@@ -200,12 +203,37 @@ function goProfile() { router.push({ name: 'profile' }) }
 function goProfileEdit() { router.push({ name: 'profile.edit' }) }
 function goWebPushSettings() { router.push({ name: 'notifications.settings' }) }
 
+const notifyDropdownRef = ref()
+
 // Qo'ng'iroqcha ochilganda — badge va ro'yxatni backend haqiqatiga moslaymiz.
 // Bu fantom badge'ni (masalan, persistent bo'lmagan WS hisobidan) o'z-o'zidan tuzatadi.
 function onNotifyVisible(visible: boolean) {
   if (visible && auth.isAuthenticated) {
     notifications.refresh().catch(() => undefined)
   }
+}
+
+// Bildirishnoma bosilsa qaysidir sahifaga o'tadimi? (tadbir yoki e'lon bo'lsa — ha)
+function isClickable(n: AppNotification): boolean {
+  return Boolean(n.event_id) || (n.notification_type === 'ANNOUNCEMENT' && Boolean(n.report_id))
+}
+
+// Bildirishnoma ustiga bosilganda — o'qilgan deb belgilab, tegishli sahifaga o'tamiz.
+async function onNotificationClick(n: AppNotification) {
+  // O'qilgan deb belgilash (faqat haqiqiy DB yozuvi — optimistik `ws-…` elementlari emas)
+  const isRealId = !n.id.startsWith('ws-') && !n.id.startsWith('report-')
+  if (!n.seen && isRealId) {
+    notifications.markRead([n.id]).catch(() => undefined)
+  }
+  // Tegishli oynaga o'tish
+  if (n.event_id) {
+    router.push({ name: 'events.detail', params: { id: n.event_id } })
+  } else if (n.notification_type === 'ANNOUNCEMENT' && n.report_id) {
+    router.push({ name: 'announcements.detail', params: { id: n.report_id } })
+  } else {
+    return // bog'lanadigan sahifa yo'q — dropdown ochiq qoladi
+  }
+  notifyDropdownRef.value?.handleClose()
 }
 
 async function markAllRead() {
@@ -415,10 +443,14 @@ onMounted(async () => {
 .notify-item {
   padding: 12px 16px;
   border-bottom: 1px solid $color-border-soft;
-  cursor: pointer;
+  cursor: default;
   transition: background-color 0.12s ease;
 
   &:last-child { border-bottom: none; }
+
+  &--clickable {
+    cursor: pointer;
+  }
 
   &:hover {
     background: $color-bg-hover;

@@ -87,6 +87,11 @@
     "partner": "Собеседник",
     "unread": "Непрочитанные"
   },
+  "announcement": {
+    "detailTitle": "Объявление",
+    "notFound": "Объявление не найдено",
+    "confirmDelete": "Удалить объявление?"
+  },
   "reports": {
     "create": "Новый",
     "taskTitle": "Новое поручение",

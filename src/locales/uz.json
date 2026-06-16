@@ -87,6 +87,11 @@
     "partner": "Suhbatdosh",
     "unread": "O'qilmagan"
   },
+  "announcement": {
+    "detailTitle": "E'lon",
+    "notFound": "E'lon topilmadi",
+    "confirmDelete": "E'lonni o'chirishni tasdiqlaysizmi?"
+  },
   "reports": {
     "create": "Yangi",
     "taskTitle": "Yangi topshiriq yuborish",
