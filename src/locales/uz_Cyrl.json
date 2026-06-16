@@ -52,13 +52,28 @@
     "admin": "Бошқарув"
   },
   "dashboard": {
+    "greeting": "Ассалому алайкум",
     "welcome": "Салом, {name}!",
-    "tasks": "Топшириқлар",
-    "requests": "Сўровлар",
+    "todaySummary": "Бугун {n} та тадбир режалаштирилган",
+    "todaySummaryEmpty": "Бугун режалаштирилган тадбир йўқ",
+    "quickEvent": "Тадбир яратиш",
+    "quickAnnouncement": "Эълон бериш",
+    "openCalendar": "Календар",
+    "todayEvents": "Бугун",
+    "weekEvents": "Шу ҳафта",
+    "monthEvents": "Шу ой",
     "announcements": "Эълонлар",
     "unreadChat": "Ўқилмаган хабарлар",
-    "notifications": "Янги билдиришномалар",
-    "todayPlaceholder": "Бугунги тадбирлар ва статистика тез орада бу ерда кўринади."
+    "notifications": "Билдиришномалар",
+    "todaySchedule": "Бугунги режа",
+    "viewAll": "Барчаси",
+    "noEventsToday": "Бугун режалаштирилган тадбир йўқ",
+    "upcomingEvents": "Яқин кунлардаги тадбирлар",
+    "noUpcoming": "Яқин кунларда тадбир йўқ",
+    "recentAnnouncements": "Сўнгги эълонлар",
+    "noAnnouncements": "Эълонлар йўқ",
+    "deputies": "Ўринбосарлар",
+    "noDeputies": "Ўринбосарлар топилмади"
   },
   "notifications": {
     "title": "Сарлавҳа",

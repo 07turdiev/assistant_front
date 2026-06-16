@@ -52,13 +52,28 @@
     "admin": "Boshqaruv"
   },
   "dashboard": {
+    "greeting": "Assalomu alaykum",
     "welcome": "Salom, {name}!",
-    "tasks": "Topshiriqlar",
-    "requests": "So'rovlar",
+    "todaySummary": "Bugun {n} ta tadbir rejalashtirilgan",
+    "todaySummaryEmpty": "Bugun rejalashtirilgan tadbir yo'q",
+    "quickEvent": "Tadbir yaratish",
+    "quickAnnouncement": "E'lon berish",
+    "openCalendar": "Kalendar",
+    "todayEvents": "Bugun",
+    "weekEvents": "Shu hafta",
+    "monthEvents": "Shu oy",
     "announcements": "E'lonlar",
     "unreadChat": "O'qilmagan xabarlar",
-    "notifications": "Yangi bildirishnomalar",
-    "todayPlaceholder": "Bugungi tadbirlar va statistika tez orada bu yerda ko'rinadi."
+    "notifications": "Bildirishnomalar",
+    "todaySchedule": "Bugungi reja",
+    "viewAll": "Barchasi",
+    "noEventsToday": "Bugun rejalashtirilgan tadbir yo'q",
+    "upcomingEvents": "Yaqin kunlardagi tadbirlar",
+    "noUpcoming": "Yaqin kunlarda tadbir yo'q",
+    "recentAnnouncements": "So'nggi e'lonlar",
+    "noAnnouncements": "E'lonlar yo'q",
+    "deputies": "O'rinbosarlar",
+    "noDeputies": "O'rinbosarlar topilmadi"
   },
   "notifications": {
     "title": "Sarlavha",

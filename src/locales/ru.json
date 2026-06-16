@@ -52,13 +52,28 @@
     "admin": "Управление"
   },
   "dashboard": {
+    "greeting": "Здравствуйте",
     "welcome": "Здравствуйте, {name}!",
-    "tasks": "Поручения",
-    "requests": "Запросы",
+    "todaySummary": "Сегодня запланировано мероприятий: {n}",
+    "todaySummaryEmpty": "На сегодня мероприятий нет",
+    "quickEvent": "Создать мероприятие",
+    "quickAnnouncement": "Дать объявление",
+    "openCalendar": "Календарь",
+    "todayEvents": "Сегодня",
+    "weekEvents": "На неделе",
+    "monthEvents": "В этом месяце",
     "announcements": "Объявления",
     "unreadChat": "Непрочитанные сообщения",
-    "notifications": "Новые уведомления",
-    "todayPlaceholder": "Здесь скоро появятся сегодняшние мероприятия и статистика."
+    "notifications": "Уведомления",
+    "todaySchedule": "Расписание на сегодня",
+    "viewAll": "Все",
+    "noEventsToday": "На сегодня мероприятий нет",
+    "upcomingEvents": "Ближайшие мероприятия",
+    "noUpcoming": "Ближайших мероприятий нет",
+    "recentAnnouncements": "Последние объявления",
+    "noAnnouncements": "Объявлений нет",
+    "deputies": "Заместители",
+    "noDeputies": "Заместители не найдены"
   },
   "notifications": {
     "title": "Заголовок",
