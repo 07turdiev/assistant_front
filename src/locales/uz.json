@@ -51,6 +51,9 @@
     "profile": "Profil",
     "admin": "Boshqaruv"
   },
+  "onBehalf": {
+    "acting": "Siz {name} nomidan ish yuritmoqdasiz"
+  },
   "dashboard": {
     "greeting": "Assalomu alaykum",
     "welcome": "Salom, {name}!",
@@ -221,6 +224,8 @@
     "participantDepartments": "Qatnashuvchi bo'limlar",
     "forward": "Yo'naltirish",
     "forwardTitle": "Quyi xodimlarga yo'naltirish",
+    "forwardToPeople": "Xodimlar",
+    "forwardToDepartments": "Quyi bo'limlar",
     "submitBtn": "Topshiriq qo'shish",
     "subordinateTag": "Yordamchi",
     "reminder": {

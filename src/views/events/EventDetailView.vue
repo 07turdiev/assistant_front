@@ -137,13 +137,32 @@
 
   <!-- Yo'naltirish dialogi -->
   <el-dialog v-model="forwardOpen" :title="$t('event.forwardTitle')" width="460px">
+    <!-- Xodimlar -->
+    <div class="forward-label">{{ $t('event.forwardToPeople') }}</div>
     <div v-if="myTeam.length === 0" class="muted">{{ $t('event.noTeam') }}</div>
     <el-checkbox-group v-else v-model="forwardIds" class="forward-list">
       <el-checkbox v-for="u in myTeam" :key="u.id" :value="u.id">{{ formatUser(u) }}</el-checkbox>
     </el-checkbox-group>
+
+    <!-- Quyi bo'limlar — har birining boshlig'iga boradi (u yana yo'naltira oladi) -->
+    <template v-if="subDepts.length > 0">
+      <el-divider />
+      <div class="forward-label">{{ $t('event.forwardToDepartments') }}</div>
+      <el-checkbox-group v-model="forwardDirIds" class="forward-list">
+        <el-checkbox v-for="d in subDepts" :key="d.id" :value="d.id">
+          {{ locale === 'ru' ? d.name_ru : d.name_uz }}
+        </el-checkbox>
+      </el-checkbox-group>
+    </template>
+
     <template #footer>
       <el-button @click="forwardOpen = false">{{ $t('common.cancel') }}</el-button>
-      <el-button type="primary" :loading="forwarding" :disabled="forwardIds.length === 0" @click="onForward">
+      <el-button
+        type="primary"
+        :loading="forwarding"
+        :disabled="forwardIds.length === 0 && forwardDirIds.length === 0"
+        @click="onForward"
+      >
         {{ $t('event.forward') }}
       </el-button>
     </template>
@@ -158,6 +177,7 @@ import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
 import { ArrowLeft, Delete, Document, Edit, Paperclip, Share } from '@element-plus/icons-vue'
 import { eventsApi } from '@/api/events'
 import { usersApi } from '@/api/users'
+import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
@@ -177,11 +197,32 @@ const loading = ref(false)
 const protocolFiles = ref<UploadFile[]>([])
 const uploadingProtocols = ref(false)
 
-// Delegatsiya (boshliq → quyi xodimlar)
+// Delegatsiya (boshliq → quyi xodimlar / quyi bo'limlar)
 const myTeam = ref<User[]>([])
+const subDepts = ref<Direction[]>([])
 const forwardOpen = ref(false)
 const forwardIds = ref<string[]>([])
+const forwardDirIds = ref<string[]>([])
 const forwarding = ref(false)
+
+// Directions tree'dan foydalanuvchining bo'limidan past (avlod) bo'limlarini yig'ish
+function collectDescendants(roots: Direction[], targetId: string): Direction[] {
+  let target: Direction | null = null
+  const find = (list: Direction[]) => {
+    for (const n of list) {
+      if (target) return
+      if (n.id === targetId) { target = n; return }
+      if (n.children?.length) find(n.children)
+    }
+  }
+  find(roots)
+  const out: Direction[] = []
+  const walk = (node: Direction) => {
+    for (const c of node.children || []) { out.push(c); walk(c) }
+  }
+  if (target) walk(target)
+  return out
+}
 
 const canEdit = computed(() => {
   if (!event.value || !auth.user) return false
@@ -196,20 +237,32 @@ const canForward = computed(() => {
 
 async function openForward() {
   forwardIds.value = []
+  forwardDirIds.value = []
   if (myTeam.value.length === 0 && auth.user) {
     try {
       const { data } = await usersApi.subordinates(auth.user.id)
       myTeam.value = data
     } catch (_e) { /* ignore */ }
   }
+  // Quyi bo'limlar — o'z bo'limidan past (avlod) bo'limlar
+  if (subDepts.value.length === 0 && auth.user?.direction_id) {
+    try {
+      const { data } = await adminDirectionsApi.tree()
+      subDepts.value = collectDescendants(data, auth.user.direction_id)
+    } catch (_e) { /* ignore */ }
+  }
   forwardOpen.value = true
 }
 
 async function onForward() {
-  if (!event.value || forwardIds.value.length === 0) return
+  if (!event.value) return
+  if (forwardIds.value.length === 0 && forwardDirIds.value.length === 0) return
   forwarding.value = true
   try {
-    await eventsApi.forward(event.value.id, forwardIds.value)
+    await eventsApi.forward(event.value.id, {
+      subordinate_ids: forwardIds.value,
+      direction_ids: forwardDirIds.value,
+    })
     ElMessage.success(t('common.success'))
     forwardOpen.value = false
     await load()
@@ -335,6 +388,13 @@ onMounted(async () => {
 
 .forward-block {
   margin-top: 12px;
+}
+
+.forward-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a6c7d;
+  margin-bottom: 6px;
 }
 
 .forward-list {

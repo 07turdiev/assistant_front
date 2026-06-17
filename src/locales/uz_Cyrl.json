@@ -51,6 +51,9 @@
     "profile": "Профил",
     "admin": "Бошқарув"
   },
+  "onBehalf": {
+    "acting": "Сиз {name} номидан иш юритмоқдасиз"
+  },
   "dashboard": {
     "greeting": "Ассалому алайкум",
     "welcome": "Салом, {name}!",
@@ -221,6 +224,8 @@
     "participantDepartments": "Қатнашувчи бўлимлар",
     "forward": "Йўналтириш",
     "forwardTitle": "Қуйи ходимларга йўналтириш",
+    "forwardToPeople": "Ходимлар",
+    "forwardToDepartments": "Қуйи бўлимлар",
     "submitBtn": "Топшириқ қўшиш",
     "subordinateTag": "Ёрдамчи",
     "reminder": {

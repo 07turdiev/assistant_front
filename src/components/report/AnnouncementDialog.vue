@@ -6,6 +6,7 @@
     @update:model-value="emit('update:modelValue', $event)"
     @open="onOpen"
   >
+    <OnBehalfBanner style="margin-bottom: 16px" />
     <el-form label-position="top">
       <el-form-item :label="$t('reports.description')" required>
         <el-input
@@ -61,6 +62,7 @@ import { ElMessage } from 'element-plus'
 import { reportsApi } from '@/api/reports'
 import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { showApiError } from '@/utils/api-error'
+import OnBehalfBanner from '@/components/common/OnBehalfBanner.vue'
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ 'update:modelValue': [boolean]; created: [] }>()

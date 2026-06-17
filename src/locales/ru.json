@@ -51,6 +51,9 @@
     "profile": "Профиль",
     "admin": "Управление"
   },
+  "onBehalf": {
+    "acting": "Вы действуете от имени {name}"
+  },
   "dashboard": {
     "greeting": "Здравствуйте",
     "welcome": "Здравствуйте, {name}!",
@@ -220,6 +223,8 @@
     "participantDepartments": "Участвующие отделы",
     "forward": "Направить",
     "forwardTitle": "Направить подчинённым",
+    "forwardToPeople": "Сотрудники",
+    "forwardToDepartments": "Подразделения",
     "submitBtn": "Добавить поручение",
     "subordinateTag": "Помощник",
     "reminder": {

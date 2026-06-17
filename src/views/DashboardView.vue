@@ -1,5 +1,7 @@
 <template>
   <div class="dashboard">
+    <OnBehalfBanner />
+
     <!-- ===== HERO ===== -->
     <section class="hero">
       <div class="hero__bg" aria-hidden="true"></div>
@@ -245,6 +247,7 @@ import type { Event } from '@/types/event'
 import type { Report } from '@/types/report'
 import type { User as TUser } from '@/types/user'
 import AnnouncementDialog from '@/components/report/AnnouncementDialog.vue'
+import OnBehalfBanner from '@/components/common/OnBehalfBanner.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()

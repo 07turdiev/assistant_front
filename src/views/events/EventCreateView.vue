@@ -7,6 +7,7 @@
       </div>
     </template>
 
+    <OnBehalfBanner style="margin-bottom: 16px" />
     <EventForm :is-create="true" :submitting="submitting" @submit="onSubmit" @cancel="$router.back()" />
   </el-card>
 </template>
@@ -18,6 +19,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import EventForm from '@/components/event/EventForm.vue'
+import OnBehalfBanner from '@/components/common/OnBehalfBanner.vue'
 import { eventsApi } from '@/api/events'
 import { showApiError } from '@/utils/api-error'
 

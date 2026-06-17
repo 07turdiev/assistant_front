@@ -42,8 +42,22 @@ export interface User {
   telegram_id?: number | null
 }
 
+// Yordamchining rahbari — "[rahbar] nomidan" banneri uchun qisqa ma'lumot
+export interface ChiefInfo {
+  id: string
+  first_name: string
+  last_name: string
+  father_name?: string
+  position_uz?: string
+  position_ru?: string
+  role_label_uz?: string
+  role_label_ru?: string
+}
+
 export interface UserMe extends User {
   position?: string
+  // Faqat YORDAMCHI uchun to'ldiriladi (rahbar nomidan ish yuritadi)
+  chief?: ChiefInfo | null
 }
 
 export interface UserShort {
