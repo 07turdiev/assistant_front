@@ -41,7 +41,7 @@
             size="small"
             type="info"
           >
-            {{ locale === 'ru' ? d.name_ru : d.name_uz }}
+            {{ localizeBilingual(d.name_uz, d.name_ru) }}
           </el-tag>
         </template>
         <el-tag v-else size="small" type="success">{{ $t('reports.audienceAll') }}</el-tag>
@@ -61,13 +61,14 @@ import { ArrowLeft, Delete } from '@element-plus/icons-vue'
 import { reportsApi } from '@/api/reports'
 import { showApiError } from '@/utils/api-error'
 import { fullName } from '@/utils/format'
+import { localizeBilingual } from '@/utils/translit'
 import { formatDateTime } from '@/utils/date'
 import type { Report } from '@/types/report'
 import type { User } from '@/types/user'
 
 const route = useRoute()
 const router = useRouter()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const report = ref<Report | null>(null)
 const loading = ref(false)
@@ -79,7 +80,7 @@ const canManage = computed(() => report.value?.can_manage ?? false)
 const senderPosition = computed(() => {
   const s = report.value?.sender
   if (!s) return ''
-  return locale.value === 'ru' ? s.position_ru || '' : s.position_uz || ''
+  return localizeBilingual(s.position_uz, s.position_ru)
 })
 
 function formatUser(u?: User | null): string {

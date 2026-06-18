@@ -62,7 +62,7 @@
           </el-avatar>
           <div class="row__content">
             <div class="row__name">{{ formatUser(u) }}</div>
-            <div v-if="u.position_uz" class="row__preview">{{ u.position_uz }}</div>
+            <div v-if="u.position_uz" class="row__preview">{{ localize(u.position_uz) }}</div>
           </div>
           <el-badge
             v-if="chat.unreadBySender[u.id] > 0"
@@ -171,6 +171,7 @@ import { useChatStore } from '@/stores/chat'
 import { useLookupStore } from '@/stores/lookup'
 import { useRealtimeStore } from '@/stores/realtime'
 import { fullName } from '@/utils/format'
+import { localize } from '@/utils/translit'
 import { formatTime } from '@/utils/date'
 import { showApiError } from '@/utils/api-error'
 import type { User } from '@/types/user'

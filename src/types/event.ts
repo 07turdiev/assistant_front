@@ -38,7 +38,6 @@ export interface Event {
   is_important: boolean
   is_private: boolean
   conclusion?: string
-  speaker: User | null
   // "Nomidan" — yordamchi yaratsa, asl egasi (vazir/o'rinbosar)
   on_behalf_of?: User | null
   participants: User[]
@@ -62,7 +61,6 @@ export interface EventPayload {
   sphere: string
   type: string
   notify_time_list?: number[]
-  speaker_id?: string
   // Qatnashchilar: bo'limlar (yuqori rollar) yoki odamlar (boshliqlar)
   participant_ids?: string[]
   participant_direction_ids?: string[]

@@ -148,11 +148,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { Bell, ChatLineRound, Edit, Menu, Setting, SwitchButton, User } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatTime } from '@/utils/date'
+import { localize, localizeBilingual } from '@/utils/translit'
 import type { AppNotification } from '@/types/notification'
 import LangSwitch from '@/components/common/LangSwitch.vue'
 
@@ -173,7 +173,6 @@ defineEmits<{
 const auth = useAuthStore()
 const notifications = useNotificationsStore()
 const router = useRouter()
-const { locale } = useI18n()
 
 // Telegram bot link — .env'dagi VITE_TG_BOT_USERNAME bo'lmasa header'da tugma ko'rinmaydi.
 const telegramBotUrl = computed(() => {
@@ -186,12 +185,12 @@ const telegramBotUrl = computed(() => {
 const fullNameWithFather = computed(() => {
   if (!auth.user) return ''
   const u = auth.user
-  return [u.last_name, u.first_name, u.father_name].filter(Boolean).join(' ')
+  return localize([u.last_name, u.first_name, u.father_name].filter(Boolean).join(' '))
 })
 
 const positionLabel = computed(() => {
   if (!auth.user) return ''
-  return locale.value !== 'uz' ? auth.user.position_ru || '' : auth.user.position_uz || ''
+  return localizeBilingual(auth.user.position_uz, auth.user.position_ru)
 })
 
 const initials = computed(() => {

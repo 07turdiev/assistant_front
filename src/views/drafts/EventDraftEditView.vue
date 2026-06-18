@@ -87,48 +87,24 @@
         </el-col>
       </el-row>
 
-      <el-row :gutter="16">
-        <el-col :span="12">
-          <el-form-item :label="$t('event.speaker')" required>
-            <el-select
-              v-model="form.speaker"
-              filterable
-              remote
-              :remote-method="searchUsers"
-              :loading="userSearchLoading"
-              :placeholder="$t('drafts.searchByName')"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="u in userOptions"
-                :key="u.id"
-                :label="`${u.last_name} ${u.first_name}`"
-                :value="u.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item :label="$t('event.assignedTo')">
-            <el-select
-              v-model="form.assigned_to"
-              filterable
-              remote
-              :remote-method="searchUsers"
-              :loading="userSearchLoading"
-              :placeholder="$t('drafts.searchByName')"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="u in userOptions"
-                :key="u.id"
-                :label="`${u.last_name} ${u.first_name}`"
-                :value="u.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <el-form-item :label="$t('event.assignedTo')">
+        <el-select
+          v-model="form.assigned_to"
+          filterable
+          remote
+          :remote-method="searchUsers"
+          :loading="userSearchLoading"
+          :placeholder="$t('drafts.searchByName')"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="u in userOptions"
+            :key="u.id"
+            :label="`${u.last_name} ${u.first_name}`"
+            :value="u.id"
+          />
+        </el-select>
+      </el-form-item>
 
       <el-form-item :label="$t('event.participants')">
         <el-select
@@ -237,7 +213,6 @@ const form = reactive({
   location: '',
   sphere: '',
   event_type: '',
-  speaker: null as string | null,
   assigned_to: null as string | null,
   suggested_participants: [] as string[],
   is_important: false,
@@ -294,7 +269,6 @@ function fillForm(d: EventDraft) {
   form.location = d.location
   form.sphere = d.sphere
   form.event_type = d.event_type
-  form.speaker = d.speaker?.id || null
   form.assigned_to = d.assigned_to?.id || null
   form.suggested_participants = d.suggested_participants.map((u) => u.id)
   form.is_important = d.is_important
@@ -303,7 +277,7 @@ function fillForm(d: EventDraft) {
 
 function seedUserOptions(d: EventDraft) {
   const seen = new Map<string, User>()
-  for (const u of [d.speaker, d.assigned_to, ...d.suggested_participants]) {
+  for (const u of [d.assigned_to, ...d.suggested_participants]) {
     if (u && !seen.has(u.id)) seen.set(u.id, u as unknown as User)
   }
   userOptions.value = Array.from(seen.values())

@@ -45,7 +45,6 @@ interface SubmitPayload {
     type: string
     is_important: boolean
     is_private: boolean
-    speaker_id: string
     direction_id: string
     participant_ids: string[]
     notify_time_list: number[]

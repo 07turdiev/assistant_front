@@ -108,7 +108,6 @@
                 <div class="agenda__meta">
                   <span v-if="e.address"><el-icon><Location /></el-icon> {{ e.address }}</span>
                   <span v-if="typeLabel(e)"><el-icon><CollectionTag /></el-icon> {{ typeLabel(e) }}</span>
-                  <span v-if="e.speaker"><el-icon><User /></el-icon> {{ formatUser(e.speaker) }}</span>
                 </div>
               </div>
             </li>
@@ -231,7 +230,7 @@ import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import {
   ArrowRight, Calendar, Clock, Coffee, CollectionTag, Location, Plus,
-  Promotion, ChatDotRound, Bell, TrendCharts, User, UserFilled,
+  Promotion, ChatDotRound, Bell, TrendCharts, UserFilled,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
@@ -242,6 +241,7 @@ import { eventsApi } from '@/api/events'
 import { reportsApi } from '@/api/reports'
 import { usersApi } from '@/api/users'
 import { fullName } from '@/utils/format'
+import { localizeBilingual } from '@/utils/translit'
 import { fromNow } from '@/utils/date'
 import type { Event } from '@/types/event'
 import type { Report } from '@/types/report'
@@ -283,7 +283,7 @@ const heroName = computed(() => {
 const positionLabel = computed(() => {
   const u = auth.user
   if (!u) return ''
-  return locale.value === 'ru' ? u.position_ru || '' : u.position_uz || ''
+  return localizeBilingual(u.position_uz, u.position_ru)
 })
 
 const canCreateEvent = computed(() => auth.hasRole('VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ'))
@@ -347,7 +347,7 @@ function typeLabel(e: Event): string {
   return lookup.types.find((x) => x.value === e.type)?.label || ''
 }
 function posLabel(u: TUser): string {
-  return locale.value === 'ru' ? u.position_ru || '' : u.position_uz || ''
+  return localizeBilingual(u.position_uz, u.position_ru)
 }
 
 const STATUS_COLOR: Record<string, string> = {

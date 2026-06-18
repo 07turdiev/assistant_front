@@ -1,8 +1,9 @@
 import type { User } from '@/types/user'
+import { localize } from './translit'
 
 export function fullName(user?: User | null): string {
   if (!user) return ''
-  return `${user.last_name} ${user.first_name} ${user.father_name || ''}`.trim()
+  return localize(`${user.last_name} ${user.first_name} ${user.father_name || ''}`.trim())
 }
 
 export function shortName(user?: User | null): string {
@@ -11,7 +12,7 @@ export function shortName(user?: User | null): string {
     .filter(Boolean)
     .map((c) => `${c}.`)
     .join('')
-  return `${user.last_name} ${initials}`.trim()
+  return localize(`${user.last_name} ${initials}`.trim())
 }
 
 export function formatPhone(phone?: string | null): string {

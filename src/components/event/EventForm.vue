@@ -142,7 +142,7 @@
             </el-avatar>
             <div class="participant-row__info">
               <span class="participant-row__name">{{ formatUser(u) }}</span>
-              <span v-if="u.position_uz" class="participant-row__position">{{ u.position_uz }}</span>
+              <span v-if="u.position_uz" class="participant-row__position">{{ localize(u.position_uz) }}</span>
             </div>
             <el-tag v-if="!isUserAvailable(u)" size="small" type="warning" effect="light" class="participant-row__badge participant-row__status-tag">
               <el-icon class="status-tag__icon"><Lock /></el-icon>
@@ -175,6 +175,7 @@ import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
 import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { fullName } from '@/utils/format'
+import { localize } from '@/utils/translit'
 import type { Event, Visitor, Attachment } from '@/types/event'
 import type { User, UserStatus } from '@/types/user'
 
@@ -189,7 +190,6 @@ interface FormShape {
   type: string
   is_important: boolean
   is_private: boolean
-  speaker_id: string
   direction_id: string
   participant_ids: string[]
   participant_direction_ids: string[]
@@ -236,7 +236,6 @@ const form = reactive<FormShape>({
   type: '',
   is_important: false,
   is_private: false,
-  speaker_id: '',
   direction_id: '',
   participant_ids: [],
   participant_direction_ids: [],
@@ -346,7 +345,6 @@ watch(
     form.type = e.type
     form.is_important = e.is_important
     form.is_private = e.is_private
-    form.speaker_id = e.speaker?.id || ''
     form.participant_ids = e.participants?.map((p) => p.id) || []
     form.participant_direction_ids = e.participant_directions?.map((d) => d.id) || []
     form.notify_time_list = [...(e.notify_time || [5])]
@@ -360,8 +358,7 @@ watch(
 async function onSubmit() {
   if (!formRef.value) return
 
-  // Ma'ruzachi/yo'nalish — joriy foydalanuvchidan (backend ham default beradi)
-  if (!form.speaker_id && auth.user) form.speaker_id = auth.user.id
+  // Yo'nalish — joriy foydalanuvchidan (backend ham default beradi)
   if (!form.direction_id && auth.user?.direction_id) form.direction_id = auth.user.direction_id
   form.notify_time_list = [reminderMinutes.value]
 

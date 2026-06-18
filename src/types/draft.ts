@@ -34,7 +34,6 @@ export interface EventDraft extends BaseDraft {
   is_private: boolean
   sphere: string
   event_type: string
-  speaker: UserShort | null
   published_event: string | null
 }
 
@@ -55,7 +54,6 @@ export interface EventDraftUpdate {
   is_private?: boolean
   sphere?: string
   event_type?: string
-  speaker?: string | null
   assigned_to?: string | null
   suggested_participants?: string[]
   notify_minutes_before?: number[]

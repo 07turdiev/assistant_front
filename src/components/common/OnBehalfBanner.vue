@@ -7,20 +7,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { UserFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
+import { localize, localizeBilingual } from '@/utils/translit'
 
 const auth = useAuthStore()
-const { locale } = useI18n()
 
 const chief = computed(() => auth.user?.chief ?? null)
 
 const chiefName = computed(() => {
   const c = chief.value
   if (!c) return ''
-  const name = [c.last_name, c.first_name].filter(Boolean).join(' ')
-  const role = locale.value === 'ru' ? c.role_label_ru : c.role_label_uz
+  const name = localize([c.last_name, c.first_name].filter(Boolean).join(' '))
+  const role = localizeBilingual(c.role_label_uz, c.role_label_ru)
   return role ? `${name} (${role})` : name
 })
 </script>

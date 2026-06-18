@@ -38,9 +38,6 @@
         <el-descriptions-item v-if="event.on_behalf_of" :label="$t('event.organizer')" :span="2">
           {{ formatUser(event.on_behalf_of) }}
         </el-descriptions-item>
-        <el-descriptions-item :label="$t('event.speaker')" :span="2">
-          {{ formatUser(event.speaker) }}
-        </el-descriptions-item>
         <el-descriptions-item v-if="event.description" :label="$t('event.description')" :span="2">
           {{ event.description }}
         </el-descriptions-item>
@@ -56,7 +53,7 @@
         <el-divider content-position="left">{{ $t('event.participantDepartments') }}</el-divider>
         <div class="users-list">
           <el-tag v-for="d in event.participant_directions" :key="d.id" type="info" class="user-tag">
-            {{ locale === 'ru' ? d.name_ru : d.name_uz }}<template v-if="d.head"> — {{ formatUser(d.head) }}</template>
+            {{ localizeBilingual(d.name_uz, d.name_ru) }}<template v-if="d.head"> — {{ formatUser(d.head) }}</template>
           </el-tag>
         </div>
       </template>
@@ -150,7 +147,7 @@
       <div class="forward-label">{{ $t('event.forwardToDepartments') }}</div>
       <el-checkbox-group v-model="forwardDirIds" class="forward-list">
         <el-checkbox v-for="d in subDepts" :key="d.id" :value="d.id">
-          {{ locale === 'ru' ? d.name_ru : d.name_uz }}
+          {{ localizeBilingual(d.name_uz, d.name_ru) }}
         </el-checkbox>
       </el-checkbox-group>
     </template>
@@ -179,6 +176,7 @@ import { eventsApi } from '@/api/events'
 import { usersApi } from '@/api/users'
 import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { showApiError } from '@/utils/api-error'
+import { localizeBilingual } from '@/utils/translit'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
 import { formatDate } from '@/utils/date'

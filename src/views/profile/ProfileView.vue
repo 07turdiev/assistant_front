@@ -44,9 +44,10 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Edit } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
+import { localize, localizeBilingual } from '@/utils/translit'
 
 const auth = useAuthStore()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const statusLabel = computed(() => {
   if (!auth.user) return ''
@@ -62,7 +63,7 @@ const statusLabel = computed(() => {
 
 const fullName = computed(() => {
   if (!auth.user) return ''
-  return `${auth.user.last_name} ${auth.user.first_name} ${auth.user.father_name || ''}`.trim()
+  return localize(`${auth.user.last_name} ${auth.user.first_name} ${auth.user.father_name || ''}`.trim())
 })
 
 const initials = computed(() => {
@@ -72,7 +73,7 @@ const initials = computed(() => {
 
 const position = computed(() => {
   if (!auth.user) return ''
-  return locale.value !== 'uz' ? auth.user.position_ru : auth.user.position_uz
+  return localizeBilingual(auth.user.position_uz, auth.user.position_ru)
 })
 </script>
 

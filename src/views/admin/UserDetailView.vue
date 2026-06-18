@@ -74,11 +74,12 @@ import { adminUsersApi } from '@/api/admin'
 import { usersApi } from '@/api/users'
 import { showApiError } from '@/utils/api-error'
 import { fullName } from '@/utils/format'
+import { localizeBilingual } from '@/utils/translit'
 import type { User } from '@/types/user'
 
 const route = useRoute()
 const router = useRouter()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 const user = ref<User | null>(null)
 const subordinates = ref<User[]>([])
@@ -89,7 +90,7 @@ const loading = ref(false)
 const initials = computed(() => initialsFor(user.value))
 const position = computed(() => {
   if (!user.value) return ''
-  return locale.value !== 'uz' ? user.value.position_ru || '' : user.value.position_uz || ''
+  return localizeBilingual(user.value.position_uz, user.value.position_ru)
 })
 
 const statusLabel = computed(() => {
@@ -135,7 +136,7 @@ async function loadUser() {
     if (data.direction_id) {
       try {
         const { data: dir } = await import('@/api/admin').then((m) => m.adminDirectionsApi.retrieve(data.direction_id!))
-        directionName.value = locale.value !== 'uz' ? dir.name_ru : dir.name_uz
+        directionName.value = localizeBilingual(dir.name_uz, dir.name_ru)
       } catch (_e) { /* ignore */ }
     }
 
