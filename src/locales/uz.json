@@ -289,12 +289,22 @@
     "description": "Sahifa topilmadi",
     "goHome": "Bosh sahifaga"
   },
+  "halls": {
+    "floor": "Etaj",
+    "floorLabel": "{n}-etaj",
+    "selectFloor": "Etajni tanlang",
+    "name": "Zal nomi",
+    "namePlaceholder": "Masalan: Katta yig'ilishlar zali",
+    "nameRequired": "Zal nomini kiriting"
+  },
   "admin": {
     "dashboard": "Admin paneli",
     "users": "Foydalanuvchilar",
     "directions": "Yo'nalishlar",
     "organisations": "Tashkilotlar",
     "regions": "Hududlar",
+    "halls": "Yig'ilish zallari",
+    "noHalls": "Hozircha zal qo'shilmagan",
     "districts": "Tumanlar",
     "chats": "Yozishmalar",
     "create": "Yaratish",

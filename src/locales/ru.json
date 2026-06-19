@@ -289,12 +289,22 @@
     "description": "Страница не найдена",
     "goHome": "На главную"
   },
+  "halls": {
+    "floor": "Этаж",
+    "floorLabel": "{n}-этаж",
+    "selectFloor": "Выберите этаж",
+    "name": "Название зала",
+    "namePlaceholder": "Например: Большой зал собраний",
+    "nameRequired": "Введите название зала"
+  },
   "admin": {
     "dashboard": "Панель администратора",
     "users": "Пользователи",
     "directions": "Направления",
     "organisations": "Организации",
     "regions": "Регионы",
+    "halls": "Залы собраний",
+    "noHalls": "Залы пока не добавлены",
     "districts": "Районы",
     "chats": "Переписки",
     "create": "Создать",

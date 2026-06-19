@@ -194,6 +194,28 @@ export const adminOrganisationsApi = {
   },
 }
 
+// Yig'ilish zali — vazirlik binosidagi xona (etaj + nom)
+export interface Hall {
+  id: number
+  floor: number
+  name: string
+}
+
+export const adminHallsApi = {
+  list() {
+    return apiClient.get<Hall[]>('/halls/')
+  },
+  create(payload: { floor: number; name: string }) {
+    return apiClient.post<Hall>('/halls/', payload)
+  },
+  update(id: number, payload: { floor: number; name: string }) {
+    return apiClient.put<Hall>(`/halls/${id}/`, payload)
+  },
+  delete(id: number) {
+    return apiClient.delete(`/halls/${id}/`)
+  },
+}
+
 export const adminRegionsApi = {
   list() {
     return apiClient.get<Region[]>('/regions/')

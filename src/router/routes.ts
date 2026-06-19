@@ -154,6 +154,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, roles: ['SUPER_ADMIN', 'ADMIN'], titleKey: 'admin.regions' },
   },
   {
+    path: '/admin/halls',
+    name: 'admin.halls',
+    component: () => import('@/views/admin/HallsView.vue'),
+    meta: { requiresAuth: true, roles: ['SUPER_ADMIN', 'ADMIN'], titleKey: 'admin.halls' },
+  },
+  {
     path: '/admin/chats',
     name: 'admin.chats',
     component: () => import('@/views/admin/AdminChatsView.vue'),

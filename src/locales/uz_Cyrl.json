@@ -289,12 +289,22 @@
     "description": "Саҳифа топилмади",
     "goHome": "Бош саҳифага"
   },
+  "halls": {
+    "floor": "Этаж",
+    "floorLabel": "{n}-этаж",
+    "selectFloor": "Этажни танланг",
+    "name": "Зал номи",
+    "namePlaceholder": "Масалан: Катта йиғилишлар зали",
+    "nameRequired": "Зал номини киритинг"
+  },
   "admin": {
     "dashboard": "Админ панели",
     "users": "Фойдаланувчилар",
     "directions": "Йўналишлар",
     "organisations": "Ташкилотлар",
     "regions": "Ҳудудлар",
+    "halls": "Йиғилиш заллари",
+    "noHalls": "Ҳозирча зал қўшилмаган",
     "districts": "Туманлар",
     "chats": "Ёзишмалар",
     "create": "Яратиш",

@@ -114,6 +114,7 @@ import {
   ChatDotRound,
   Document,
   HomeFilled,
+  House,
   OfficeBuilding,
   Plus,
   Setting,
@@ -163,6 +164,7 @@ const adminItems = computed(() => {
     { name: 'admin.directions', path: '/admin/directions', label: 'admin.directions', icon: OfficeBuilding },
     { name: 'admin.organisations', path: '/admin/organisations', label: 'admin.organisations', icon: OfficeBuilding },
     { name: 'admin.regions', path: '/admin/regions', label: 'admin.regions', icon: OfficeBuilding },
+    { name: 'admin.halls', path: '/admin/halls', label: 'admin.halls', icon: House },
   ]
   if (isSuperAdmin.value) {
     items.push({ name: 'admin.chats', path: '/admin/chats', label: 'admin.chats', icon: ChatDotRound })
