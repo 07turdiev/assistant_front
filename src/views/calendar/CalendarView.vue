@@ -24,11 +24,6 @@
       </div>
 
       <div class="cal-toolbar__right">
-        <el-tooltip v-if="canCreateTask" :content="taskDialogTitle" placement="top">
-          <el-button type="success" circle size="large" @click="taskDialogVisible = true">
-            <el-icon><Document /></el-icon>
-          </el-button>
-        </el-tooltip>
         <el-tooltip v-if="canCreateEvent" :content="$t('event.create')" placement="top">
           <el-button type="primary" circle size="large" @click="$router.push({ name: 'events.create' })">
             <el-icon><Plus /></el-icon>
@@ -64,43 +59,22 @@
       <FullCalendar ref="calendarRef" :options="calendarOptions" />
     </div>
 
-    <!-- Tezkor topshiriq/so'rov dialogi -->
-    <el-dialog v-model="taskDialogVisible" :title="taskDialogTitle" width="520px">
-      <el-form :model="taskForm" label-position="top">
-        <el-form-item :label="$t('reports.description')" required>
-          <el-input
-            v-model="taskForm.description"
-            type="textarea"
-            :rows="4"
-            :placeholder="$t('reports.descriptionHint')"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="taskDialogVisible = false">{{ $t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="creatingTask" @click="onCreateTask">
-          {{ $t('common.save') }}
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
-import { ArrowLeft, ArrowRight, Document, Plus } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Plus } from '@element-plus/icons-vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import interactionPlugin, { type DateClickArg } from '@fullcalendar/interaction'
 import multiMonthPlugin from '@fullcalendar/multimonth'
 import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput, EventContentArg, LocaleInput } from '@fullcalendar/core'
 
 import { eventsApi } from '@/api/events'
-import { reportsApi } from '@/api/reports'
 import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
 import { useRealtimeStore } from '@/stores/realtime'
@@ -202,36 +176,8 @@ const realtime = useRealtimeStore()
 const lastRange = ref<{ start: string; end: string } | null>(null)
 
 const canCreateEvent = computed(() =>
-  auth.hasRole('VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ', 'YORDAMCHI')
+  auth.hasRole('VAZIR', 'ORINBOSAR', 'YORDAMCHI', 'BOSHLIQ')
 )
-const canCreateTask = computed(() =>
-  auth.hasRole('VAZIR', 'BOSHLIQ', 'YORDAMCHI', 'YORDAMCHI')
-)
-
-const taskDialogVisible = ref(false)
-const creatingTask = ref(false)
-const taskForm = reactive({ description: '' })
-
-const taskDialogTitle = computed(() => {
-  if (auth.hasRole('VAZIR', 'BOSHLIQ')) return t('reports.taskTitle')
-  if (auth.hasRole('YORDAMCHI', 'YORDAMCHI')) return t('reports.requestTitle')
-  return t('reports.create')
-})
-
-async function onCreateTask() {
-  if (!taskForm.description.trim()) return
-  creatingTask.value = true
-  try {
-    await reportsApi.create({ description: taskForm.description.trim() })
-    ElMessage.success(t('common.success'))
-    taskForm.description = ''
-    taskDialogVisible.value = false
-  } catch (e: unknown) {
-    showApiError(e, t('common.error'))
-  } finally {
-    creatingTask.value = false
-  }
-}
 
 // EventType -> color mapping (production enum'i)
 const typeColors: Record<string, string> = {
@@ -330,6 +276,8 @@ const calendarOptions = computed<CalendarOptions>(() => {
     // render qiladi va datesSet qayta ishga tushib cheksiz loop yaratadi.
     eventClick: onEventClick,
     datesSet: onDatesSet,
+    // Butun kun yacheykasi bosilganda — o'sha kun ko'rinishiga o'tadi (faqat oy/yil view'da)
+    dateClick: onDateClick,
     dayMaxEvents: 3,
     nowIndicator: true,
     navLinks: true,
@@ -419,6 +367,16 @@ function onNavToDay(date: Date) {
   view.value = 'timeGridDay'
   const api = calendarRef.value?.getApi()
   if (api) api.changeView('timeGridDay', date)
+}
+
+// Kun yacheykasi (sana raqami emas, butun katak) bosilganda — o'sha kunni ochish.
+// Faqat oy/yil ko'rinishida; hafta/kun view'da slot bosilishi sahifani sakratmaydi.
+function onDateClick(arg: DateClickArg) {
+  const vt = arg.view.type
+  if (vt === 'dayGridMonth' || vt === 'multiMonthYear') {
+    view.value = 'timeGridDay'
+    arg.view.calendar.changeView('timeGridDay', arg.date)
+  }
 }
 
 async function onDatesSet(arg: DatesSetArg) {
@@ -712,9 +670,20 @@ $shadow-event-hover: 0 2px 8px rgba(15, 23, 42, 0.08);
   transition: background-color 0.15s ease;
 }
 
+/* Butun kun yacheykasi bosiladi — aniq ko'rsatkich (pointer + hover) */
 :deep(.fc-daygrid-day-frame) {
   padding: 2px;
   min-height: 90px;
+  cursor: pointer;
+}
+
+:deep(.fc-daygrid-day:hover) {
+  background-color: rgba(64, 158, 255, 0.07);
+}
+
+/* Bo'sh joyni ham bosish oson bo'lsin — pastki bo'shliq ham yacheyka ichida */
+:deep(.fc-daygrid-day-events) {
+  min-height: 1.5em;
 }
 
 :deep(.fc-daygrid-day-top) {
