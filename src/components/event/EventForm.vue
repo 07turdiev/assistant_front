@@ -87,10 +87,7 @@
         class="toggle-btn"
         @click="setLocationMode('hall')"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1H15V15H1V1Z" stroke="currentColor" stroke-width="2" />
-        </svg>
-        {{ $t('event.locationHall') }}
+        <el-icon><OfficeBuilding /></el-icon>&nbsp;{{ $t('event.locationHall') }}
       </el-button>
       <el-button
         :type="locationMode === 'external' ? 'primary' : ''"
@@ -98,11 +95,7 @@
         class="toggle-btn"
         @click="setLocationMode('external')"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8 1C4.134 1 1 4.134 1 8s3.134 7 7 7 7-3.134 7-7-3.134-7-7-7zm0 12c-2.761 0-5-2.239-5-5s2.239-5 5-5 5 2.239 5 5-2.239 5-5 5z" fill="currentColor"/>
-          <circle cx="8" cy="8" r="3" fill="currentColor"/>
-        </svg>
-        {{ $t('event.locationExternal') }}
+        <el-icon><LocationFilled /></el-icon>&nbsp;{{ $t('event.locationExternal') }}
       </el-button>
     </div>
 
@@ -281,7 +274,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Check, DocumentAdd, Lock, Paperclip, User as UserIcon } from '@element-plus/icons-vue'
+import { Check, DocumentAdd, LocationFilled, Lock, OfficeBuilding, Paperclip, User as UserIcon } from '@element-plus/icons-vue'
 import { useLookupStore } from '@/stores/lookup'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'

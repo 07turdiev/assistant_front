@@ -3,16 +3,6 @@
     <template #header>
       <div class="header">
         <span class="title">{{ $t('drafts.listTitle') }}</span>
-        <el-radio-group v-model="activeKind" size="default" @change="loadDrafts">
-          <el-radio-button label="event">
-            <el-icon class="kind-icon"><Calendar /></el-icon>
-            {{ $t('drafts.events') }} ({{ eventCount }})
-          </el-radio-button>
-          <el-radio-button label="report">
-            <el-icon class="kind-icon"><Document /></el-icon>
-            {{ $t('drafts.reports') }} ({{ reportCount }})
-          </el-radio-button>
-        </el-radio-group>
       </div>
     </template>
 
@@ -38,7 +28,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column v-if="activeKind === 'event'" :label="$t('drafts.dateTime')" width="160">
+      <el-table-column :label="$t('drafts.dateTime')" width="160">
         <template #default="{ row }">
           <div v-if="row.date">{{ row.date }}</div>
           <div v-if="row.start_time" style="color: var(--el-text-color-secondary)">
@@ -80,31 +70,20 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Calendar, Document } from '@element-plus/icons-vue'
-import { eventDraftsApi, reportDraftsApi } from '@/api/drafts'
-import type { EventDraft, ReportDraft, DraftStatus } from '@/types/draft'
+import { eventDraftsApi } from '@/api/drafts'
+import type { EventDraft, DraftStatus } from '@/types/draft'
 import { showApiError } from '@/utils/api-error'
 
 const router = useRouter()
 const { t } = useI18n()
-const activeKind = ref<'event' | 'report'>('event')
-const drafts = ref<(EventDraft | ReportDraft)[]>([])
+const drafts = ref<EventDraft[]>([])
 const loading = ref(false)
-const eventCount = ref(0)
-const reportCount = ref(0)
 
 async function loadDrafts() {
   loading.value = true
   try {
-    if (activeKind.value === 'event') {
-      const { data } = await eventDraftsApi.list({ page_size: 50 })
-      drafts.value = data.results
-      eventCount.value = data.count
-    } else {
-      const { data } = await reportDraftsApi.list({ page_size: 50 })
-      drafts.value = data.results
-      reportCount.value = data.count
-    }
+    const { data } = await eventDraftsApi.list({ page_size: 50 })
+    drafts.value = data.results
   } catch (e: unknown) {
     showApiError(e, t('drafts.loadError'))
   } finally {
@@ -112,22 +91,8 @@ async function loadDrafts() {
   }
 }
 
-async function loadCounts() {
-  try {
-    const [evt, rep] = await Promise.all([
-      eventDraftsApi.list({ page_size: 1 }),
-      reportDraftsApi.list({ page_size: 1 }),
-    ])
-    eventCount.value = evt.data.count
-    reportCount.value = rep.data.count
-  } catch {}
-}
-
-function onRowClick(row: EventDraft | ReportDraft) {
-  router.push({
-    name: activeKind.value === 'event' ? 'drafts.event.edit' : 'drafts.report.edit',
-    params: { id: row.id },
-  })
+function onRowClick(row: EventDraft) {
+  router.push({ name: 'drafts.event.edit', params: { id: row.id } })
 }
 
 function statusType(s: DraftStatus): 'primary' | 'success' | 'warning' | 'info' | 'danger' | undefined {
@@ -154,10 +119,7 @@ function formatDate(iso: string): string {
   return d.toLocaleString('uz-UZ', { dateStyle: 'short', timeStyle: 'short' })
 }
 
-onMounted(() => {
-  loadCounts()
-  loadDrafts()
-})
+onMounted(loadDrafts)
 </script>
 
 <style scoped>
