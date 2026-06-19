@@ -32,7 +32,7 @@
         <el-descriptions-item :label="$t('event.time')">
           {{ event.start_time?.slice(0, 5) }} – {{ event.end_time?.slice(0, 5) }}
         </el-descriptions-item>
-        <el-descriptions-item :label="$t('event.address')">{{ event.address || '—' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('event.location')">{{ locationText }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.type')">{{ typeLabel }}</el-descriptions-item>
         <el-descriptions-item :label="$t('event.sphere')" :span="2">{{ sphereLabel }}</el-descriptions-item>
         <el-descriptions-item v-if="event.on_behalf_of" :label="$t('event.organizer')" :span="2">
@@ -176,7 +176,7 @@ import { eventsApi } from '@/api/events'
 import { usersApi } from '@/api/users'
 import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { showApiError } from '@/utils/api-error'
-import { localizeBilingual } from '@/utils/translit'
+import { localize, localizeBilingual } from '@/utils/translit'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
 import { formatDate } from '@/utils/date'
@@ -279,6 +279,21 @@ const typeLabel = computed(() => {
 const sphereLabel = computed(() => {
   if (!event.value) return ''
   return lookup.spheres.find((s) => s.value === event.value!.sphere)?.label || event.value.sphere
+})
+
+// Manzil: vazirlik binosi (zal) yoki tashqi hudud (viloyat/tuman/manzil)
+const locationText = computed(() => {
+  const e = event.value
+  if (!e) return '—'
+  if (e.hall) {
+    return `${t('halls.floorLabel', { n: e.hall.floor })}: ${localize(e.hall.name)}`
+  }
+  const parts = [
+    e.region ? localizeBilingual(e.region.name_uz, e.region.name_ru) : '',
+    e.district ? localizeBilingual(e.district.name_uz, e.district.name_ru) : '',
+    e.address || '',
+  ].filter(Boolean)
+  return parts.length ? parts.join(', ') : '—'
 })
 
 function formatUser(u?: User | null): string {

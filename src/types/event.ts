@@ -24,6 +24,19 @@ export interface EventDirection {
   head: User | null
 }
 
+// Manzil — vazirlik binosi (zal) yoki tashqi hudud (viloyat/tuman)
+export interface EventHall {
+  id: number
+  floor: number
+  name: string
+}
+
+export interface EventLocationRef {
+  id: number
+  name_uz: string
+  name_ru: string
+}
+
 export interface Event {
   id: string
   title: string
@@ -40,6 +53,10 @@ export interface Event {
   conclusion?: string
   // "Nomidan" — yordamchi yaratsa, asl egasi (vazir/o'rinbosar)
   on_behalf_of?: User | null
+  // Manzil: vazirlik binosi (hall) yoki tashqi hudud (region/district + address)
+  hall?: EventHall | null
+  region?: EventLocationRef | null
+  district?: EventLocationRef | null
   participants: User[]
   participant_directions?: EventDirection[]
   visitors: Visitor[]
@@ -61,6 +78,10 @@ export interface EventPayload {
   sphere: string
   type: string
   notify_time_list?: number[]
+  // Manzil — ikki rejim: hall_id (vazirlik binosi) yoki region_id/district_id (tashqi)
+  hall_id?: number | null
+  region_id?: number | null
+  district_id?: number | null
   // Qatnashchilar: bo'limlar (yuqori rollar) yoki odamlar (boshliqlar)
   participant_ids?: string[]
   participant_direction_ids?: string[]

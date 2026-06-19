@@ -40,6 +40,9 @@ interface SubmitPayload {
     start_time: string
     end_time: string
     address: string
+    hall_id: number | null
+    region_id: number | null
+    district_id: number | null
     description: string
     sphere: string
     type: string

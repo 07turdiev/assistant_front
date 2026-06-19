@@ -24,6 +24,20 @@
       </div>
 
       <div class="cal-toolbar__right">
+        <el-select
+          v-model="selectedHall"
+          clearable
+          filterable
+          :placeholder="$t('calendar.allEvents')"
+          class="hall-filter"
+        >
+          <el-option v-for="h in halls" :key="h.id" :value="h.id" :label="hallLabel(h)" />
+        </el-select>
+        <el-tooltip :content="$t('calendar.bookHall')" placement="top">
+          <el-button type="warning" circle size="large" @click="openReserve">
+            <el-icon><House /></el-icon>
+          </el-button>
+        </el-tooltip>
         <el-tooltip v-if="canCreateEvent" :content="$t('event.create')" placement="top">
           <el-button type="primary" circle size="large" @click="$router.push({ name: 'events.create' })">
             <el-icon><Plus /></el-icon>
@@ -59,14 +73,64 @@
       <FullCalendar ref="calendarRef" :options="calendarOptions" />
     </div>
 
+    <!-- Zal band qilish (alohida bron, bo'lim nomidan) -->
+    <el-dialog v-model="reserve.visible" :title="$t('calendar.bookHall')" width="480px">
+      <el-form :model="reserve.form" label-position="top">
+        <el-form-item :label="$t('event.hall')" required>
+          <el-select v-model="reserve.form.hall_id" filterable :placeholder="$t('event.selectHall')" style="width: 100%">
+            <el-option v-for="h in halls" :key="h.id" :value="h.id" :label="hallLabel(h)" />
+          </el-select>
+        </el-form-item>
+        <el-row :gutter="12">
+          <el-col :span="8">
+            <el-form-item :label="$t('event.date')" required>
+              <el-date-picker v-model="reserve.form.date" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item :label="$t('event.startTime')" required>
+              <el-time-picker v-model="reserve.form.start_time" value-format="HH:mm" format="HH:mm" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item :label="$t('event.endTime')" required>
+              <el-time-picker v-model="reserve.form.end_time" value-format="HH:mm" format="HH:mm" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item :label="$t('calendar.bookDepartment')">
+          <el-tree-select
+            v-model="reserve.form.direction_id"
+            :data="directionTree"
+            :props="treeProps"
+            node-key="id"
+            check-strictly
+            clearable
+            filterable
+            :placeholder="$t('reports.audienceSelectHint')"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item :label="$t('calendar.bookPurpose')">
+          <el-input v-model="reserve.form.title" :placeholder="$t('calendar.bookPurposeHint')" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="reserve.visible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="reserve.saving" @click="submitReserve">
+          {{ $t('calendar.bookConfirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, ArrowRight, Plus } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, House, Plus } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -75,10 +139,13 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import type { CalendarOptions, EventClickArg, DatesSetArg, EventInput, EventContentArg, LocaleInput } from '@fullcalendar/core'
 
 import { eventsApi } from '@/api/events'
+import { hallsApi, hallBookingsApi, type Hall } from '@/api/halls'
+import { adminDirectionsApi, type Direction } from '@/api/admin'
 import { showApiError } from '@/utils/api-error'
 import { useAuthStore } from '@/stores/auth'
 import { useRealtimeStore } from '@/stores/realtime'
 import { formatDate } from '@/utils/date'
+import { localize } from '@/utils/translit'
 import type { Event } from '@/types/event'
 
 // ---- O'zbek (Latin) oy va hafta nomlari ----
@@ -214,6 +281,72 @@ const events = ref<Event[]>([])
 const loading = ref(false)
 const currentTitle = ref('')
 
+// ===== Zal filtri + bandlik =====
+const halls = ref<Hall[]>([])
+const selectedHall = ref<number | null>(null)
+const bookings = ref<import('@/api/halls').HallBooking[]>([])
+const directionTree = ref<Direction[]>([])
+const treeProps = computed(() => ({
+  label: locale.value === 'ru' ? 'name_ru' : 'name_uz',
+  children: 'children',
+}))
+
+function hallLabel(h: Hall): string {
+  return `${t('halls.floorLabel', { n: h.floor })}: ${localize(h.name)}`
+}
+
+// "Band qilish" dialogi
+const reserve = reactive({
+  visible: false,
+  saving: false,
+  form: {
+    hall_id: null as number | null,
+    date: '',
+    start_time: '',
+    end_time: '',
+    direction_id: '' as string,
+    title: '',
+  },
+})
+
+function openReserve() {
+  reserve.form = {
+    hall_id: selectedHall.value,
+    date: formatDate(new Date(), 'YYYY-MM-DD'),
+    start_time: '09:00',
+    end_time: '10:00',
+    direction_id: '',
+    title: '',
+  }
+  reserve.visible = true
+}
+
+async function submitReserve() {
+  const f = reserve.form
+  if (!f.hall_id || !f.date || !f.start_time || !f.end_time) {
+    ElMessage.warning(t('event.selectHall'))
+    return
+  }
+  reserve.saving = true
+  try {
+    await hallBookingsApi.create({
+      hall_id: f.hall_id,
+      date: f.date,
+      start_time: f.start_time,
+      end_time: f.end_time,
+      direction_id: f.direction_id || null,
+      title: f.title.trim(),
+    })
+    ElMessage.success(t('common.success'))
+    reserve.visible = false
+    if (lastRange.value) reloadData(lastRange.value.start, lastRange.value.end)
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
+  } finally {
+    reserve.saving = false
+  }
+}
+
 const importantCount = computed(() => events.value.filter((e) => e.is_important).length)
 const privateCount = computed(() => events.value.filter((e) => e.is_private).length)
 
@@ -228,8 +361,32 @@ function colorFor(e: Event): string {
   return typeColors[e.type] || '#909399'
 }
 
-const fcEvents = computed<EventInput[]>(() =>
-  events.value.map((e) => {
+const fcEvents = computed<EventInput[]>(() => {
+  // Zal tanlangan bo'lsa — o'sha zalning bandligi (tadbir + alohida bronlar)
+  if (selectedHall.value) {
+    return bookings.value.map((b) => {
+      const base = b.event ? '#409eff' : '#e6a23c' // tadbir — ko'k; alohida bron — sariq
+      const title = b.event_title || b.title || t('calendar.reserved')
+      return {
+        id: `booking-${b.id}`,
+        title,
+        start: `${b.date}T${b.start_time}`,
+        end: `${b.date}T${b.end_time}`,
+        backgroundColor: base,
+        borderColor: base,
+        classNames: ['event-pill'],
+        extendedProps: {
+          start_time: b.start_time,
+          is_important: false,
+          is_private: false,
+          bookingId: b.id,
+          eventId: b.event,
+          subtitle: b.direction_name || b.booked_by || '',
+        },
+      }
+    })
+  }
+  return events.value.map((e) => {
     const base = colorFor(e)
     return {
       id: e.id,
@@ -253,7 +410,7 @@ const fcEvents = computed<EventInput[]>(() =>
       },
     }
   })
-)
+})
 
 const calendarOptions = computed<CalendarOptions>(() => {
   const isRu = locale.value === 'ru'
@@ -360,7 +517,41 @@ function navNext() { calendarRef.value?.getApi().next() }
 function navToday() { calendarRef.value?.getApi().today() }
 
 function onEventClick(arg: EventClickArg) {
+  // Zal rejimida — bron bosilgan: tadbir bo'lsa sahifaga o'tamiz, alohida bron — bekor qilish
+  if (selectedHall.value) {
+    const eventId = arg.event.extendedProps.eventId as string | null
+    const bookingId = arg.event.extendedProps.bookingId as number | undefined
+    if (eventId) {
+      router.push({ name: 'events.detail', params: { id: eventId } })
+    } else if (bookingId) {
+      onBookingClick(bookingId)
+    }
+    return
+  }
   router.push({ name: 'events.detail', params: { id: arg.event.id } })
+}
+
+async function onBookingClick(bookingId: number) {
+  const b = bookings.value.find((x) => x.id === bookingId)
+  const info = b ? `${b.start_time.slice(0, 5)}–${b.end_time.slice(0, 5)} · ${b.title || b.direction_name || ''}` : ''
+  try {
+    await ElMessageBox.confirm(
+      t('calendar.cancelBookingConfirm', { info }),
+      t('calendar.bookHall'),
+      {
+        type: 'warning',
+        confirmButtonText: t('calendar.cancelBooking'),
+        cancelButtonText: t('common.cancel'),
+      },
+    )
+  } catch { return }
+  try {
+    await hallBookingsApi.delete(bookingId)
+    ElMessage.success(t('common.success'))
+    if (lastRange.value) reloadData(lastRange.value.start, lastRange.value.end)
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
+  }
 }
 
 function onNavToDay(date: Date) {
@@ -384,19 +575,49 @@ async function onDatesSet(arg: DatesSetArg) {
   const start = formatDate(arg.start, 'YYYY-MM-DD')
   const end = formatDate(arg.end, 'YYYY-MM-DD')
   lastRange.value = { start, end }
-  await loadEvents(start, end)
+  await reloadData(start, end)
 }
 
 // Realtime — yangi/o'zgargan/o'chirilgan tadbir kelganda kalendarni jonli yangilash
 watch(() => realtime.eventsBump, () => {
-  if (lastRange.value) loadEvents(lastRange.value.start, lastRange.value.end)
+  if (lastRange.value) reloadData(lastRange.value.start, lastRange.value.end)
 })
+
+// Zal filtri o'zgarsa — tadbir yoki bron rejimiga qayta yuklaymiz
+watch(selectedHall, () => {
+  if (lastRange.value) reloadData(lastRange.value.start, lastRange.value.end)
+})
+
+// Tanlangan rejimga qarab ma'lumot yuklash: zal tanlansa — bandlik, aks holda — tadbirlar
+async function reloadData(startDate: string, endDate: string) {
+  if (selectedHall.value) {
+    await loadBookings(startDate, endDate)
+  } else {
+    await loadEvents(startDate, endDate)
+  }
+}
 
 async function loadEvents(startDate: string, endDate: string) {
   loading.value = true
   try {
     const { data } = await eventsApi.byPeriod({ start_date: startDate, end_date: endDate })
     events.value = data
+  } catch (e: unknown) {
+    showApiError(e, t('common.error'))
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadBookings(startDate: string, endDate: string) {
+  loading.value = true
+  try {
+    const { data } = await hallBookingsApi.list({
+      hall: selectedHall.value as number,
+      start_date: startDate,
+      end_date: endDate,
+    })
+    bookings.value = data
   } catch (e: unknown) {
     showApiError(e, t('common.error'))
   } finally {
@@ -416,6 +637,10 @@ watch(fcEvents, (newEvents) => {
 }, { deep: true })
 
 onMounted(async () => {
+  // Zal filtri va "band qilish" uchun ma'lumotlar
+  hallsApi.list().then(({ data }) => { halls.value = data }).catch(() => undefined)
+  adminDirectionsApi.tree().then(({ data }) => { directionTree.value = data }).catch(() => undefined)
+
   // Calendar mount bo'lib, datesSet ishga tushgandan keyin events yuklanadi.
   // Initial render uchun nextTick'da fcEvents'ni qo'shamiz (datesSet'dan keyin).
   await nextTick()
@@ -530,6 +755,10 @@ $shadow-event-hover: 0 2px 8px rgba(15, 23, 42, 0.08);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+
+.hall-filter {
+  width: 200px;
 }
 
 /* ============================================================

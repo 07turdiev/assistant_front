@@ -76,6 +76,118 @@
       </el-col>
     </el-row>
 
+    <!-- ===== Manzil — vazirlik binosi (zal) yoki boshqa hudud ===== -->
+    <h3 class="section-title">{{ $t('event.locationTitle') }}</h3>
+    <el-divider class="title-divider" />
+
+    <div class="location-mode">
+      <el-button
+        :type="locationMode === 'hall' ? 'primary' : ''"
+        :plain="locationMode !== 'hall'"
+        class="toggle-btn"
+        @click="setLocationMode('hall')"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1H15V15H1V1Z" stroke="currentColor" stroke-width="2" />
+        </svg>
+        {{ $t('event.locationHall') }}
+      </el-button>
+      <el-button
+        :type="locationMode === 'external' ? 'primary' : ''"
+        :plain="locationMode !== 'external'"
+        class="toggle-btn"
+        @click="setLocationMode('external')"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 1C4.134 1 1 4.134 1 8s3.134 7 7 7 7-3.134 7-7-3.134-7-7-7zm0 12c-2.761 0-5-2.239-5-5s2.239-5 5-5 5 2.239 5 5-2.239 5-5 5z" fill="currentColor"/>
+          <circle cx="8" cy="8" r="3" fill="currentColor"/>
+        </svg>
+        {{ $t('event.locationExternal') }}
+      </el-button>
+    </div>
+
+    <!-- Vazirlik binosi: zal tanlash + jonli bandlik -->
+    <el-row v-if="locationMode === 'hall'" :gutter="24">
+      <el-col :span="12">
+        <el-form-item :label="$t('event.hall')">
+          <el-select
+            v-model="form.hall_id"
+            filterable
+            clearable
+            :placeholder="$t('event.selectHall')"
+            style="width: 100%"
+          >
+            <el-option v-for="h in halls" :key="h.id" :value="h.id" :label="hallLabel(h)" />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label=" ">
+          <el-alert
+            v-if="hallConflict"
+            :title="hallConflict"
+            type="error"
+            :closable="false"
+            show-icon
+          />
+          <el-alert
+            v-else-if="form.hall_id && !hallChecking"
+            :title="$t('event.hallFree')"
+            type="success"
+            :closable="false"
+            show-icon
+          />
+        </el-form-item>
+      </el-col>
+    </el-row>
+
+    <!-- Boshqa hudud: viloyat + tuman + qo'shimcha manzil -->
+    <el-row v-else :gutter="24">
+      <el-col :span="8">
+        <el-form-item :label="$t('event.region')">
+          <el-select
+            v-model="form.region_id"
+            filterable
+            clearable
+            :placeholder="$t('event.region')"
+            style="width: 100%"
+            @change="onRegionChange"
+          >
+            <el-option
+              v-for="r in regions"
+              :key="r.id"
+              :value="r.id"
+              :label="localizeBilingual(r.name_uz, r.name_ru)"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="8">
+        <el-form-item :label="$t('event.district')">
+          <el-select
+            v-model="form.district_id"
+            filterable
+            clearable
+            :disabled="!form.region_id"
+            :placeholder="$t('event.district')"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="d in districts"
+              :key="d.id"
+              :value="d.id"
+              :label="localizeBilingual(d.name_uz, d.name_ru)"
+            />
+          </el-select>
+        </el-form-item>
+      </el-col>
+      <el-col :span="8">
+        <el-form-item :label="$t('event.address')">
+          <el-input v-model="form.address" :placeholder="$t('event.addressHint')" />
+        </el-form-item>
+      </el-col>
+    </el-row>
+
     <el-form-item>
       <el-upload class="big-upload" :auto-upload="false" :file-list="newFiles" :on-change="onFileChange" :on-remove="onFileRemove" multiple list-type="picture-card">
         <el-icon class="upload-icon"><DocumentAdd /></el-icon>
@@ -173,9 +285,10 @@ import { Check, DocumentAdd, Lock, Paperclip, User as UserIcon } from '@element-
 import { useLookupStore } from '@/stores/lookup'
 import { useAuthStore } from '@/stores/auth'
 import { usersApi } from '@/api/users'
-import { adminDirectionsApi, type Direction } from '@/api/admin'
+import { adminDirectionsApi, adminRegionsApi, type Direction, type Region, type District } from '@/api/admin'
+import { hallsApi, hallBookingsApi, type Hall } from '@/api/halls'
 import { fullName } from '@/utils/format'
-import { localize } from '@/utils/translit'
+import { localize, localizeBilingual } from '@/utils/translit'
 import type { Event, Visitor, Attachment } from '@/types/event'
 import type { User, UserStatus } from '@/types/user'
 
@@ -185,6 +298,9 @@ interface FormShape {
   start_time: string
   end_time: string
   address: string
+  hall_id: number | null
+  region_id: number | null
+  district_id: number | null
   description: string
   sphere: string
   type: string
@@ -231,6 +347,9 @@ const form = reactive<FormShape>({
   start_time: '',
   end_time: '',
   address: '',
+  hall_id: null,
+  region_id: null,
+  district_id: null,
   description: '',
   sphere: 'VARIOUS_QUESTIONS',
   type: '',
@@ -252,6 +371,69 @@ const treeProps = computed(() => ({
 
 // O'z jamoasi — quyi xodimlar (BOSHLIQ uchun)
 const myTeam = ref<User[]>([])
+
+// ===== Manzil: vazirlik binosi (zal) yoki tashqi hudud =====
+const locationMode = ref<'hall' | 'external'>('hall')
+const halls = ref<Hall[]>([])
+const regions = ref<Region[]>([])
+const districts = ref<District[]>([])
+const hallConflict = ref('')
+const hallChecking = ref(false)
+const editingEventId = ref<string | null>(null)
+
+function hallLabel(h: Hall): string {
+  return `${t('halls.floorLabel', { n: h.floor })}: ${localize(h.name)}`
+}
+
+function setLocationMode(mode: 'hall' | 'external') {
+  locationMode.value = mode
+  if (mode === 'hall') {
+    form.region_id = null
+    form.district_id = null
+  } else {
+    form.hall_id = null
+    hallConflict.value = ''
+  }
+}
+
+async function loadDistricts(regionId: number) {
+  try {
+    const { data } = await adminRegionsApi.districts(regionId)
+    districts.value = data
+  } catch (_e) { /* ignore */ }
+}
+
+function onRegionChange() {
+  form.district_id = null
+  districts.value = []
+  if (form.region_id) loadDistricts(form.region_id)
+}
+
+// Jonli bandlik tekshiruvi — zal/sana/vaqt o'zgarsa (350ms debounce)
+let checkTimer: ReturnType<typeof setTimeout> | null = null
+watch(
+  () => [locationMode.value, form.hall_id, form.date, form.start_time, form.end_time],
+  () => {
+    hallConflict.value = ''
+    if (locationMode.value !== 'hall' || !form.hall_id || !form.date || !form.start_time || !form.end_time) return
+    if (checkTimer) clearTimeout(checkTimer)
+    checkTimer = setTimeout(async () => {
+      hallChecking.value = true
+      try {
+        const { data } = await hallBookingsApi.check({
+          hall_id: form.hall_id as number,
+          date: form.date,
+          start_time: form.start_time,
+          end_time: form.end_time,
+          exclude_event_id: editingEventId.value || undefined,
+        })
+        hallConflict.value = data.available ? '' : (data.message || t('event.hallBusy'))
+      } catch (_e) { /* ignore */ } finally {
+        hallChecking.value = false
+      }
+    }, 350)
+  },
+)
 
 const newFiles = ref<UploadFile[]>([])
 const existingFiles = ref<Attachment[]>([])
@@ -340,6 +522,20 @@ watch(
     form.start_time = e.start_time?.slice(0, 5)
     form.end_time = e.end_time?.slice(0, 5)
     form.address = e.address || ''
+    // Manzil rejimini tadbirdan aniqlaymiz
+    editingEventId.value = e.id
+    if (e.hall) {
+      locationMode.value = 'hall'
+      form.hall_id = e.hall.id
+      form.region_id = null
+      form.district_id = null
+    } else {
+      locationMode.value = 'external'
+      form.hall_id = null
+      form.region_id = e.region?.id ?? null
+      form.district_id = e.district?.id ?? null
+      if (form.region_id) loadDistricts(form.region_id)
+    }
     form.description = e.description || ''
     form.sphere = e.sphere || 'VARIOUS_QUESTIONS'
     form.type = e.type
@@ -375,9 +571,29 @@ async function onSubmit() {
     return
   }
 
+  // Vazirlik binosi rejimi — zal tanlangan va band bo'lmasligi shart
+  if (locationMode.value === 'hall') {
+    if (!form.hall_id) {
+      ElMessage.warning(t('event.selectHall'))
+      return
+    }
+    if (hallConflict.value) {
+      ElMessage.error(hallConflict.value)
+      return
+    }
+  }
+
   const dto = { ...form }
   if (!dto.end_time && dto.start_time) {
     dto.end_time = addOneHour(dto.start_time)
+  }
+  // Rejimga qarab keraksiz manzil maydonlarini tozalaymiz
+  if (locationMode.value === 'hall') {
+    dto.region_id = null
+    dto.district_id = null
+    dto.address = ''
+  } else {
+    dto.hall_id = null
   }
 
   emit('submit', {
@@ -395,6 +611,9 @@ function addOneHour(time: string): string {
 
 onMounted(async () => {
   await lookup.loadAll()
+  // Manzil ma'lumotlari: zallar + viloyatlar
+  hallsApi.list().then(({ data }) => { halls.value = data }).catch(() => undefined)
+  adminRegionsApi.list().then(({ data }) => { regions.value = data }).catch(() => undefined)
   if (selectsByDepartment.value) {
     try {
       const { data } = await adminDirectionsApi.tree()
