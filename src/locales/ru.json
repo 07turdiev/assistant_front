@@ -258,6 +258,7 @@
     "selectHall": "Выберите зал",
     "hallFree": "Зал свободен",
     "hallBusy": "В это время зал занят",
+    "assignedTo": "Назначен",
     "region": "Область",
     "district": "Район",
     "description": "Описание",

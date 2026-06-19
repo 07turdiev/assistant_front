@@ -106,24 +106,25 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item :label="$t('event.participants')">
-        <el-select
-          v-model="form.suggested_participants"
+      <el-form-item :label="$t('event.selectDepartments')">
+        <el-tree-select
+          v-model="form.target_directions"
+          :data="directionTree"
+          :props="treeProps"
+          node-key="id"
           multiple
+          check-strictly
+          show-checkbox
+          check-on-click-node
+          :render-after-expand="false"
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
           filterable
-          remote
-          :remote-method="searchUsers"
-          :loading="userSearchLoading"
-          :placeholder="$t('drafts.searchByName')"
+          :placeholder="$t('event.selectDepartmentsHint')"
           style="width: 100%"
-        >
-          <el-option
-            v-for="u in userOptions"
-            :key="u.id"
-            :label="`${u.last_name} ${u.first_name}`"
-            :value="u.id"
-          />
-        </el-select>
+        />
+        <div class="dept-hint">{{ $t('event.departmentHeadHint') }}</div>
         <div v-if="draft.unresolved_participant_names.length" class="unresolved">
           <el-icon class="unresolved__icon"><WarningFilled /></el-icon>
           {{ $t('drafts.unresolvedParticipants') }} {{ draft.unresolved_participant_names.join(', ') }}
@@ -186,13 +187,14 @@ import {
 import type { AxiosError } from 'axios'
 import { eventDraftsApi } from '@/api/drafts'
 import { infoApi, usersApi } from '@/api'
+import { adminDirectionsApi, type Direction } from '@/api/admin'
 import type { EventDraft, DraftStatus } from '@/types/draft'
 import type { User } from '@/types/user'
 import { showApiError } from '@/utils/api-error'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const draft = ref<EventDraft | null>(null)
 const loading = ref(false)
@@ -215,9 +217,17 @@ const form = reactive({
   event_type: '',
   assigned_to: null as string | null,
   suggested_participants: [] as string[],
+  target_directions: [] as string[],
   is_important: false,
   is_private: false,
 })
+
+// Bo'lim/boshqarmalar daraxti (tanlash uchun)
+const directionTree = ref<Direction[]>([])
+const treeProps = computed(() => ({
+  label: locale.value === 'ru' ? 'name_ru' : 'name_uz',
+  children: 'children',
+}))
 
 const canEdit = computed(() => draft.value?.status === 'PENDING_REVIEW')
 
@@ -271,6 +281,7 @@ function fillForm(d: EventDraft) {
   form.event_type = d.event_type
   form.assigned_to = d.assigned_to?.id || null
   form.suggested_participants = d.suggested_participants.map((u) => u.id)
+  form.target_directions = (d.target_directions || []).map((x) => x.id)
   form.is_important = d.is_important
   form.is_private = d.is_private
 }
@@ -300,6 +311,7 @@ async function loadChoices() {
     spheres.value = s.data
     eventTypes.value = ty.data
   } catch {}
+  adminDirectionsApi.tree().then(({ data }) => { directionTree.value = data }).catch(() => undefined)
 }
 
 async function onSave() {
@@ -405,6 +417,11 @@ onMounted(() => {
 }
 .unresolved {
   color: var(--el-color-warning);
+  font-size: 12px;
+  margin-top: 6px;
+}
+.dept-hint {
+  color: var(--el-text-color-secondary);
   font-size: 12px;
   margin-top: 6px;
 }

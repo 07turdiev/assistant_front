@@ -25,6 +25,13 @@ export interface BaseDraft {
   rejected_reason: string
 }
 
+export interface DraftDirection {
+  id: string
+  name_uz: string
+  name_ru: string
+  kind?: string
+}
+
 export interface EventDraft extends BaseDraft {
   date: string | null
   start_time: string | null
@@ -34,6 +41,8 @@ export interface EventDraft extends BaseDraft {
   is_private: boolean
   sphere: string
   event_type: string
+  // Tanlangan bo'lim/boshqarmalar — joylanganda har birining boshlig'i qatnashadi
+  target_directions?: DraftDirection[]
   published_event: string | null
 }
 
@@ -56,6 +65,7 @@ export interface EventDraftUpdate {
   event_type?: string
   assigned_to?: string | null
   suggested_participants?: string[]
+  target_directions?: string[]
   notify_minutes_before?: number[]
 }
 
