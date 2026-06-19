@@ -222,10 +222,8 @@ function collectDescendants(roots: Direction[], targetId: string): Direction[] {
   return out
 }
 
-const canEdit = computed(() => {
-  if (!event.value || !auth.user) return false
-  return event.value.created_by_id === auth.user.id || auth.hasRole('SUPER_ADMIN')
-})
+// Tahrirlash/o'chirish huquqini backend hisoblaydi (muallif, rahbar yoki uning yordamchisi)
+const canEdit = computed(() => event.value?.can_manage ?? false)
 
 // Boshliq tadbir qatnashchisi bo'lsa — o'z xodimlariga yo'naltira oladi
 const canForward = computed(() => {

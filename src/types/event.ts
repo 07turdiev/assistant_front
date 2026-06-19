@@ -64,6 +64,8 @@ export interface Event {
   protocols: Attachment[]
   notify_time: number[]
   created_by_id: string
+  // Joriy foydalanuvchi tahrirlay/o'chira oladimi (backend hisoblaydi: muallif/rahbar/yordamchi)
+  can_manage?: boolean
 }
 
 export interface EventPayload {
