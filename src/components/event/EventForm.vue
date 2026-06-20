@@ -198,6 +198,25 @@
       </div>
     </div>
 
+    <el-row :gutter="24">
+      <el-col :span="12">
+        <el-form-item :label="$t('event.sphere')">
+          <el-tree-select
+            v-model="form.sphere"
+            :data="directionTree"
+            :props="treeProps"
+            node-key="id"
+            check-strictly
+            check-on-click-node
+            clearable
+            filterable
+            :placeholder="$t('event.sphere')"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-col>
+    </el-row>
+
     <h3 class="section-title">{{ $t('event.executors') }}</h3>
     <el-divider class="title-divider" />
 
@@ -344,7 +363,7 @@ const form = reactive<FormShape>({
   region_id: null,
   district_id: null,
   description: '',
-  sphere: 'VARIOUS_QUESTIONS',
+  sphere: '',
   type: '',
   is_important: false,
   is_private: false,
@@ -530,7 +549,7 @@ watch(
       if (form.region_id) loadDistricts(form.region_id)
     }
     form.description = e.description || ''
-    form.sphere = e.sphere || 'VARIOUS_QUESTIONS'
+    form.sphere = e.sphere || ''
     form.type = e.type
     form.is_important = e.is_important
     form.is_private = e.is_private
