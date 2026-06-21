@@ -165,6 +165,7 @@ const adminItems = computed(() => {
     { name: 'admin.organisations', path: '/admin/organisations', label: 'admin.organisations', icon: OfficeBuilding },
     { name: 'admin.regions', path: '/admin/regions', label: 'admin.regions', icon: OfficeBuilding },
     { name: 'admin.halls', path: '/admin/halls', label: 'admin.halls', icon: House },
+    { name: 'admin.spheres', path: '/admin/spheres', label: 'admin.spheres', icon: Document },
   ]
   if (isSuperAdmin.value) {
     items.push({ name: 'admin.chats', path: '/admin/chats', label: 'admin.chats', icon: ChatDotRound })

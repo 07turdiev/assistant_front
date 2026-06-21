@@ -216,6 +216,27 @@ export const adminHallsApi = {
   },
 }
 
+// Tadbir sohasi — admin paneldan boshqariladi (nom)
+export interface Sphere {
+  id: number
+  name: string
+}
+
+export const adminSpheresApi = {
+  list() {
+    return apiClient.get<Sphere[]>('/spheres/')
+  },
+  create(payload: { name: string }) {
+    return apiClient.post<Sphere>('/spheres/', payload)
+  },
+  update(id: number, payload: { name: string }) {
+    return apiClient.put<Sphere>(`/spheres/${id}/`, payload)
+  },
+  delete(id: number) {
+    return apiClient.delete(`/spheres/${id}/`)
+  },
+}
+
 export const adminRegionsApi = {
   list() {
     return apiClient.get<Region[]>('/regions/')

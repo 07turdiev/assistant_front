@@ -317,6 +317,11 @@
     "namePlaceholder": "Masalan: Katta yig'ilishlar zali",
     "nameRequired": "Zal nomini kiriting"
   },
+  "spheres": {
+    "name": "Soha nomi",
+    "namePlaceholder": "Masalan: Madaniyat",
+    "nameRequired": "Soha nomini kiriting"
+  },
   "admin": {
     "dashboard": "Admin paneli",
     "users": "Foydalanuvchilar",
@@ -325,6 +330,8 @@
     "regions": "Hududlar",
     "halls": "Yig'ilish zallari",
     "noHalls": "Hozircha zal qo'shilmagan",
+    "spheres": "Sohalar",
+    "noSpheres": "Hozircha soha qo'shilmagan",
     "districts": "Tumanlar",
     "chats": "Yozishmalar",
     "create": "Yaratish",

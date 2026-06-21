@@ -201,18 +201,15 @@
     <el-row :gutter="24">
       <el-col :span="12">
         <el-form-item :label="$t('event.sphere')">
-          <el-tree-select
+          <el-select
             v-model="form.sphere"
-            :data="directionTree"
-            :props="treeProps"
-            node-key="id"
-            check-strictly
-            check-on-click-node
-            clearable
             filterable
+            clearable
             :placeholder="$t('event.sphere')"
             style="width: 100%"
-          />
+          >
+            <el-option v-for="s in lookup.spheres" :key="s.value" :value="s.value" :label="s.label" />
+          </el-select>
         </el-form-item>
       </el-col>
     </el-row>
